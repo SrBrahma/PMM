@@ -2,7 +2,7 @@
 #define PMM_GPS_h
 
 #include <pmmConsts.h>
-#include <NMEAGPS.h>
+#include "neoGps/NMEAGPS.h"
 // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
 
 typedef struct // Speed are in meters/s

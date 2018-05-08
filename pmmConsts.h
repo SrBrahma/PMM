@@ -6,14 +6,6 @@
 // This .h is for the base PMM uses. For a specific constant, create another .h .
 // PMM pins, PMM only macros etc.
 
-typedef struct
-{
-    uint32_t packetId;
-    uint32_t extraLogId;
-    float giroscopio[3];
-    float barometro[3];
-}pdaMainStructType; //IMU Structure
-
 
 // =======================================================================
 //  SD

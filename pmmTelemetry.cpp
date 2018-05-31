@@ -10,13 +10,13 @@ TelemetryManager::updateReceive()
 {
     if (rf95.recv2(rfPayload))
     {
-        if (!memcmp(rfPayload, RF_HEADER_LOG, 4))
+        if (!memcmp(rfPayload, RF_HEADER_LOG, 4)) // MLOG
         {
             // save in bin
             // save in .csv
             return 1;
         }
-        else if (!memcmp(rfPayload, RF_HEADER_EXTRA_LOG, 4))
+        else if (!memcmp(rfPayload, RF_HEADER_EXTRA_LOG, 4)) // M
         {
             // save in txt
 
@@ -32,3 +32,5 @@ TelemetryManager::updateReceive()
     else
         return 0;
 }
+
+variableId++;

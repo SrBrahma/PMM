@@ -7,28 +7,40 @@
 
 typedef struct // Speed are in meters/s
 {
-    float latitude;
-    float longitude;
-    float altitude;
-    uint8_t satellites;
-    #if PMM_GPS_GET_SPEEDS
-        unsigned long lastReadMillis;
-        float horizontalSpeed;
-        float speedNorth;
-        float speedEast;
-        float speedUp;
-        float headingDegree;
+    #ifdef GPS_FIX_LOCATION
+        float latitude;
+        float longitude;
     #endif
-} Gps_structType; //IMU Structure
+
+    #ifdef GPS_FIX_ALTITUDE
+        float altitude;
+    #endif
+
+    #ifdef GPS_FIX_SATELLITES
+        uint8_t satellites;
+    #endif
+
+    #ifdef GPS_FIX_SPEED
+        float horizontalSpeed;
+        float northSpeed;
+        float eastSpeed;
+        float headingDegree;
+
+        #ifdef GPS_FIX_ALTITUDE
+            float upSpeed;
+        #endif
+    #endif
+} gpsStructType; //GPS Structure
+
+
 
 class GpsManager
 {
 private:
-    //------------------------------------------------------------
-    // This object parses received characters
-    //   into the gps.fix() data structure
-    NMEAGPS mGps;
-    #if PMM_GPS_GET_SPEEDS
+    NMEAGPS mGps; // This object parses received characters into the gps.fix() data structure
+
+    #if (defined GPS_FIX_SPEED && defined GPS_FIX_ALTITUDE) // https://stackoverflow.com/a/38474505
+        unsigned long mLastReadMillis;
         unsigned long mTempLastReadMillis;
         float mLastAltitude;
     #endif
@@ -36,12 +48,12 @@ private:
     //  Define a set of GPS fix information.  It will hold on to the various pieces as they are received from
     //  an RMC sentence.  It can be used anywhere in your sketch.
     gps_fix mFix;
-    // Gps_structType mGps_struct;
+    // gpsStructType mgpsStructType;
 
 public:
     GpsManager();
     int init();
-    int update(Gps_structType *gps_struct);
+    int update(gpsStructType *gpsStruct);
     //void doSomeWork();
 };
 

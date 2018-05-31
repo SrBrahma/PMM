@@ -9,8 +9,7 @@
 class SdManager
 {
 private:
-    // Private functions
-    void yield();
+    void yield(); // Not really sure if it is needed.
     SdFatSdioEX mSdEx;
     File mFile;
     char mFilename[FILENAME_MAX_LENGTH];

@@ -36,7 +36,7 @@
 //-------------------------------------------------------------------------
 //  The GPSport.h include file tries to choose a default serial port
 //  for the GPS device.  If you know which serial port you want to use, edit the GPSport.h file.
-#include <GPSport.h>
+#include "neoGps/GPSport.h"
 
 //------------------------------------------------------------
 // For the NeoGPS example programs, "Streamers" is common set of printing and formatting routines for GPS data, in a
@@ -61,11 +61,12 @@ int GpsManager::init()
     Serial4.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
+        mLastReadMillis = 0;
     #endif
     return 0;
 }
 
-int GpsManager::update(Gps_structType *gps_struct)
+int GpsManager::update(gpsStructType *gpsStruct)
 {
     int hadUpdate = 0;
     while (mGps.available(gpsPort))
@@ -78,22 +79,33 @@ int GpsManager::update(Gps_structType *gps_struct)
 
     if (hadUpdate)
     {
-        gps_struct->latitude = mFix.latitude();
-        gps_struct->longitude = mFix.longitude();
-        gps_struct->altitude = mFix.altitude();
-        gps_struct->satellites = mFix.satellites;
-        #if PMM_GPS_GET_SPEEDS
-            mTempLastReadMillis = millis();
-            mLastAltitude = gps_struct->altitude;
+        gpsStruct->latitude = mFix.latitude();
+        gpsStruct->longitude = mFix.longitude();
+
+        #ifdef GPS_FIX_ALTITUDE
+            gpsStruct->altitude = mFix.altitude();
+        #endif
+
+        #ifdef GPS_FIX_SATELLITES
+            gpsStruct->satellites = mFix.satellites;
+        #endif
+
+        #ifdef GPS_FIX_SPEED
             mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
-            gps_struct->horizontalSpeed = mFix.speed_metersps();
-            gps_struct->speedNorth = mFix.velocity_northF();
-            gps_struct->speedEast = mFix.velocity_eastF();
-            gps_struct->speedUp = ((gps_struct->altitude - mLastAltitude) / ((mTempLastReadMillis - gps_struct->lastReadMillis) / 1000.0)); // mFix.velocity_downF();
-            gps_struct->headingDegree = mFix.heading();
-            gps_struct->lastReadMillis = mTempLastReadMillis;
+            gpsStruct->horizontalSpeed = mFix.speed_metersps();
+            gpsStruct->speedNorth = mFix.velocity_northF();
+            gpsStruct->speedEast = mFix.velocity_eastF();
+            gpsStruct->headingDegree = mFix.heading();
+
+            #ifdef GPS_FIX_ALTITUDE
+                mTempLastReadMillis = millis();
+                mLastAltitude = gpsStruct->altitude;
+                gpsStruct->speedUp = ((gpsStruct->altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
+                mLastReadMillis = mTempLastReadMillis;
+            #endif
         #endif
     }
+
     return hadUpdate;
 }
 

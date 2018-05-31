@@ -145,8 +145,8 @@ public:
             velocity_north = speed_meter_per_s * cos (headingInRad);
             velocity_east  = speed_meter_per_s * sin (headingInRad);
 
-            Serial.print("Heading in RAD : "); Serial.print(headingInRad); Serial.print("; SpeedMps : "); Serial.print(speed_meter_per_s);
-            Serial.print("SpeedNorth : "); Serial.print(velocity_north); Serial.print("; SpeedEast : "); Serial.println(velocity_east);
+            //Serial.print("Heading in RAD : "); Serial.print(headingInRad); Serial.print("; SpeedMps : "); Serial.print(speed_meter_per_s);
+            //Serial.print("SpeedNorth : "); Serial.print(velocity_north); Serial.print("; SpeedEast : "); Serial.println(velocity_east);
             // velocity_down has already been set.
 
         }

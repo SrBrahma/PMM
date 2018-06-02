@@ -11,7 +11,7 @@
 
 #define PMM_TELEMETRY_PAYLOAD_LENGTH 255 // Must be 255. recv2() in RH_RF95.cpp.
 
-class TelemetryManager
+class PmmTelemetry
 {
 private:
     #if PMM_USE_SD
@@ -22,7 +22,7 @@ private:
     uint8_t rfPayload[PMM_TELEMETRY_PAYLOAD_LENGTH];
 
 public:
-    TelemetryManager();
+    PmmTelemetry();
     int update();
 
 };

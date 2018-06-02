@@ -5,7 +5,7 @@
 //------------------- SD vars --------------------//
 
 // Replace "weak" system yield() function.
-void SdManager::yield()
+void PmmSd::yield()
 {
     // Only count cardBusy time.
     if (!sdBusy())
@@ -24,23 +24,72 @@ void SdManager::yield()
     yieldMicros += m;*/
 }
 
-SdManager::SdManager() {}
+PmmSd::PmmSd() {}
 
-int SdManager::init()
+int PmmSd::init()
 {
+    // SETUP SD //
+    if (pmmSd.init())
+    {
+        DEBUG_PRINT("SD init FAILED!");
+        mSdIsWorking = 0;
+    }
+    else
+    {
+        DEBUG_PRINT("SD init successful.");
+        mFileId = pmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
+        #if DEBUG_SERIAL
+            char tempFilename[FILENAME_MAX_LENGTH];
+            pmmSd.getFilename(tempFilename, FILENAME_MAX_LENGTH);
+            Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
+        #endif
+    }
+
     if (!mSdEx.begin())
         return 1; // Didnt initialized successfully
+
     // make sdEx the current volume.
     mSdEx.chvol();
     return 0;
+
+    if (sdIsWorking) // This conditional exists so you can disable sd writing by changing the initial sdIsWorking value on the variable declaration.
+    {
+        if (sdManager.writeToFile(SD_LOG_HEADER, strlen(SD_LOG_HEADER)))
+        {
+            DEBUG_PRINT("sdIsWorking = False");
+            sdIsWorking = 0;
+            pmmErrorsAndSignals.reportError(ERROR_SD, 0, sdIsWorking, rfIsWorking);
+        }
+        else
+        {
+            DEBUG_PRINT("sdIsWorking = True");
+        }
+    }
+//END of Setup Modulo SD--------------------------------//
+
+if (sdIsWorking)
+{
+    DEBUG_MAINLOOP_PRINT(8.1);
+    if (sdManager.writeToFile(logString, logStringLength))
+    {
+        DEBUG_PRINT("SD WRITING ERROR!");
+        sdIsWorking = 0;
+        pmmErrorsAndSignals.reportError(ERROR_SD_WRITE, packetIDul, sdIsWorking, rfIsWorking);
+    }
+}
+else
+{
+
 }
 
-void SdManager::setFilename(char *sourceFilename)
+}
+
+void PmmSd::setFilename(char *sourceFilename)
 {
     snprintf(mFilename, FILENAME_MAX_LENGTH, "%s", sourceFilename);
 }
 
-int SdManager::setFilenameAutoId(const char* baseName, const char* suffix)
+int PmmSd::setFilenameAutoId(const char* baseName, const char* suffix)
 {
     int fileID = 0;
     while (true)
@@ -56,7 +105,7 @@ int SdManager::setFilenameAutoId(const char* baseName, const char* suffix)
     }
 }
 
-int SdManager::writeToFile(char *arrayToWrite, int32_t length)
+int PmmSd::writeToFile(char *arrayToWrite, int32_t length)
 {
     if (!mFile.open(mFilename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
     {
@@ -82,7 +131,7 @@ int SdManager::writeToFile(char *arrayToWrite, int32_t length)
     return 0;
 }
 
-int SdManager::writeToFilename(char *filename, char *arrayToWrite, int32_t length)
+int PmmSd::writeToFilename(char *filename, char *arrayToWrite, int32_t length)
 {
     if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
     {
@@ -98,7 +147,7 @@ int SdManager::writeToFilename(char *filename, char *arrayToWrite, int32_t lengt
     return 0;
 }
 
-int SdManager::writeStringToFilename(char *filename, char *arrayToWrite)
+int PmmSd::writeStringToFilename(char *filename, char *arrayToWrite)
 {
     int32_t length;
     if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
@@ -117,7 +166,7 @@ int SdManager::writeStringToFilename(char *filename, char *arrayToWrite)
     mFile.close();
     return 0;
 }
-int SdManager::writeToFile(char *arrayToWrite)
+int PmmSd::writeToFile(char *arrayToWrite)
 {
     int32_t length;
     if (!mFile.open(mFilename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
@@ -137,12 +186,18 @@ int SdManager::writeToFile(char *arrayToWrite)
     return 0;
 }
 
-bool SdManager::sdBusy()
+bool PmmSd::sdBusy()
 {
     return mSdEx.card()->isBusy();
 }
 
-void SdManager::getFilename(char *stringToReturn, uint32_t bufferLength)
+void PmmSd::getFilename(char *stringToReturn, uint32_t bufferLength)
 {
     snprintf(stringToReturn, bufferLength, "%s", mFilename);
+}
+
+
+unsigned PmmSd::getFileId()
+{
+    return mFileId;
 }

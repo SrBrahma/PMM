@@ -54,9 +54,9 @@
 
 /* Also change GPSfix_cfg.h in neoGps Lib */
 
-GpsManager::GpsManager(){};
+PmmGps::PmmGps(){};
 
-int GpsManager::init()
+int PmmGps::init()
 {
     Serial4.begin(9600);
     #if PMM_GPS_GET_SPEEDS
@@ -66,7 +66,7 @@ int GpsManager::init()
     return 0;
 }
 
-int GpsManager::update(gpsStructType *gpsStruct)
+int PmmGps::update(gpsStructType *gpsStruct)
 {
     int hadUpdate = 0;
     while (mGps.available(gpsPort))
@@ -116,7 +116,7 @@ int GpsManager::update(gpsStructType *gpsStruct)
 //  a while: print a bunch of things, write to SD, send an SMS, etc.
 //  By doing the "hard" work during the quiet time, the CPU can get back to reading the GPS chars as they come in, so that no chars are lost.
 
-//void GpsManager::doSomeWork()
+//void PmmGps::doSomeWork()
 //{
   // Print all the things!
   //trace_all(DEBUG_PORT, mGps, mFix);

@@ -1,7 +1,7 @@
 /***************************************************************************
   This is a library for the BMP085 pressure sensor
 
-  Designed specifically to work with the Adafruit BMP085 or BMP180 Breakout 
+  Designed specifically to work with the Adafruit BMP085 or BMP180 Breakout
   ----> http://www.adafruit.com/products/391
   ----> http://www.adafruit.com/products/1603
 
@@ -11,7 +11,7 @@
   please support Adafruit andopen-source hardware by purchasing products
   from Adafruit!
 
-  Written by Kevin Townsend for Adafruit Industries.  
+  Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #ifndef __BMP085_H__
@@ -100,9 +100,9 @@ class Adafruit_BMP085_Unified : public Adafruit_Sensor
 {
   public:
     Adafruit_BMP085_Unified(int32_t sensorID = -1);
-  
+
     bool  begin(bmp085_mode_t mode = BMP085_MODE_ULTRAHIGHRES);
-    void  getTemperature(float *temp);
+    float getTemperature(); // Changed by Henrique Bruno; Minerva Rockets; UFRJ - Brazil
     void  getPressure(float *pressure);
     float pressureToAltitude(float seaLevel, float atmospheric);
     float seaLevelForAltitude(float altitude, float atmospheric);

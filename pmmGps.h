@@ -34,7 +34,7 @@ typedef struct // Speed are in meters/s
 
 
 
-class GpsManager
+class PmmGps
 {
 private:
     NMEAGPS mGps; // This object parses received characters into the gps.fix() data structure
@@ -51,7 +51,7 @@ private:
     // gpsStructType mgpsStructType;
 
 public:
-    GpsManager();
+    PmmGps();
     int init();
     int update(gpsStructType *gpsStruct);
     //void doSomeWork();

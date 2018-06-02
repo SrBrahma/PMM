@@ -55,7 +55,6 @@ void PmmLogPackage::addMagnetometer(float magnetometerArray[3])
     const PROGMEM char * magnetometerXString = "magnetometerX(uT)";
     const PROGMEM char * magnetometerYString = "magnetometerX(uT)";
     const PROGMEM char * magnetometerZString = "magnetometerX(uT)";
-
     includeVariableInPackage(magnetometerXString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[0]);
     includeVariableInPackage(magnetometerYString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[1]);
     includeVariableInPackage(magnetometerZString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[2]);
@@ -66,7 +65,6 @@ void PmmLogPackage::addGyroscope(float gyroscopeArray[3])
     const PROGMEM char * gyroscopeXString = "gyroscopeX()";
     const PROGMEM char * gyroscopeYString = "gyroscopeY()";
     const PROGMEM char * gyroscopeZString = "gyroscopeZ()";
-
     includeVariableInPackage(gyroscopeXString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[0]);
     includeVariableInPackage(gyroscopeYString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[1]);
     includeVariableInPackage(gyroscopeZString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[2]);
@@ -84,7 +82,7 @@ void PmmLogPackage::addAccelerometer(float accelerometerArray[3])
 
 void PmmLogPackage::addBarometer(float barometerArray[2])
 {
-    const PROGMEM char * barometerPressureString = "barometerPressure(Pa)";
+    const PROGMEM char * barometerPressureString = "barometerPressure(hPa)";
     const PROGMEM char * barometerAltitudeString = "barometerAltitude(m)";
     includeVariableInPackage(barometerPressureString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray[0]);
     includeVariableInPackage(barometerAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray[1]);
@@ -135,6 +133,8 @@ void PmmLogPackage::addGps(gpsStructType *gpsStruct)
         #endif
     #endif
 }
+
+
 
 unsigned PmmLogPackage::returnNumberOfVariables()
 {

@@ -1,17 +1,17 @@
 /***************************************************************************
   This is a library for the BMP085 pressure sensor
 
-  Designed specifically to work with the Adafruit BMP085 or BMP180 Breakout 
+  Designed specifically to work with the Adafruit BMP085 or BMP180 Breakout
   ----> http://www.adafruit.com/products/391
   ----> http://www.adafruit.com/products/1603
- 
+
   These displays use I2C to communicate, 2 pins are required to interface.
 
   Adafruit invests time and resources providing this open source code,
   please support Adafruit andopen-source hardware by purchasing products
   from Adafruit!
 
-  Written by Kevin Townsend for Adafruit Industries.  
+  Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #if ARDUINO >= 100
@@ -78,7 +78,7 @@ static void read8(byte reg, uint8_t *value)
     *value = Wire.read();
   #else
     *value = Wire.receive();
-  #endif  
+  #endif
   Wire.endTransmission();
 }
 
@@ -101,7 +101,7 @@ static void read16(byte reg, uint16_t *value)
     *value = (Wire.read() << 8) | Wire.read();
   #else
     *value = (Wire.receive() << 8) | Wire.receive();
-  #endif  
+  #endif
   Wire.endTransmission();
 }
 
@@ -207,7 +207,7 @@ static void readRawPressure(int32_t *pressure)
     read8(BMP085_REGISTER_PRESSUREDATA+2, &p8);
     p32 += p8;
     p32 >>= (8 - _bmp085Mode);
-    
+
     *pressure = p32;
   #endif
 }
@@ -227,7 +227,7 @@ int32_t Adafruit_BMP085_Unified::computeB5(int32_t ut) {
 /***************************************************************************
  CONSTRUCTOR
  ***************************************************************************/
- 
+
 /**************************************************************************/
 /*!
     @brief  Instantiates a new Adafruit_BMP085_Unified class
@@ -240,7 +240,7 @@ Adafruit_BMP085_Unified::Adafruit_BMP085_Unified(int32_t sensorID) {
 /***************************************************************************
  PUBLIC FUNCTIONS
  ***************************************************************************/
- 
+
 /**************************************************************************/
 /*!
     @brief  Setups the HW
@@ -270,7 +270,7 @@ bool Adafruit_BMP085_Unified::begin(bmp085_mode_t mode)
 
   /* Coefficients need to be read once */
   readCoefficients();
-    
+
   return true;
 }
 
@@ -327,10 +327,10 @@ void Adafruit_BMP085_Unified::getPressure(float *pressure)
     @brief  Reads the temperatures in degrees Celsius
 */
 /**************************************************************************/
-void Adafruit_BMP085_Unified::getTemperature(float *temp)
+float Adafruit_BMP085_Unified::getTemperature() // Changed by Henrique Bruno; Minerva Rockets; UFRJ - Brazil
 {
   int32_t UT, B5;     // following ds convention
-  float t;
+  float temp;
 
   readRawTemperature(&UT);
 
@@ -344,10 +344,9 @@ void Adafruit_BMP085_Unified::getTemperature(float *temp)
   #endif
 
   B5 = computeB5(UT);
-  t = (B5+8) >> 4;
-  t /= 10;
-
-  *temp = t;
+  temp = (B5+8) >> 4;
+  temp /= 10;
+  return temp;
 }
 
 /**************************************************************************/
@@ -367,7 +366,7 @@ float Adafruit_BMP085_Unified::pressureToAltitude(float seaLevel, float atmosphe
   // Note that using the equation from wikipedia can give bad results
   // at high altitude.  See this thread for more information:
   //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
-  
+
   return 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));
 }
 
@@ -394,8 +393,8 @@ float Adafruit_BMP085_Unified::pressureToAltitude(float seaLevel, float atmosphe
 
 /**************************************************************************/
 /*!
-    Calculates the pressure at sea level (in hPa) from the specified altitude 
-    (in meters), and atmospheric pressure (in hPa).  
+    Calculates the pressure at sea level (in hPa) from the specified altitude
+    (in meters), and atmospheric pressure (in hPa).
 
     @param  altitude      Altitude in meters
     @param  atmospheric   Atmospheric pressure in hPa
@@ -409,13 +408,13 @@ float Adafruit_BMP085_Unified::seaLevelForAltitude(float altitude, float atmosph
   // Note that using the equation from wikipedia can give bad results
   // at high altitude.  See this thread for more information:
   //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
-  
+
   return atmospheric / pow(1.0 - (altitude/44330.0), 5.255);
 }
 
 /**************************************************************************/
 /*!
-    Calculates the pressure at sea level (in hPa) from the specified altitude 
+    Calculates the pressure at sea level (in hPa) from the specified altitude
     (in meters), and atmospheric pressure (in hPa).  Note that this
     function just calls the overload of seaLevelForAltitude which takes
     altitude and atmospheric pressure--temperature is ignored.  The original
@@ -476,6 +475,6 @@ bool Adafruit_BMP085_Unified::getEvent(sensors_event_t *event)
   event->timestamp = 0;
   getPressure(&pressure_kPa);
   event->pressure = pressure_kPa / 100.0F;
-  
+
   return true;
 }

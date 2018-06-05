@@ -29,7 +29,7 @@
  * MOSI0 (Pin 11) -------------------> MOSI
  * Pin 15 ---------------------------> CS
  * pin 17 ---------------------------> RTS
- * 
+ *
  * GPS:
  * Teensy 3.6 (3.3V) ----------------> Vcc in
  * GND-------------------------------> GND
@@ -101,33 +101,7 @@ void Pmm::init()
     pmmPackage.addBarometer(&pmmImu.barometer);
     pmmPackage.addTemperature(&pmmImu.temperature);
     pmmPackage.addGps(
-    uint8_t *rf_radioPacket[RF_BYTES_IN_PACKET] =
-    {
-        (uint8_t*) & RF_VALIDATION_HEADER,
-        (uint8_t*) & packetIDfloat,
-        (uint8_t*) & packetTimeFloatS,
-        (uint8_t*) & gps_struct.latitude,
-        (uint8_t*) & gps_struct.longitude,
-        (uint8_t*) & gps_struct.altitude,
-        (uint8_t*) & gps_struct.horizontalSpeed,
-        (uint8_t*) & gps_struct.speedNorth,
-        (uint8_t*) & gps_struct.speedEast,
-        (uint8_t*) & gps_struct.speedUp,
-        (uint8_t*) & gps_struct.headingDegree,
-        (uint8_t*) & gps_struct.satellites,
-        (uint8_t*) & imu_struct.barometro[0], // pressure
-        (uint8_t*) & imu_struct.barometro[1], // altitude
-        (uint8_t*) & imu_struct.barometro[2], // temperature
-        (uint8_t*) & imu_struct.acelerometro[0],
-        (uint8_t*) & imu_struct.acelerometro[1],
-        (uint8_t*) & imu_struct.acelerometro[2],
-        (uint8_t*) & imu_struct.giroscopio[0],
-        (uint8_t*) & imu_struct.giroscopio[1],
-        (uint8_t*) & imu_struct.giroscopio[2],
-        (uint8_t*) & imu_struct.magnetometro[0],
-        (uint8_t*) & imu_struct.magnetometro[1],
-        (uint8_t*) & imu_struct.magnetometro[2]
-    };
+
     #if PMM_SERIAL_DEBUG
         Serial.begin(250000); //Initialize Serial Port at 9600 baudrate.
         while (!Serial); // wait for serial port to connect. Needed for native USB port only

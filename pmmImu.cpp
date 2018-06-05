@@ -4,16 +4,15 @@
 // Using Adafruit Libraries.
 // Contact : marcelomaronas at poli.ufrj.br
 // For more codes : github.com/engmaronas
-
-#include <pmmImu.h>
 #include <pmmConsts.h>
+#include <pmmImu.h>
+#include <pmmErrorsAndSignals.h>
 
 PmmImu::PmmImu()
 {
     mBmpObject = Adafruit_BMP085_Unified(10085);
     mAccelerometerObject = Adafruit_ADXL345_Unified(12345);
     mMagnetometerObject = Adafruit_HMC5883_Unified(12346);
-    mGyroscopeObject;
     mNextMillisBarometer = 0;
 }
 
@@ -27,10 +26,10 @@ int PmmImu::initAccelerometer() //ADXL45 SETUP
 
 int PmmImu::initGyroscope() //L2G4200D Setup
 {
-    if (!gyroscope.init())
+    if (!mGyroscopeObject.init())
         return 1;
 
-    gyroscope.enableDefault();
+    mGyroscopeObject.enableDefault();
     return 0;
 }
 
@@ -43,95 +42,101 @@ int PmmImu::initMagnetometer() //HMC5884 Setup
 
 int PmmImu::initBMP()  //BMP085 Setup
 {
-    if(!bmp.begin())
+    if(!mBmpObject.begin())
         return 1;
     return 0;
 }
 
-int PmmImu::init()
+int PmmImu::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
 {
-    if (InitBMP())
+    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    if (initBMP())
     {
-        baroIsWorking = 0;
-        DEBUG_PRINT("BAROMETER INIT ERROR");
-        pmmErrorsAndSignals.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        mPmmErrorsAndSignals->setBarometerIsWorking(0);
+        //DEBUG_PRINT("BAROMETER INIT ERROR");
+        //pmmErrorsAndSignals.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
-    if (InitAcel())
+    if (initAccelerometer())
     {
-        accelIsWorking = 0;
-        DEBUG_PRINT("ACCELEROMETER INIT ERROR");
-        pmmErrorsAndSignals.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        mPmmErrorsAndSignals->setAccelerometerIsWorking(0);
+        //DEBUG_PRINT("ACCELEROMETER INIT ERROR");
+        //pmmErrorsAndSignals.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
-    if (InitGyro())
+    if (initGyroscope())
     {
-        gyroIsWorking = 0;
-        DEBUG_PRINT("GYROSCOPE INIT ERROR");
-        pmmErrorsAndSignals.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
+        mPmmErrorsAndSignals->setGyroscopeIsWorking(0);
+        //DEBUG_PRINT("GYROSCOPE INIT ERROR");
+        //pmmErrorsAndSignals.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
     }
-    if (InitMag())
+    if (initMagnetometer())
     {
-        magnIsWorking = 0;
-        DEBUG_PRINT("MAGNETOMETER INIT ERROR");
-        pmmErrorsAndSignals.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        mPmmErrorsAndSignals->setMagnetometerIsWorking(0);
+        //DEBUG_PRINT("MAGNETOMETER INIT ERROR");
+        //pmmErrorsAndSignals.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
-}
-
-
-
-
-
-int PmmImu::getGyroscope() {
-    gyroscope.read();
-
-    imu->gyroscope[0] = (float) gyroscope.g.x;
-    imu->gyroscope[1] = (float) gyroscope.g.y;
-    imu->gyroscope[2] = (float) gyroscope.g.z;
     return 0;
 }
 
-int PmmImu::getAccelerometer() {
+
+
+
+
+int PmmImu::getGyroscope()
+{
+    mGyroscopeObject.read();
+
+    gyroscope[0] = mGyroscopeObject.g.x;
+    gyroscope[1] = mGyroscopeObject.g.y;
+    gyroscope[2] = mGyroscopeObject.g.z;
+    return 0;
+}
+
+int PmmImu::getAccelerometer()
+{
     mAccelerometerObject.getEvent(&mEvent);
 
-    imu->accelerometer[0] = mEvent.acceleration.x;
-    imu->accelerometer[1] = mEvent.acceleration.y;
-    imu->accelerometer[2] = mEvent.acceleration.z;
+    accelerometer[0] = mEvent.acceleration.x;
+    accelerometer[1] = mEvent.acceleration.y;
+    accelerometer[2] = mEvent.acceleration.z;
     return 0;
 }
 
-int PmmImu::getMagnetometer() {
+int PmmImu::getMagnetometer()
+{
     mMagnetometerObject.getEvent(&mEvent);
 
-    imu->magnetometer[0] = (float) mEvent.magnetic.x;
-    imu->magnetometer[1] = (float) mEvent.magnetic.y;
-    imu->magnetometer[2] = (float) mEvent.magnetic.z;
+    magnetometer[0] = (float) mEvent.magnetic.x;
+    magnetometer[1] = (float) mEvent.magnetic.y;
+    magnetometer[2] = (float) mEvent.magnetic.z;
     return 0;
 }
 
-int PmmImu::getBMP() {
-    bmp.getEvent(&mEvent);
+int PmmImu::getBMP()
+{
+    mBmpObject.getEvent(&mEvent);
 
-    barometer = (float) mEvent.pressure;
-    altitude = (float) mBmpObject.pressureToAltitude(SENSORS_PRESSURE_SEALEVELHPA, mEvent.pressure);
-    temperature = bmp.getTemperature();
+    barometer[0] = (float) mEvent.pressure;
+    barometer[1] = (float) mBmpObject.pressureToAltitude(SENSORS_PRESSURE_SEALEVELHPA, mEvent.pressure);
+    temperature = mBmpObject.getTemperature();
     return 0;
 }
 
 int PmmImu::update()
 {
-
-    if (accelIsWorking)
+    if (mPmmErrorsAndSignals->getAccelerometerIsWorking())//accelIsWorking)
         getAccelerometer();
 
-    if (gyroIsWorking)
+    if (mPmmErrorsAndSignals->getGyroscopeIsWorking())//gyroIsWorking)
         getGyroscope();
 
-    if (magnIsWorking)
+    if (mPmmErrorsAndSignals->getMagnetometerIsWorking())//magnIsWorking)
         getMagnetometer();
-        
+
     if (millis() >= mNextMillisBarometer)
     {
-        nextMillis_barometer = millis() + DELAY_MS_BAROMETER;
-        if (baroIsWorking)
+        mNextMillisBarometer = millis() + DELAY_MS_BAROMETER;
+        if (mPmmErrorsAndSignals->getBarometerIsWorking())//baroIsWorking)
             getBMP();
     }
+    return 0;
 }

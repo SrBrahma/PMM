@@ -1,3 +1,6 @@
+#ifndef PMM_RECOVERY_h
+#define PMM_RECOVERY_h
+/*
 //Moving average variables
 #define RECOVERY_AVERAGE_LENGTH 5 //Size of samples for moving average code
 float recHolder; //Value holder need to exchage values in vector
@@ -13,3 +16,5 @@ bool recoveryActivated = 0; //Boolean reporting if recovery was activated
 int recCount = 0; //Counter for recovery code, if recCount > REC_COUNT_NEEDED, then recovery is activated
 int recLevel = 0; //Variable for next step in code, using recursion for recovery code, not implemented yet
 float recBuffer[RECOVERY_AVERAGE_LENGTH]; //Array holding the barometer values for the moving average code
+*/
+#endif

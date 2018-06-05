@@ -1,35 +1,33 @@
+// This .h is for the base PMM uses. For a specific constant, create another .h .
+// PMM pins, PMM only macros etc.
+
 #include <Arduino.h> // for uint32_t type
 
 #ifndef PMM_CONSTS_h
 #define PMM_CONSTS_h
 
-// This .h is for the base PMM uses. For a specific constant, create another .h .
-// PMM pins, PMM only macros etc.
-
-
+#define PMM_SERIAL_DEBUG 1
 // =======================================================================
 //  SD
 // =======================================================================
-
 #define PMM_USE_SD 1
-
 
 // =======================================================================
 //  LoRa
 // =======================================================================
-#define PMM_USE_RF 1
+#define PMM_USE_TELEMETRY 1
 
-#define PIN_RFM95_CS 99
-#define PIN_RFM95_RST 99            // Reset
-#define PIN_RFM95_INT 99            // Interrupt
-#define LORA_FREQUENCY 915.0         // Mhz
+#define PMM_PIN_RFM95_CS 99
+#define PMM_PIN_RFM95_RST 99            // Reset
+#define PMM_PIN_RFM95_INT 99            // Interrupt
+#define PMM_LORA_FREQUENCY 915.0         // Mhz
 
 // =======================================================================
-//  RF and DATA_LIST
+//  Telemetry and DATA_LIST
 // =======================================================================
-const char RF_HEADER_LOG[4] = {'M', 'N', 'R', 'V'};
-const char RF_HEADER_VARS_INFO[4] = {'M', 'V', 'A', 'I'};
-const char RF_HEADER_STRING[4] = {'M', 'S', 'T', 'R'};
+const char PMM_TELEMETRY_HEADER_LOG[4] = {'M', 'L', 'O', 'G'};
+const char PMM_TELEMETRY_HEADER_LOG_INFO[4] = {'M', 'L', 'I', 'N'};
+const char PMM_TELEMETRY_HEADER_STRING[4] = {'M', 'S', 'T', 'R'};
 
 
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES 32
@@ -42,13 +40,11 @@ const char RF_HEADER_STRING[4] = {'M', 'S', 'T', 'R'};
 // =======================================================================
 //  GPS
 // =======================================================================
-
 #define PMM_USE_GPS 1
 
 #if PMM_USE_GPS
 
     #define PMM_GPS_EXTERNAL_CONFIGURATION 1 // To activate the lines below. Also changed the neoGps/GPSfix_cfg.h file.
-
     // External change of the neoGps/GPSfix_cfg.h file.
     // Comment / Uncomment which GPS informations you want to obtain. They will also be included in your logs and on the RF
     // package automatically.

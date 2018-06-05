@@ -38,7 +38,7 @@ int PmmSd::init()
     {
         DEBUG_PRINT("SD init successful.");
         mFileId = pmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
-        #if DEBUG_SERIAL
+        #if PMM_SERIAL_DEBUG
             char tempFilename[FILENAME_MAX_LENGTH];
             pmmSd.getFilename(tempFilename, FILENAME_MAX_LENGTH);
             Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");

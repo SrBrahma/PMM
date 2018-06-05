@@ -1,3 +1,5 @@
+#include <pmmRecovery.h>
+/*
 //---------------Recuperação---------------//
 //if (((abs(imu_struct.acelerometro[0]) < 1) && (abs(imu_struct.acelerometro[1]) < 1) && (abs(imu_struct.acelerometro[2]) < 1)) && (lastAltitude - imu_struct.barometro[1] > recThreshold))
 if (recCount == REC_COUNT_NEEDED)
@@ -35,3 +37,4 @@ else
 recCount = 0;
 }
 //
+*/

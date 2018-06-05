@@ -50,13 +50,13 @@ private:
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
 
 public:
-    void addPackageInfo(uint32_t * packageId, uint32_t * packageTimeMs);
+    void addPackageBasicInfo(uint32_t * packageId, uint32_t * packageTimeMs);
     void addMagnetometer(float magnetometerArray[3]);
     void addGyroscope(float gyroscopeArray[3]);
     void addAccelerometer(float accelerometerArray[3]);
     void addBarometer(float barometerArray[2]);
     void addThermometer(float *thermometer);
-    void addGps(gpsStructType *gpsStruct);
+    void addGps(PmmGps pmmGps);
 
     // For a quick way to add a variable to the package.
     // Make sure the given variable name and the variable itself is static, global, "const PROGMEM", or any other way that the variable isn't lost during the program run.
@@ -70,8 +70,12 @@ public:
     const char *mVariableName[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableType[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableSize[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
-    uint8_t *mVariableAddress[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
+    void *mVariableAddress[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
+    #if PMM_SERIAL_DEBUG
+        void debugPrintLogHeader();
+        void debugPrintLogContent();
+    #endif
 };
 
 #endif

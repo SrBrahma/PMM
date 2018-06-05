@@ -28,13 +28,15 @@ For more codes : github.com/engmaronas
 #ifndef PMM_IMU_h
 #define PMM_IMU_h
 
+#define DELAY_MS_BAROMETER 100 //random value
+
 #include <Wire.h>
 #include "Adafruit_Sensor-master/Adafruit_Sensor.h"
 #include "Adafruit_BMP085_Unified-master/Adafruit_BMP085_U.h"
-#include <Adafruit_ADXL345_U.h>
-#include <L3G.h>
-#include <Adafruit_HMC5883_U.h>
-
+#include "Adafruit_ADXL345-master/Adafruit_ADXL345_U.h"
+#include "l3g-arduino-master/L3G.h"
+#include "Adafruit_HMC5883_Unified-master/Adafruit_HMC5883_U.h"
+#include <pmmErrorsAndSignals.h>
 
 class PmmImu
 {
@@ -45,28 +47,31 @@ private:
     L3G mGyroscopeObject;
     sensors_event_t mEvent;
     unsigned long mNextMillisBarometer;
+    PmmErrorsAndSignals *pmmErrorsAndSignals;
 
 public:
     //
-    int initAccelerometer() //ADXL45 SETUP
+    PmmImu();
+    int initAccelerometer(); //ADXL45 SETUP
     int initGyroscope(); //L2G4200D Setup
     int initMagnetometer(); //HMC5884 Setup
     int initBMP();  //BMP085 Setup
 
-    int init(); // short for init all sensors above
+    int init(PmmErrorsAndSignals *pmmErrorsAndSignals); // Must be executed, so the object is passed
 
     //
-    int getGyroscope(pmmImuStructType *imu);
-    int getAccelerometer(pmmImuStructType *imu);
-    int getMagnetometer(pmmImuStructType *imu);
-    int getBMP(pmmImuStructType *imu);
+    int getGyroscope();
+    int getAccelerometer();
+    int getMagnetometer();
+    int getBMP();
 
     int update(); // Gets all the sensor above
 
     float accelerometer[3]; //Posicoes 1,2,3, respectivamente sao as Aceleracoes em x,y,z
     float magnetometer[3]; //Posicoes 1,2,3, respectivamente sao as Campos Magneticos em x,y,z
     float gyroscope[3]; //Posicoes 1, 2, 3, respectivamente sao a velocidade angular em x,y,z
-    float barometer; //Posicoes 1,2,3 respectivamente sao Pressao, Altura e Temperatura
-//Functions headers
+    float barometer[2]; //Posicoes 1,2,3 respectivamente sao Pressao, Altura e Temperatura
+    float temperature;
+};
 
 #endif

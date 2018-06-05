@@ -10,7 +10,7 @@
   please support Adafruit andopen-source hardware by purchasing products
   from Adafruit!
 
-  Written by Kevin Townsend for Adafruit Industries.  
+  Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #ifndef __HMC5883_H__
@@ -22,7 +22,7 @@
  #include "WProgram.h"
 #endif
 
-#include <Adafruit_Sensor.h>
+#include "Adafruit_Sensor-master/Adafruit_Sensor.h"
 
 #ifdef __AVR_ATtiny85__
   #include "TinyWireM.h"
@@ -73,7 +73,7 @@
       HMC5883_MAGGAIN_4_7                        = 0xA0,  // +/- 4.7
       HMC5883_MAGGAIN_5_6                        = 0xC0,  // +/- 5.6
       HMC5883_MAGGAIN_8_1                        = 0xE0   // +/- 8.1
-    } hmc5883MagGain;	
+    } hmc5883MagGain;
 /*=========================================================================*/
 
 /*=========================================================================
@@ -100,7 +100,7 @@ class Adafruit_HMC5883_Unified : public Adafruit_Sensor
 {
   public:
     Adafruit_HMC5883_Unified(int32_t sensorID = -1);
-  
+
     bool begin(void);
     void setMagGain(hmc5883MagGain gain);
     bool getEvent(sensors_event_t*);
@@ -110,7 +110,7 @@ class Adafruit_HMC5883_Unified : public Adafruit_Sensor
     hmc5883MagGain   _magGain;
     hmc5883MagData   _magData;     // Last read magnetometer data will be available here
     int32_t         _sensorID;
-    
+
     void write8(byte address, byte reg, byte value);
     byte read8(byte address, byte reg);
     void read(void);

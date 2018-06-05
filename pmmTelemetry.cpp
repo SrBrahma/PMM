@@ -7,6 +7,8 @@ PmmTelemetry::PmmTelemetry()
 
 PmmTelemetry::init()
 {
+    RH_RF95 rf95(PIN_RFM95_CS, PIN_RFM95_INT);
+
     pinMode(PIN_RFM95_RST, OUTPUT);
     digitalWrite(PIN_RFM95_RST, HIGH);
 
@@ -15,7 +17,7 @@ PmmTelemetry::init()
     int rf_initCounter = 0;
     while (!(rfIsWorking = rf95.init()) and (rf_initCounter++ < RF_INIT_MAX_TRIES))
     {
-        #if DEBUG_SERIAL
+        #if PMM_SERIAL_DEBUG
             Serial.print("LoRa didn't initialized, attempt number "); Serial.println(rf_initCounter);
         #endif
     }

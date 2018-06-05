@@ -33,6 +33,8 @@
 #include "neoGps/NMEAGPS.h"
 #include <pmmGps.h>
 #include <pmmConsts.h>
+#include <pmmErrorsAndSignals.h>
+
 //-------------------------------------------------------------------------
 //  The GPSport.h include file tries to choose a default serial port
 //  for the GPS device.  If you know which serial port you want to use, edit the GPSport.h file.
@@ -54,10 +56,11 @@
 
 /* Also change GPSfix_cfg.h in neoGps Lib */
 
-PmmGps::PmmGps(){};
+PmmGps::PmmGps(){}
 
-int PmmGps::init()
+int PmmGps::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
 {
+    mPmmErrorsAndSignals = pmmErrorsAndSignals;
     Serial4.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
@@ -66,47 +69,52 @@ int PmmGps::init()
     return 0;
 }
 
-int PmmGps::update(gpsStructType *gpsStruct)
+int PmmGps::update()
 {
-    int hadUpdate = 0;
-    while (mGps.available(gpsPort))
+    if (mPmmErrorsAndSignals.getGpsIsWorking())
     {
-        mFix = mGps.read();
-        //doSomeWork();
-        if (!hadUpdate)
-            hadUpdate = 1;
-    }
+        int hadUpdate = 0;
+        while (mGps.available(gpsPort))
+        {
+            mFix = mGps.read();
+            //doSomeWork();
+            if (!hadUpdate)
+                hadUpdate = 1;
+        }
 
-    if (hadUpdate)
-    {
-        gpsStruct->latitude = mFix.latitude();
-        gpsStruct->longitude = mFix.longitude();
-
-        #ifdef GPS_FIX_ALTITUDE
-            gpsStruct->altitude = mFix.altitude();
-        #endif
-
-        #ifdef GPS_FIX_SATELLITES
-            gpsStruct->satellites = mFix.satellites;
-        #endif
-
-        #ifdef GPS_FIX_SPEED
-            mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
-            gpsStruct->horizontalSpeed = mFix.speed_metersps();
-            gpsStruct->speedNorth = mFix.velocity_northF();
-            gpsStruct->speedEast = mFix.velocity_eastF();
-            gpsStruct->headingDegree = mFix.heading();
+        if (hadUpdate)
+        {
+            latitude = mFix.latitude();
+            longitude = mFix.longitude();
 
             #ifdef GPS_FIX_ALTITUDE
-                mTempLastReadMillis = millis();
-                mLastAltitude = gpsStruct->altitude;
-                gpsStruct->speedUp = ((gpsStruct->altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
-                mLastReadMillis = mTempLastReadMillis;
+                altitude = mFix.altitude();
             #endif
-        #endif
-    }
 
-    return hadUpdate;
+            #ifdef GPS_FIX_SATELLITES
+                satellites = mFix.satellites;
+            #endif
+
+            #ifdef GPS_FIX_SPEED
+                mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
+                horizontalSpeed = mFix.speed_metersps();
+                northSpeed = mFix.velocity_northF();
+                eastSpeed = mFix.velocity_eastF();
+                headingDegree = mFix.heading();
+
+                #ifdef GPS_FIX_ALTITUDE
+                    mTempLastReadMillis = millis();
+                    mLastAltitude = altitude;
+                    upSpeed = ((altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
+                    mLastReadMillis = mTempLastReadMillis;
+                #endif
+            #endif
+        }
+
+        return hadUpdate;
+    }
+    else
+        return 0;
 }
 
 

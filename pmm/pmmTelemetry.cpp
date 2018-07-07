@@ -1,0 +1,97 @@
+#include <pmmTelemetry.h>
+#include <RH_RF95.h>
+
+PmmTelemetry::PmmTelemetry()
+{
+}
+
+int PmmTelemetry::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
+{
+    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    RH_RF95 mRf95(PIN_RFM95_CS, PIN_RFM95_INT);
+
+    pinMode(PMM_PIN_RFM95_RST, OUTPUT);
+    digitalWrite(PMM_PIN_RFM95_RST, HIGH);
+
+    delay(100); digitalWrite(PMM_PIN_RFM95_RST, LOW); delay(10); digitalWrite(PMM_PIN_RFM95_RST, HIGH); delay(10);
+
+    int rf_initCounter = 0;
+    while (!(rfIsWorking = mRf95.init()) and (rf_initCounter++ < RF_INIT_MAX_TRIES))
+    {
+        #if PMM_SERIAL_DEBUG
+            Serial.print("LoRa didn't initialized, attempt number "); Serial.println(rf_initCounter);
+        #endif
+    }
+
+    if (!rfIsWorking)
+        pmmErrorsAndSignals.reportError(ERROR_RF_INIT, 0, sdIsWorking, rfIsWorking);
+
+    else // if RF is working
+    {
+        if (!(rfIsWorking = mRf95.setFrequency(RF95_FREQ)))
+        {
+            DEBUG_PRINT("LoRa setFrequency failed!");
+            pmmErrorsAndSignals.reportError(ERROR_RF_SET_FREQ, 0, sdIsWorking, rfIsWorking);
+        }
+        else // if RF is working
+        {
+            mRf95.setTxPower(23, false);
+            DEBUG_PRINT("LoRa initialized successfully!");
+        }
+    }
+}
+
+int
+PmmTelemetry::updateTransmission()
+{
+    if (millis() >= nextMillis_rf)
+    {
+        nextMillis_rf = millis() + DELAY_MS_RF;
+        if (rfIsWorking)
+        {
+            pmmErrorsAndSignals.blinkRfLED(HIGH);
+            mRf95.sendArrayOfPointersOf4Bytes(rf_radioPacket, RF_WORDS_IN_PACKET);
+            pmmErrorsAndSignals.blinkRfLED(LOW);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int
+PmmTelemetry::updateReception()
+{
+    if (mRf95.recv2(rfPayload))
+    {
+        if (!memcmp(rfPayload, RF_HEADER_LOG, 4)) // MLOG
+        {
+            // save in bin
+            // save in .csv
+            return 1;
+        }
+        else if (!memcmp(rfPayload, RF_HEADER_EXTRA_LOG, 4)) // M
+        {
+            // save in txt
+
+            return 1;
+        }
+        else if (!memcmp(rfPayload, RF_HEADER_VARS_INFO, 4))
+        {
+            return 1;
+        }
+        else
+            return 0;
+    }
+    else
+        return 0;
+}
+
+int
+PmmTelemetry::setTxPower(int value)
+{
+    value <= 5? value = 5;
+    value >= 23? value = 23;
+
+    mRf95.setTxPower(value, false);
+    return 0;
+}

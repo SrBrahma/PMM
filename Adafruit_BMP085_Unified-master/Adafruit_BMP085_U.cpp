@@ -30,7 +30,7 @@
 #include <math.h>
 #include <limits.h>
 
-#include "Adafruit_BMP085_U.h"
+#include <Adafruit_BMP085_U.h>
 
 static bmp085_calib_data _bmp085_coeffs;   // Last read accelerometer data will be available here
 static uint8_t           _bmp085Mode;

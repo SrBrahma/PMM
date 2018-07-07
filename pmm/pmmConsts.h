@@ -7,11 +7,25 @@
 #define PMM_CONSTS_h
 
 #define PMM_SERIAL_DEBUG 1
+
+// =======================================================================
+//  General
+// =======================================================================
+#define PMM_USE_BUZZER              1
+#define PMM_USE_LED_RECOVERY        1
+#define PMM_USE_LED_ERRORS          1
+#define PMM_USE_LED_ALL_OK_AND_RF   1
+
+#define PMM_PIN_BUZZER                  9
+#define PMM_PIN_LED_RECOVERY            9
+#define PMM_PIN_LED_ERRORS              9
+#define PMM_PIN_ALL_OK_AND_TELEMETRY    9
+
 // =======================================================================
 //  SD
 // =======================================================================
 #define PMM_USE_SD 1
-
+#define PMM_SD_FILENAME_MAX_LENGTH 64
 // =======================================================================
 //  LoRa
 // =======================================================================
@@ -25,9 +39,9 @@
 // =======================================================================
 //  Telemetry and DATA_LIST
 // =======================================================================
-const char PMM_TELEMETRY_HEADER_LOG[4] = {'M', 'L', 'O', 'G'};
-const char PMM_TELEMETRY_HEADER_LOG_INFO[4] = {'M', 'L', 'I', 'N'};
-const char PMM_TELEMETRY_HEADER_STRING[4] = {'M', 'S', 'T', 'R'};
+const char PMM_TELEMETRY_HEADER_LOG[5] = {"MLOG"}; // Strings for snprintf, for string package.
+const char PMM_TELEMETRY_HEADER_LOG_INFO[5] = {"MLIN"};
+const char PMM_TELEMETRY_HEADER_STRING[5] = {"MSTR"};
 
 
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES 32

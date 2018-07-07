@@ -1,9 +1,7 @@
 #include <pmmConsts.h>
 #include <SdFat.h>
 #include <pmmSd.h>
-
-//------------------- SD vars --------------------//
-
+#include <pmmErrorsAndSignals.h>
 // Replace "weak" system yield() function.
 void PmmSd::yield()
 {
@@ -26,21 +24,23 @@ void PmmSd::yield()
 
 PmmSd::PmmSd() {}
 
-int PmmSd::init()
+int PmmSd::init(PmmErrorsAndSignals pmmErrorsAndSignals)
 {
+    mPmmErrorsAndSignals = pmmErrorsAndSignals;
     // SETUP SD //
-    if (pmmSd.init())
+    if (mSdEx.init())
     {
         DEBUG_PRINT("SD init FAILED!");
+        mPmmErrorsAndSignals->reportError(ERROR_SD, 0);
+        mPmmErrorsAndSignals->setSdIsWorking(0);
         mSdIsWorking = 0;
     }
     else
     {
-        DEBUG_PRINT("SD init successful.");
-        mFileId = pmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
+        mFileId = mPmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
         #if PMM_SERIAL_DEBUG
-            char tempFilename[FILENAME_MAX_LENGTH];
-            pmmSd.getFilename(tempFilename, FILENAME_MAX_LENGTH);
+            char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+            mPmmSd.getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
             Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
         #endif
     }
@@ -54,7 +54,7 @@ int PmmSd::init()
 
     if (sdIsWorking) // This conditional exists so you can disable sd writing by changing the initial sdIsWorking value on the variable declaration.
     {
-        if (sdManager.writeToFile(SD_LOG_HEADER, strlen(SD_LOG_HEADER)))
+        if (mPmmSd.writeToFile(SD_LOG_HEADER, strlen(SD_LOG_HEADER)))
         {
             DEBUG_PRINT("sdIsWorking = False");
             sdIsWorking = 0;
@@ -86,7 +86,7 @@ else
 
 void PmmSd::setFilename(char *sourceFilename)
 {
-    snprintf(mFilename, FILENAME_MAX_LENGTH, "%s", sourceFilename);
+    snprintf(mFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s", sourceFilename);
 }
 
 int PmmSd::setFilenameAutoId(const char* baseName, const char* suffix)
@@ -94,7 +94,7 @@ int PmmSd::setFilenameAutoId(const char* baseName, const char* suffix)
     int fileID = 0;
     while (true)
     {
-        snprintf(mFilename, FILENAME_MAX_LENGTH, "%s%03u%s", baseName, fileID, suffix); // %03u to make the file id at least 3 digits.
+        snprintf(mFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s%03u%s", baseName, fileID, suffix); // %03u to make the file id at least 3 digits.
         if (mSdEx.exists(mFilename))
             fileID++;
         else

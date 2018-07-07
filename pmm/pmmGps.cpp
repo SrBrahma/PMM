@@ -30,7 +30,7 @@
 //======================================================================
 
 #include <Arduino.h>
-#include "neoGps/NMEAGPS.h"
+#include <NMEAGPS.h>
 #include <pmmGps.h>
 #include <pmmConsts.h>
 #include <pmmErrorsAndSignals.h>
@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------
 //  The GPSport.h include file tries to choose a default serial port
 //  for the GPS device.  If you know which serial port you want to use, edit the GPSport.h file.
-#include "neoGps/GPSport.h"
+#include <GPSport.h>
 
 //------------------------------------------------------------
 // For the NeoGPS example programs, "Streamers" is common set of printing and formatting routines for GPS data, in a
@@ -84,28 +84,28 @@ int PmmGps::update()
 
         if (hadUpdate)
         {
-            latitude = mFix.latitude();
-            longitude = mFix.longitude();
+            mPmmGpsStruct.latitude = mFix.latitude();
+            mPmmGpsStruct.longitude = mFix.longitude();
 
             #ifdef GPS_FIX_ALTITUDE
-                altitude = mFix.altitude();
+                mPmmGpsStruct.altitude = mFix.altitude();
             #endif
 
             #ifdef GPS_FIX_SATELLITES
-                satellites = mFix.satellites;
+                mPmmGpsStruct.satellites = mFix.satellites;
             #endif
 
             #ifdef GPS_FIX_SPEED
                 mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
-                horizontalSpeed = mFix.speed_metersps();
-                northSpeed = mFix.velocity_northF();
-                eastSpeed = mFix.velocity_eastF();
-                headingDegree = mFix.heading();
+                mPmmGpsStruct.horizontalSpeed = mFix.speed_metersps();
+                mPmmGpsStruct.northSpeed = mFix.velocity_northF();
+                mPmmGpsStruct.eastSpeed = mFix.velocity_eastF();
+                mPmmGpsStruct.headingDegree = mFix.heading();
 
                 #ifdef GPS_FIX_ALTITUDE
                     mTempLastReadMillis = millis();
                     mLastAltitude = altitude;
-                    upSpeed = ((altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
+                    mPmmGpsStruct.upSpeed = ((altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
                     mLastReadMillis = mTempLastReadMillis;
                 #endif
             #endif
@@ -117,8 +117,15 @@ int PmmGps::update()
         return 0;
 }
 
+pmmGpsStructType* PmmGps::getGpsStructPtr()
+{
+    return &mPmmGpsStruct;
+}
 
-
+pmmGpsStructType PmmGps::getGpsStruct()
+{
+    return mPmmGpsStruct;
+}
 //----------------------------------------------------------------
 //  This function gets called about once per second, during the GPS quiet time.  It's the best place to do anything that might take
 //  a while: print a bunch of things, write to SD, send an SMS, etc.

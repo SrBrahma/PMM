@@ -2,9 +2,10 @@
 #define PMM_SD_h
 
 #include <Arduino.h>
-#include "SdFat-master/SdFat.h"
+#include <SdFat.h>
+#include <pmmErrorsAndSignals.h>
+#include <pmmConsts.h>
 
-#define FILENAME_MAX_LENGTH 64
 
 class PmmSd
 {
@@ -12,13 +13,13 @@ private:
     void yield(); // Not really sure if it is needed.
     SdFatSdioEX mSdEx;
     File mFile;
-    char mFilename[FILENAME_MAX_LENGTH];
+    char mFilename[PMM_SD_FILENAME_MAX_LENGTH];
     unsigned mFileId;
     unsigned mSdIsWorking;
 
 public:
     PmmSd();
-    int init();
+    int init(PmmErrorsAndSignals pmmErrorsAndSignals);
     void setFilename(char *filename);
     int setFilenameAutoId(const char* baseName, const char* suffix);
     int writeToFilename(char *filename, char *arrayToWrite, int32_t length);

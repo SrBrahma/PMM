@@ -1,9 +1,13 @@
+/* pmmGps.h
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_GPS_h
 #define PMM_GPS_h
 
 #include <pmmConsts.h>
 #include <NMEAGPS.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 
 // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
 
@@ -49,11 +53,11 @@ private:
     //  an RMC sentence.  It can be used anywhere in your sketch.
     gps_fix mFix;
     pmmGpsStructType mPmmGpsStruct;
-    PmmErrorsAndSignals *mPmmErrorsAndSignals;
+    pmmErrorsCentral *mPmmErrorsCentral;
 
 public:
     PmmGps();
-    int init(PmmErrorsAndSignals *pmmErrorsAndSignals);
+    int init(pmmErrorsCentral *pmmErrorsCentral);
     int update();
     pmmGpsStructType* getGpsStructPtr();
     pmmGpsStructType getGpsStruct();

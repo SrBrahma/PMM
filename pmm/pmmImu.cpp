@@ -6,7 +6,7 @@
 // For more codes : github.com/engmaronas
 #include <pmmConsts.h>
 #include <pmmImu.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 
 PmmImu::PmmImu()
 {
@@ -47,32 +47,32 @@ int PmmImu::initBMP()  //BMP085 Setup
     return 0;
 }
 
-int PmmImu::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
+int PmmImu::init(pmmErrorsCentral *pmmErrorsCentral)
 {
-    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    mPmmErrorsCentral = pmmErrorsCentral;
     if (initBMP())
     {
-        mPmmErrorsAndSignals->setBarometerIsWorking(0);
+        mPmmErrorsCentral->setBarometerIsWorking(0);
         //DEBUG_PRINT("BAROMETER INIT ERROR");
-        //pmmErrorsAndSignals.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        //pmmErrorsCentral.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
     if (initAccelerometer())
     {
-        mPmmErrorsAndSignals->setAccelerometerIsWorking(0);
+        mPmmErrorsCentral->setAccelerometerIsWorking(0);
         //DEBUG_PRINT("ACCELEROMETER INIT ERROR");
-        //pmmErrorsAndSignals.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        //pmmErrorsCentral.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
     if (initGyroscope())
     {
-        mPmmErrorsAndSignals->setGyroscopeIsWorking(0);
+        mPmmErrorsCentral->setGyroscopeIsWorking(0);
         //DEBUG_PRINT("GYROSCOPE INIT ERROR");
-        //pmmErrorsAndSignals.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
+        //pmmErrorsCentral.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
     }
     if (initMagnetometer())
     {
-        mPmmErrorsAndSignals->setMagnetometerIsWorking(0);
+        mPmmErrorsCentral->setMagnetometerIsWorking(0);
         //DEBUG_PRINT("MAGNETOMETER INIT ERROR");
-        //pmmErrorsAndSignals.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        //pmmErrorsCentral.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
     }
     return 0;
 }
@@ -123,19 +123,19 @@ int PmmImu::updateBMP()
 
 int PmmImu::update()
 {
-    if (mPmmErrorsAndSignals->getAccelerometerIsWorking())//accelIsWorking)
+    if (mPmmErrorsCentral->getAccelerometerIsWorking())//accelIsWorking)
         getAccelerometer();
 
-    if (mPmmErrorsAndSignals->getGyroscopeIsWorking())//gyroIsWorking)
+    if (mPmmErrorsCentral->getGyroscopeIsWorking())//gyroIsWorking)
         getGyroscope();
 
-    if (mPmmErrorsAndSignals->getMagnetometerIsWorking())//magnIsWorking)
+    if (mPmmErrorsCentral->getMagnetometerIsWorking())//magnIsWorking)
         getMagnetometer();
 
     if (millis() >= mNextMillisBarometer)
     {
         mNextMillisBarometer = millis() + DELAY_MS_BAROMETER;
-        if (mPmmErrorsAndSignals->getBarometerIsWorking())//baroIsWorking)
+        if (mPmmErrorsCentral->getBarometerIsWorking())//baroIsWorking)
             getBMP();
     }
     return 0;

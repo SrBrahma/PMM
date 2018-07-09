@@ -1,9 +1,13 @@
+/* pmmSd.h
+ * 
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_SD_h
 #define PMM_SD_h
 
 #include <Arduino.h>
 #include <SdFat.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 #include <pmmConsts.h>
 
 
@@ -19,7 +23,7 @@ private:
 
 public:
     PmmSd();
-    int init(PmmErrorsAndSignals pmmErrorsAndSignals);
+    int init(pmmErrorsCentral pmmErrorsCentral);
     void setFilename(char *filename);
     int setFilenameAutoId(const char* baseName, const char* suffix);
     int writeToFilename(char *filename, char *arrayToWrite, int32_t length);

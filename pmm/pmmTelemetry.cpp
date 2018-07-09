@@ -1,3 +1,7 @@
+/* pmmTelemetry.cpp
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #include <pmmTelemetry.h>
 #include <RH_RF95.h>
 
@@ -5,9 +9,9 @@ PmmTelemetry::PmmTelemetry()
 {
 }
 
-int PmmTelemetry::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
+int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
 {
-    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    mPmmErrorsCentral = pmmErrorsCentral;
     RH_RF95 mRf95(PIN_RFM95_CS, PIN_RFM95_INT);
 
     pinMode(PMM_PIN_RFM95_RST, OUTPUT);
@@ -18,20 +22,20 @@ int PmmTelemetry::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
     int rf_initCounter = 0;
     while (!(rfIsWorking = mRf95.init()) and (rf_initCounter++ < RF_INIT_MAX_TRIES))
     {
-        #if PMM_SERIAL_DEBUG
+        #if PMM_DEBUG_SERIAL
             Serial.print("LoRa didn't initialized, attempt number "); Serial.println(rf_initCounter);
         #endif
     }
 
     if (!rfIsWorking)
-        pmmErrorsAndSignals.reportError(ERROR_RF_INIT, 0, sdIsWorking, rfIsWorking);
+        pmmErrorsCentral.reportError(ERROR_RF_INIT, 0, sdIsWorking, rfIsWorking);
 
     else // if RF is working
     {
         if (!(rfIsWorking = mRf95.setFrequency(RF95_FREQ)))
         {
             DEBUG_PRINT("LoRa setFrequency failed!");
-            pmmErrorsAndSignals.reportError(ERROR_RF_SET_FREQ, 0, sdIsWorking, rfIsWorking);
+            pmmErrorsCentral.reportError(ERROR_RF_SET_FREQ, 0, sdIsWorking, rfIsWorking);
         }
         else // if RF is working
         {
@@ -49,9 +53,9 @@ PmmTelemetry::updateTransmission()
         nextMillis_rf = millis() + DELAY_MS_RF;
         if (rfIsWorking)
         {
-            pmmErrorsAndSignals.blinkRfLED(HIGH);
+            pmmErrorsCentral.blinkRfLED(HIGH);
             mRf95.sendArrayOfPointersOf4Bytes(rf_radioPacket, RF_WORDS_IN_PACKET);
-            pmmErrorsAndSignals.blinkRfLED(LOW);
+            pmmErrorsCentral.blinkRfLED(LOW);
         }
         return 1;
     }

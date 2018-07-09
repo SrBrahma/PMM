@@ -1,3 +1,10 @@
+/* pmmRecovery.cpp
+ * Code for the rocket recovery system.
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma)
+ * and Marcelo Maronas
+ * Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #include <pmmRecovery.h>
 /*
 //---------------Recuperação---------------//
@@ -8,7 +15,7 @@ if (recCount == REC_COUNT_NEEDED)
   recoveryActivated = 1;
   DEBUG_PRINT("Recovery Activated!");
   recCount = 0;
-  pmmErrorsAndSignals.reportRecuperation(packetIDul, sdIsWorking, rfIsWorking);
+  pmmErrorsCentral.reportRecuperation(packetIDul, sdIsWorking, rfIsWorking);
 }
 //Moving Average code
 for (int n = 0; n < RECOVERY_AVERAGE_LENGTH; n++)

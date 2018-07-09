@@ -162,7 +162,7 @@ void PmmPackageLog::addCustomVariable(const char* variableName, uint8_t variable
 // Note for the 2 functions below:
 // There are faster ways to print the debugs, but since it isn't something that is going to be used frequently,
 // I (HB :) ) will spend my precious time on other stuffs)
-#if PMM_SERIAL_DEBUG
+#if PMM_DEBUG_SERIAL
 void PmmPackageLog::debugPrintLogHeader()
 {
     unsigned variableIndex;

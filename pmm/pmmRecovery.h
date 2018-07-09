@@ -1,3 +1,10 @@
+/* pmmRecovery.h
+ * Code for the rocket recovery system.
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma)
+ * and Marcelo Maronas
+ * Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_RECOVERY_h
 #define PMM_RECOVERY_h
 /*

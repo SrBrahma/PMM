@@ -1,3 +1,9 @@
+/* pmmHealthSignals.h
+ * Code for reporting the system health via visual and sonorous signals,
+ * Aka buzzers and Leds!*
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_HEALTH_SIGNALS_h
 #define PMM_HEALTH_SIGNALS_h
 

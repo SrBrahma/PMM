@@ -75,7 +75,7 @@ public:
     uint8_t mVariableSize[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     void *mVariableAddress[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
-    #if PMM_SERIAL_DEBUG
+    #if PMM_DEBUG_SERIAL
         void debugPrintLogHeader();
         void debugPrintLogContent();
     #endif

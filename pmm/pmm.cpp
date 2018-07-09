@@ -36,16 +36,18 @@
  * RX4 (Pin 31) ---------------------> TX
  * TX4 (Pin 32) ---------------------> RX
  *
- *  * Caso queiria usar outra entrada RX/TX consultar pinagem em: https://www.pjrc.com/teensy/pinout.html
- * E trocar Serial2 pelo numero do Serial a utilizar
+ * https://www.pjrc.com/teensy/pinout.html
+ *
  */
 // https://forum.pjrc.com/threads/39158-Using-SdFat-to-acces-Teensy-3-6-SD-internal-card-(-amp-with-audio-board)
-//---------------Inclusão de bibliotecas---------------//
+
+
 #include <pmm.h>
 #include <pmmConsts.h>
 #include <pmmImu.h>
 #include <pmmPackageLog.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
+#include <pmmHealthSignals.h>
 
 #if PMM_USE_TELEMETRY
     #include <pmmTelemetry.h>
@@ -62,8 +64,8 @@
 
 void Pmm::init()
 {
-    PmmErrorsAndSignals mPmmErrorsAndSignals;   /* Errors and Signals */
-    mPmmErrorsAndSignals.init();
+    PmmErrorsCentral mPmmErrorsCentral;   /* Errors and Signals */
+    mPmmErrorsCentral.init();
 
     #if PMM_USE_TELEMETRY                       /* Telemetry */
         PmmTelemetry mPmmTelemetry;
@@ -71,8 +73,8 @@ void Pmm::init()
     #endif
 
     #if PMM_USE_GPS                             /* GPS */
-        PmmGps mPmmGps;
-        mPmmGps.init();
+    PmmGps mPmmGps;
+    mPmmGps.init();
     #endif
 
     #if PMM_USE_SD                              /* SD */
@@ -80,7 +82,6 @@ void Pmm::init()
         mPmmSd.init();
     #endif
 
-    /* IMU */
     PmmImu mPmmImu;                             /* IMU */
     mPmmImu.init();
 
@@ -91,9 +92,10 @@ void Pmm::init()
     mPmmPackage.addImu(mPmmImu.getImuStructPtr());
     mPmmPackage.addGps(mPmmGps.getGpsStructPtr());
 
-    #if PMM_SERIAL_DEBUG
-        Serial.begin(250000); //Initialize Serial Port at 9600 baudrate.
-        while (!Serial); // wait for serial port to connect. Needed for native USB port only
+    #if PMM_DEBUG_SERIAL
+        unsigned long serialDebugTimeout = millis();
+        Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
+        while (!Serial);        // wait for serial port to connect. Needed for native USB port only
     #endif
 
     DEBUG_PRINT("\nMinerva Rockets - UFRJ");
@@ -126,7 +128,7 @@ void Pmm::update()
         pmmTelemetry.updateTransmission();
     #endif
 
-    pmmErrorsAndSignals.updateLedsAndBuzzer();
+    pmmErrorsCentral.updateLedsAndBuzzer();
     mPackageID ++;
 
     DEBUG_PRINT(4);

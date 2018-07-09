@@ -1,5 +1,8 @@
-/* Code for reporting the health via visual and sonorous signals */
-/* Aka Buzzer and Leds! */
+/* pmmHealthSignals.h
+ * Code for reporting the system health via visual and sonorous signals,
+ * Aka buzzers and Leds!* 
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <pmmConsts.h>
 #include <pmmErrorsCentral.h>

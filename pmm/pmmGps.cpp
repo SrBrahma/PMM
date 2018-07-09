@@ -1,3 +1,7 @@
+/* pmmGps.cpp
+ * Some commentaries were taken from the neoGps lib.
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 //======================================================================
 //  Program: NMEA.ino
 //
@@ -33,7 +37,7 @@
 #include <NMEAGPS.h>
 #include <pmmGps.h>
 #include <pmmConsts.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 
 //-------------------------------------------------------------------------
 //  The GPSport.h include file tries to choose a default serial port
@@ -58,9 +62,9 @@
 
 PmmGps::PmmGps(){}
 
-int PmmGps::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
+int PmmGps::init(pmmErrorsCentral *pmmErrorsCentral)
 {
-    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    mPmmErrorsCentral = pmmErrorsCentral;
     Serial4.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
@@ -71,7 +75,7 @@ int PmmGps::init(PmmErrorsAndSignals *pmmErrorsAndSignals)
 
 int PmmGps::update()
 {
-    if (mPmmErrorsAndSignals.getGpsIsWorking())
+    if (mPmmErrorsCentral.getGpsIsWorking())
     {
         int hadUpdate = 0;
         while (mGps.available(gpsPort))

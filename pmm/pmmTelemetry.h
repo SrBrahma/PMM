@@ -1,3 +1,7 @@
+/* pmmTelemetry.h
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_TELEMETRY_h
 #define PMM_TELEMETRY_h
 
@@ -13,11 +17,11 @@ class PmmTelemetry
 private:
     RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
     uint8_t mRfPayload[PMM_TELEMETRY_PAYLOAD_LENGTH];
-    PmmErrorsAndSignals *mPmmErrorsAndSignals;
+    PmmErrorsCentral *mPmmErrorsCentral;
 
 public:
     PmmTelemetry();
-    int init(PmmErrorsAndSignals *pmmErrorsAndSignals);
+    int init(PmmErrorsCentral *pmmErrorsCentral);
     int update();
 
 };

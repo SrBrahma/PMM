@@ -36,7 +36,7 @@ For more codes : github.com/engmaronas
 #include <Adafruit_ADXL345_U.h>
 #include <L3G.h>
 #include <Adafruit_HMC5883_U.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 
 typedef struct
 {
@@ -57,7 +57,7 @@ private:
     L3G mGyroscopeObject;
     sensors_event_t mEvent;
     unsigned long mNextMillisBarometer;
-    PmmErrorsAndSignals *mPmmErrorsAndSignals;
+    pmmErrorsCentral *mPmmErrorsCentral;
     pmmImuStructType mPmmImuStruct;
 
 public:
@@ -67,7 +67,7 @@ public:
     int initMagnetometer(); //HMC5884 Setup
     int initBMP();  //BMP085 Setup
 
-    int init(PmmErrorsAndSignals *pmmErrorsAndSignals); // Must be executed, so the object is passed
+    int init(pmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed
 
     int updateGyroscope();
     int updateAccelerometer();

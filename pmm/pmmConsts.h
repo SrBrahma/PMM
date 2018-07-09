@@ -1,12 +1,21 @@
-// This .h is for the base PMM uses. For a specific constant, create another .h .
-// PMM pins, PMM only macros etc.
+/* pmmConsts.h
+ * This .h is for the base PMM uses. For a specific constant, create another .h .
+ * PMM pins, PMM only macros etc.
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <Arduino.h> // for uint32_t type
 
 #ifndef PMM_CONSTS_h
 #define PMM_CONSTS_h
 
-#define PMM_SERIAL_DEBUG 1
+// =======================================================================
+//  Debug
+// =======================================================================
+#define PMM_DEBUG_SERIAL 1
+#define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED 1 /* [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
+computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
+the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket! */
+#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS 3000 // The maximum wait time for the above option. Default is 3 seconds (3000ms).
 
 // =======================================================================
 //  General

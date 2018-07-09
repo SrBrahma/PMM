@@ -1,7 +1,11 @@
+/* pmmSd.cpp
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #include <pmmConsts.h>
 #include <SdFat.h>
 #include <pmmSd.h>
-#include <pmmErrorsAndSignals.h>
+#include <pmmErrorsCentral.h>
 // Replace "weak" system yield() function.
 void PmmSd::yield()
 {
@@ -24,21 +28,21 @@ void PmmSd::yield()
 
 PmmSd::PmmSd() {}
 
-int PmmSd::init(PmmErrorsAndSignals pmmErrorsAndSignals)
+int PmmSd::init(pmmErrorsCentral pmmErrorsCentral)
 {
-    mPmmErrorsAndSignals = pmmErrorsAndSignals;
+    mPmmErrorsCentral = pmmErrorsCentral;
     // SETUP SD //
     if (mSdEx.init())
     {
         DEBUG_PRINT("SD init FAILED!");
-        mPmmErrorsAndSignals->reportError(ERROR_SD, 0);
-        mPmmErrorsAndSignals->setSdIsWorking(0);
+        mPmmErrorsCentral->reportError(ERROR_SD, 0);
+        mPmmErrorsCentral->setSdIsWorking(0);
         mSdIsWorking = 0;
     }
     else
     {
         mFileId = mPmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
-        #if PMM_SERIAL_DEBUG
+        #if PMM_DEBUG_SERIAL
             char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
             mPmmSd.getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
             Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
@@ -58,7 +62,7 @@ int PmmSd::init(PmmErrorsAndSignals pmmErrorsAndSignals)
         {
             DEBUG_PRINT("sdIsWorking = False");
             sdIsWorking = 0;
-            pmmErrorsAndSignals.reportError(ERROR_SD, 0, sdIsWorking, rfIsWorking);
+            pmmErrorsCentral.reportError(ERROR_SD, 0, sdIsWorking, rfIsWorking);
         }
         else
         {
@@ -74,7 +78,7 @@ if (sdIsWorking)
     {
         DEBUG_PRINT("SD WRITING ERROR!");
         sdIsWorking = 0;
-        pmmErrorsAndSignals.reportError(ERROR_SD_WRITE, packetIDul, sdIsWorking, rfIsWorking);
+        pmmErrorsCentral.reportError(ERROR_SD_WRITE, packetIDul, sdIsWorking, rfIsWorking);
     }
 }
 else

@@ -62,8 +62,6 @@
 
 void Pmm::init()
 {
-
-
     PmmErrorsAndSignals mPmmErrorsAndSignals;   /* Errors and Signals */
     mPmmErrorsAndSignals.init();
 

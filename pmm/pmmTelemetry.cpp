@@ -73,13 +73,13 @@ PmmTelemetry::updateReception()
             // save in .csv
             return 1;
         }
-        else if (!memcmp(rfPayload, RF_HEADER_EXTRA_LOG, 4)) // M
+        else if (!memcmp(rfPayload, RF_HEADER_EXTRA_LOG, 4)) // MSTR
         {
             // save in txt
 
             return 1;
         }
-        else if (!memcmp(rfPayload, RF_HEADER_VARS_INFO, 4))
+        else if (!memcmp(rfPayload, RF_HEADER_VARS_INFO, 4)) // MVIN
         {
             return 1;
         }

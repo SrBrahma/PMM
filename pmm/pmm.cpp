@@ -99,7 +99,7 @@ void Pmm::init()
     #endif
 
     DEBUG_PRINT("\nMinerva Rockets - UFRJ");
-    DEBUG_PRINT(SD_LOG_HEADER);
+    // DEBUG_PRINT(SD_LOG_HEADER);
 }
 
 
@@ -129,7 +129,7 @@ void Pmm::update()
     #endif
 
     pmmErrorsCentral.updateLedsAndBuzzer();
-    mPackageID ++;
+    mPackageId ++;
 
     DEBUG_PRINT(4);
 

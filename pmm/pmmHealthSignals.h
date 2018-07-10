@@ -14,10 +14,9 @@
 class PmmHealthSignals
 {
 private:
-
-    pmmErrorType mErrorsArray[ERRORS_ARRAY_SIZE]; // Total erros in the system
     int mActualNumberOfErrors; // Total errors in the system number
     unsigned long mMillisNextSignalState; // Used updateLedsAndBuzzer
+    uint8_t mSystemWasOk, mIsShortBeepOfSystemWasOk, mSignalIsOn, mSignalStarterCounter, mSignalActualErrorIndex, mSignalActualErrorCounter;
 
 public:
     PmmHealthSignals();

@@ -1,5 +1,5 @@
 /* pmmErrorsCentral.h
- * As the code is quite small, I wrote it entirely just in this .h file.
+ *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #ifndef PMM_ERRORS_CENTRAL_h
@@ -19,6 +19,7 @@ typedef enum
     ERROR_SD_WRITE,
     ERROR_RF_INIT,
     ERROR_RF_SET_FREQ,
+    ERROR_GPS,
     ERROR_ACCELEROMETER_INIT,
     ERROR_GYROSCOPE_INIT,
     ERROR_MAGNETOMETER_INIT,
@@ -40,6 +41,7 @@ const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
     "SD write fail",            // ERROR_SD_WRITE,
     "RF init fail",             // ERROR_RF_INIT,
     "RF Set Freq fail",         // ERROR_RF_SET_FREQ,
+    "GPS fail",                 // ERROR_GPS
     "Accelerometer init fail",  // ERROR_ACCELEROMETER_INIT,
     "Gyroscope init fail",      // ERROR_GYROSCOPE_INIT,
     "Magnetometer init fail",   // ERROR_MAGNETOMETER_INIT,
@@ -56,32 +58,15 @@ private:
     pmmErrorStructType mErrorsArray[ERRORS_ARRAY_SIZE]; // Total erros in the system.
 
     int mActualNumberOfErrors; // Total errors in the system number
-    int mSdIsWorking,  mGpsIsWorking, mTelemetryIsWorking, mBarometerIsWorking, mAccelerometerIsWorking, mGyroscopeIsWorking, mMagnetometerIsWorking; // are int for faster access.
+    int mSdIsWorking, mTelemetryIsWorking, mGpsIsWorking, mBarometerIsWorking, mAccelerometerIsWorking, mGyroscopeIsWorking, mMagnetometerIsWorking; // are int for faster access.
 
     const uint32_t* mPackageLogIdPtr;
-
-    int addError(pmmErrorCodeType errorCode)
-    {
-        if (errorCode < 0)
-            errorCode = ERROR_PROGRAMMING;
-        if (errorCode > ERRORS_CODE_AMOUNT)
-            errorCode = ERROR_PROGRAMMING;
-
-        mErrorsArray[mActualNumberOfErrors].code = errorCode;
-        mErrorsArray[mActualNumberOfErrors].timeMs = millis();
-        mErrorsArray[mActualNumberOfErrors].packageLogId = &mPackageLogIdPtr;
-    }
+    int addError(pmmErrorCodeType errorCode);
 
 public:
     PmmErrorsCentral();
 
-    int init (const uint32_t* packageLogIdPtr)
-    {
-        mPackageLogIdPtr = packageLogIdPtr;
-        mActualNumberOfErrors = 0;
-        mSdIsWorking = mGpsIsWorking = mTelemetryIsWorking = mBarometerIsWorking = mAccelerometerIsWorking = mGyroscopeIsWorking = mMagnetometerIsWorking = 1; // All systems starts functional
-        return 0;
-    }
+    int init (const uint32_t* packageLogIdPtr);
 
     // Getters
     pmmErrorStructType getErrorStruct(int errorIndex);  // Returns the struct of the error of the given index.
@@ -96,6 +81,7 @@ public:
     int getGpsIsWorking();
 
     // Setters
+    void reportErrorByCode(pmmErrorCodeType errorCode);
     void setSdIsWorking(int value);
     void setTelemetryIsWorking(int value);
     void setBarometerIsWorking(int value);

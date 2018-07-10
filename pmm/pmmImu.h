@@ -57,7 +57,7 @@ private:
     L3G mGyroscopeObject;
     sensors_event_t mEvent;
     unsigned long mNextMillisBarometer;
-    pmmErrorsCentral *mPmmErrorsCentral;
+    PmmErrorsCentral *mPmmErrorsCentral;
     pmmImuStructType mPmmImuStruct;
 
 public:
@@ -67,7 +67,7 @@ public:
     int initMagnetometer(); //HMC5884 Setup
     int initBMP();  //BMP085 Setup
 
-    int init(pmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed
+    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed
 
     int updateGyroscope();
     int updateAccelerometer();

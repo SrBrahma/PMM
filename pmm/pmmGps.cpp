@@ -62,7 +62,7 @@
 
 PmmGps::PmmGps(){}
 
-int PmmGps::init(pmmErrorsCentral *pmmErrorsCentral)
+int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
     Serial4.begin(9600);

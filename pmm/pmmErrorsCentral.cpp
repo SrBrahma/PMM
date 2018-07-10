@@ -1,70 +1,121 @@
-/* pmmErrorsCentral.h
- * As the code is quite small, I wrote it entirely just in this .h file.
+/* pmmErrorsCentral.cpp
+ *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#ifndef PMM_ERRORS_CENTRAL_h
-#define PMM_ERRORS_CENTRAL_h
+#include <pmmErrorsCentral.h>
 
-#include <pmmConsts.h>
-
-
-#define ERRORS_ARRAY_SIZE 20
-#define ERROR_STRING_LENGTH 80
-
-class PmmErrorsCentral
+void PmmErrorsCentral::addError(pmmErrorCodeType *errorCode) // It passes the pointer as I have a plan
+// on the future to get the previous state of the error, and sending a String package of this error being new.
 {
-private:
-    pmmErrorStructType mErrorsArray[ERRORS_ARRAY_SIZE]; // Total erros in the system.
+    // No need to treat the values, as them will be treated on the reportErrorByCode().
 
+    mErrorsArray[mActualNumberOfErrors].code = errorCode;
+    mErrorsArray[mActualNumberOfErrors].timeMs = millis();
+    mErrorsArray[mActualNumberOfErrors].packageLogId = &mPackageLogIdPtr;
+}
 
-    int mActualNumberOfErrors; // Total errors in the system number
-    int mSdIsWorking,  mGpsIsWorking, mTelemetryIsWorking, mBarometerIsWorking, mAccelerometerIsWorking, mGyroscopeIsWorking, mMagnetometerIsWorking; // are int for faster access.
+PmmErrorsCentral::PmmErrorsCentral()
+{
+}
 
-    const uint32_t* mPackageLogIdPtr;
+int PmmErrorsCentral::init (const uint32_t* packageLogIdPtr)
+{
+    mPackageLogIdPtr = packageLogIdPtr;
+    mActualNumberOfErrors = 0;
+    mSdIsWorking = mTelemetryIsWorking = mGpsIsWorking = mBarometerIsWorking = mAccelerometerIsWorking = mGyroscopeIsWorking = mMagnetometerIsWorking = 1; // All systems starts functional
+    return 0;
+}
 
-    void addError(pmmErrorCodeType errorCode)
+// Getters
+int PmmErrorsCentral::getNumberOfErrors() { return mActualNumberOfErrors; }
+int PmmErrorsCentral::getSdIsWorking() { return mSdIsWorking; }
+int PmmErrorsCentral::getTelemetryIsWorking() { return mTelemetryIsWorking; }
+int PmmErrorsCentral::getGpsIsWorking() { return mGpsIsWorking; }
+int PmmErrorsCentral::getBarometerIsWorking() { return mBarometerIsWorking; }
+int PmmErrorsCentral::getAccelerometerIsWorking() { return mAccelerometerIsWorking; }
+int PmmErrorsCentral::getGyroscopeIsWorking() { return mGyroscopeIsWorking; }
+int PmmErrorsCentral::getMagnetometerIsWorking() { return mMagnetometerIsWorking; }
+
+// Setters
+void PmmErrorsCentral::reportErrorByCode(pmmErrorCodeType errorCode)
+{
+    switch(errorCode)
     {
-        if (errorCode < 0)
-            errorCode = ERROR_PROGRAMMING;
-        if (errorCode > ERRORS_CODE_AMOUNT)
-            errorCode = ERROR_PROGRAMMING;
+        case (OK):
+            break;
 
-        mErrorsArray[mActualNumberOfErrors].code = errorCode;
-        mErrorsArray[mActualNumberOfErrors].timeMs = millis();
-        mErrorsArray[mActualNumberOfErrors].packageLogId = &mPackageLogIdPtr;
-    }
+        case (ERROR_SD):
+            mSdIsWorking = 0;
+            break;
 
-public:
-    PmmErrorsCentral()
-    {
-    }
+        case (ERROR_SD_WRITE):
+            mSdIsWorking = 0;
+            break;
 
-    int init (const uint32_t* packageLogIdPtr)
-    {
-        mPackageLogIdPtr = packageLogIdPtr;
-        mActualNumberOfErrors = 0;
-        mSdIsWorking = mGpsIsWorking = mTelemetryIsWorking = mBarometerIsWorking = mAccelerometerIsWorking = mGyroscopeIsWorking = mMagnetometerIsWorking = 1; // All systems starts functional
-        return 0;
-    }
+        case (ERROR_GPS):
+            mGpsIsWorking = 0;
+            break;
 
-    // Getters
-    int getNumberOfErrors() { return mActualNumberOfErrors; }
-    int getSdIsWorking() { return mSdIsWorking; }
-    int getTelemetryIsWorking() { return mTelemetryIsWorking; }
-    int getBarometerIsWorking() { return mBarometerIsWorking; }
-    int getAccelerometerIsWorking() { return mAccelerometerIsWorking; }
-    int getGyroscopeIsWorking() { return mGyroscopeIsWorking; }
-    int getMagnetometerIsWorking() { return mMagnetometerIsWorking; }
-    int getGpsIsWorking() { return mGpsIsWorking; }
+        case (ERROR_RF_INIT):
+            mTelemetryIsWorking = 0;
+            break;
 
-    // Setters
-    void setSdIsWorking(int value) { mSdIsWorking = value; }
-    void setTelemetryIsWorking(int value) { mTelemetryIsWorking = value; }
-    void setBarometerIsWorking(int value) { mBarometerIsWorking = value; }
-    void setAccelerometerIsWorking(int value) { mAccelerometerIsWorking = value; }
-    void setGyroscopeIsWorking(int value) { mGyroscopeIsWorking = value; }
-    void setMagnetometerIsWorking(int value) { mMagnetometerIsWorking = value; }
-    void setGpsIsWorking(int value) { mGpsIsWorking = value; }
-};
+        case (ERROR_RF_SET_FREQ):
+            mTelemetryIsWorking = 0;
+            break;
 
-#endif
+        case (ERROR_ACCELEROMETER_INIT):
+            mAccelerometerIsWorking = 0;
+            break;
+
+        case (ERROR_GYROSCOPE_INIT):
+            mGyroscopeIsWorking = 0;
+            break;
+
+        case (ERROR_MAGNETOMETER_INIT):
+            mMagnetometerIsWorking = 0;
+            break;
+
+        case (ERROR_BAROMETER_INIT):
+            mBarometerIsWorking = 0;
+            break;
+
+        default:
+            break;
+    } // End of switch
+} // End of function
+
+void PmmErrorsCentral::setSdIsWorking(int value)
+{
+    mSdIsWorking = value;
+}
+
+void PmmErrorsCentral::setTelemetryIsWorking(int value)
+{
+    mTelemetryIsWorking = value;
+}
+
+void PmmErrorsCentral::setBarometerIsWorking(int value)
+{
+    mBarometerIsWorking = value;
+}
+
+void PmmErrorsCentral::setAccelerometerIsWorking(int value)
+{
+    mAccelerometerIsWorking = value;
+}
+
+void PmmErrorsCentral::setGyroscopeIsWorking(int value)
+{
+    mGyroscopeIsWorking = value;
+}
+
+void PmmErrorsCentral::setMagnetometerIsWorking(int value)
+{
+    mMagnetometerIsWorking = value;
+}
+
+void PmmErrorsCentral::setGpsIsWorking(int value)
+{
+    mGpsIsWorking = value;
+}

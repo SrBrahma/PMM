@@ -65,7 +65,7 @@
 void Pmm::init()
 {
     PmmErrorsCentral mPmmErrorsCentral;   /* Errors and Signals */
-    mPmmErrorsCentral.init();
+    mPmmErrorsCentral.init(&mPackageLogId);
 
     #if PMM_USE_TELEMETRY                       /* Telemetry */
         PmmTelemetry mPmmTelemetry;
@@ -85,10 +85,10 @@ void Pmm::init()
     PmmImu mPmmImu;                             /* IMU */
     mPmmImu.init();
 
-    mPackageId = 0;
+    mPackageLogId = 0;
     mPackageTimeMs = 0;
 
-    mPmmPackage.addPackageBasicInfo(&mPackageId, &mPackageTimeMs);
+    mPmmPackage.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
     mPmmPackage.addImu(mPmmImu.getImuStructPtr());
     mPmmPackage.addGps(mPmmGps.getGpsStructPtr());
 

@@ -296,8 +296,8 @@ unzip develop.zip
 cd /tmp
 mkdir RadioHead
 cd RadioHead
-cp /usr/local/projects/arduino/libraries/RadioHead/*.h .
-cp /usr/local/projects/arduino/libraries/RadioHead/*.cpp .
+cp /usr/local/projects/arduino/libraries/RadioHead/ *.h .
+cp /usr/local/projects/arduino/libraries/RadioHead/ *.cpp .
 cp /usr/local/projects/arduino/libraries/RadioHead/examples/cc110/cc110_client/cc110_client.pde application.cpp
 \endcode
 - Edit application.cpp and comment out any \#include <SPI.h> so it looks like:

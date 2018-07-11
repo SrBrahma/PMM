@@ -30,7 +30,7 @@ typedef enum
 
 typedef struct
 {
-    uint32_t time;          // When (millis()) it ocurred.
+    uint32_t timeMs;          // When (millis()) it ocurred.
     uint32_t packageLogId;  // At which package log the error ocurred
     pmmErrorCodeType code;  // The error code (pmmErrorCodeType)
 } pmmErrorStructType; // This struct is a little bad: some bytes are being used as padding.
@@ -50,8 +50,6 @@ const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
 };
 const PROGMEM char recuperationActivatedString[] = "Recuperation Activated!";
 
-
-
 class PmmErrorsCentral
 {
 private:
@@ -61,7 +59,8 @@ private:
     int mSdIsWorking, mTelemetryIsWorking, mGpsIsWorking, mBarometerIsWorking, mAccelerometerIsWorking, mGyroscopeIsWorking, mMagnetometerIsWorking; // are int for faster access.
 
     const uint32_t* mPackageLogIdPtr;
-    int addError(pmmErrorCodeType errorCode);
+
+    void addError(pmmErrorCodeType errorCode);
 
 public:
     PmmErrorsCentral();

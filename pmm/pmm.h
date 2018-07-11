@@ -9,7 +9,7 @@
 class Pmm
 {
 private:
-    uint32_t mPackageTimeMs, mPackageId;
+    uint32_t mPackageTimeMs, mPackageLogId;
 
 public:
     void init();

@@ -53,11 +53,11 @@ private:
     //  an RMC sentence.  It can be used anywhere in your sketch.
     gps_fix mFix;
     pmmGpsStructType mPmmGpsStruct;
-    pmmErrorsCentral *mPmmErrorsCentral;
+    PmmErrorsCentral *mPmmErrorsCentral;
 
 public:
     PmmGps();
-    int init(pmmErrorsCentral *pmmErrorsCentral);
+    int init(PmmErrorsCentral *pmmErrorsCentral);
     int update();
     pmmGpsStructType* getGpsStructPtr();
     pmmGpsStructType getGpsStruct();

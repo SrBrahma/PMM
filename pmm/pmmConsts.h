@@ -33,41 +33,41 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  SD
 // =======================================================================
-#define PMM_USE_SD 1
-#define PMM_SD_FILENAME_MAX_LENGTH 64
+#define PMM_USE_SD                  1
+#define PMM_SD_FILENAME_MAX_LENGTH  64
 // =======================================================================
 //  LoRa
 // =======================================================================
-#define PMM_USE_TELEMETRY 1
+#define PMM_USE_TELEMETRY   1
 
-#define PMM_PIN_RFM95_CS 99
-#define PMM_PIN_RFM95_RST 99            // Reset
-#define PMM_PIN_RFM95_INT 99            // Interrupt
-#define PMM_LORA_FREQUENCY 915.0         // Mhz
+#define PMM_PIN_RFM95_CS    99
+#define PMM_PIN_RFM95_RST   99            // Reset
+#define PMM_PIN_RFM95_INT   99            // Interrupt
+#define PMM_LORA_FREQUENCY  915.0         // Mhz
 
 // =======================================================================
 //  Telemetry and DATA_LIST
 // =======================================================================
-const char PMM_TELEMETRY_HEADER_LOG[5] = {"MLOG"}; // Strings for snprintf, for string package.
-const char PMM_TELEMETRY_HEADER_LOG_INFO[5] = {"MLIN"};
-const char PMM_TELEMETRY_HEADER_STRING[5] = {"MSTR"};
+const char PMM_TELEMETRY_HEADER_LOG[5] =        {"MLOG"}; // Strings for snprintf, for string package.
+const char PMM_TELEMETRY_HEADER_LOG_INFO[5] =   {"MLIN"};
+const char PMM_TELEMETRY_HEADER_STRING[5] =     {"MSTR"};
 
 
-#define PMM_TELEMETRY_LOG_NUMBER_VARIABLES 32
-#define PMM_VARIABLE_STRING_LENGTH 22
+#define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32
+#define PMM_VARIABLE_STRING_LENGTH          22
 
-#define EXTRA_LOG_MAX_STRING_LENGTH 128
+#define EXTRA_LOG_MAX_STRING_LENGTH         128
 
 #define EXTRA_LOG_ARRAY_LENGTH EXTRA_LOG_MAX_STRING_LENGTH * EXTRA_LOG_MAX_DISPLAYED
 
 // =======================================================================
 //  GPS
 // =======================================================================
-#define PMM_USE_GPS 1
+#define PMM_USE_GPS     1
 
 #if PMM_USE_GPS
 
-    #define PMM_GPS_EXTERNAL_CONFIGURATION 1 // To activate the lines below. Also changed the neoGps/GPSfix_cfg.h file.
+    #define PMM_GPS_EXTERNAL_CONFIGURATION  1 // To activate the lines below. Also changed the neoGps/GPSfix_cfg.h file.
     // External change of the neoGps/GPSfix_cfg.h file.
     // Comment / Uncomment which GPS informations you want to obtain. They will also be included in your logs and on the RF
     // package automatically.

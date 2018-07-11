@@ -1,6 +1,6 @@
 /* pmmHealthSignals.h
  * Code for reporting the system health via visual and sonorous signals,
- * Aka buzzers and Leds!* 
+ * Aka buzzers and Leds!*
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
@@ -14,7 +14,7 @@ PmmHealthSignals::PmmHealthSignals()
 // Initializer
 void PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
 {
-    mPmmErrorsCentral pmmErrorsCentral;
+    PmmErrorsCentral *pmmErrorsCentral;
     mMillisNextSignalState = 0;
 
     pinMode(PMM_PIN_LED_RECOVERY, OUTPUT);

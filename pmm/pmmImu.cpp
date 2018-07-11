@@ -47,7 +47,7 @@ int PmmImu::initBMP()  //BMP085 Setup
     return 0;
 }
 
-int PmmImu::init(pmmErrorsCentral *pmmErrorsCentral)
+int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
     if (initBMP())

@@ -4,14 +4,13 @@
 
 #include <pmmErrorsCentral.h>
 
-void PmmErrorsCentral::addError(pmmErrorCodeType *errorCode) // It passes the pointer as I have a plan
-// on the future to get the previous state of the error, and sending a String package of this error being new.
+void PmmErrorsCentral::addError(pmmErrorCodeType errorCode)
 {
     // No need to treat the values, as them will be treated on the reportErrorByCode().
 
     mErrorsArray[mActualNumberOfErrors].code = errorCode;
     mErrorsArray[mActualNumberOfErrors].timeMs = millis();
-    mErrorsArray[mActualNumberOfErrors].packageLogId = &mPackageLogIdPtr;
+    mErrorsArray[mActualNumberOfErrors].packageLogId = *mPackageLogIdPtr;
 }
 
 PmmErrorsCentral::PmmErrorsCentral()

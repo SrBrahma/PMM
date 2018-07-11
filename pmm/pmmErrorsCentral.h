@@ -7,10 +7,8 @@
 
 #include <pmmConsts.h>
 
-
 #define ERRORS_ARRAY_SIZE 20
 #define ERROR_STRING_LENGTH 80
-
 
 typedef enum
 {
@@ -28,13 +26,6 @@ typedef enum
     ERRORS_CODE_AMOUNT
 } pmmErrorCodeType;
 
-typedef struct
-{
-    uint32_t timeMs;          // When (millis()) it ocurred.
-    uint32_t packageLogId;  // At which package log the error ocurred
-    pmmErrorCodeType code;  // The error code (pmmErrorCodeType)
-} pmmErrorStructType; // This struct is a little bad: some bytes are being used as padding.
-
 const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
     "No errors",                // OK,
     "SD init fail",             // ERROR_SD,
@@ -48,6 +39,15 @@ const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
     "Barometer init fail",      // ERROR_BAROMETER_INIT
     "Programming error"         // ERROR_PROGRAMMING
 };
+
+typedef struct
+{
+    uint32_t timeMs;          // When (millis()) it ocurred.
+    uint32_t packageLogId;  // At which package log the error ocurred
+    pmmErrorCodeType code;  // The error code (pmmErrorCodeType)
+} pmmErrorStructType; // This struct is a little bad: some bytes are being used as padding.
+
+
 const PROGMEM char recuperationActivatedString[] = "Recuperation Activated!";
 
 class PmmErrorsCentral

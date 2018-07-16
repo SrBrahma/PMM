@@ -30,13 +30,14 @@ For more codes : github.com/engmaronas
 
 #define DELAY_MS_BAROMETER 100 //random value
 
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BMP085_U.h>
-#include <Adafruit_ADXL345_U.h>
-#include <L3G.h>
-#include <Adafruit_HMC5883_U.h>
+#include <pmmConsts.h>
+#include <pmmImu.h>
 #include <pmmErrorsCentral.h>
+#include <MPU6050.h>
+#include <HMC5883L.h>
+#include <BMP085.h>
+#include <Wire.h>
+#include <I2Cdev.h>
 
 typedef struct
 {
@@ -51,23 +52,20 @@ typedef struct
 class PmmImu
 {
 private:
-    Adafruit_BMP085_Unified mBmpObject;
-    Adafruit_ADXL345_Unified mAccelerometerObject;
-    Adafruit_HMC5883_Unified mMagnetometerObject;
-    L3G mGyroscopeObject;
-    sensors_event_t mEvent;
+    BMP085 mBarometer;
     unsigned long mNextMillisBarometer;
     PmmErrorsCentral *mPmmErrorsCentral;
     pmmImuStructType mPmmImuStruct;
 
 public:
     PmmImu();
-    int initAccelerometer(); //ADXL45 SETUP
-    int initGyroscope(); //L2G4200D Setup
-    int initMagnetometer(); //HMC5884 Setup
-    int initBMP();  //BMP085 Setup
 
-    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed
+    int initAccelerometer();
+    int initGyroscope();
+    int initMagnetometer();
+    int initBMP();
+
+    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed. Also, inits everything.
 
     int updateGyroscope();
     int updateAccelerometer();

@@ -75,7 +75,7 @@ int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
 
 int PmmGps::update()
 {
-    if (mPmmErrorsCentral.getGpsIsWorking())
+    if (mPmmErrorsCentral->getGpsIsWorking())
     {
         int hadUpdate = 0;
         while (mGps.available(gpsPort))
@@ -108,8 +108,8 @@ int PmmGps::update()
 
                 #ifdef GPS_FIX_ALTITUDE
                     mTempLastReadMillis = millis();
-                    mLastAltitude = altitude;
-                    mPmmGpsStruct.upSpeed = ((altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
+                    mLastAltitude = mPmmGpsStruct.altitude;
+                    mPmmGpsStruct.upSpeed = ((mPmmGpsStruct.altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
                     mLastReadMillis = mTempLastReadMillis;
                 #endif
             #endif

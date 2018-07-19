@@ -1,26 +1,26 @@
-// GY-80 IMU Library especially written for use with Teensy 3.6
-// Code written by Marcelo Maronas @ Minerva Rockets (Federal University of Rio de Janeiro Rocketry Team) - February 19, 2018
-// Edited by Henrique Bruno @ Minerva Rockets - April 14, 2018
-// Using Adafruit Libraries.
-// Contact : marcelomaronas at poli.ufrj.br
-// For more codes : github.com/engmaronas
+/* pmmImu.cpp
+ * Code for the Inertial Measure Unit (IMU!)
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
+#include <Wire.h>
+#include <I2Cdev.h>
+#include <MPU6050.h>
+#include <HMC5883L.h>
+#include <BMP085.h>
 #include <pmmConsts.h>
 #include <pmmImu.h>
 #include <pmmErrorsCentral.h>
 
 PmmImu::PmmImu()
 {
-    mBmpObject = Adafruit_BMP085_Unified(10085);
-    mAccelerometerObject = Adafruit_ADXL345_Unified(12345);
-    mMagnetometerObject = Adafruit_HMC5883_Unified(12346);
-    mNextMillisBarometer = 0;
 }
-
+/*
 int PmmImu::initAccelerometer() //ADXL45 SETUP
 {
-    if(!mAccelerometerObject.begin()) /* Initialise the sensor */
+    if(!mAccelerometer.begin()) // Initialise the sensor
         return 1;
-    mAccelerometerObject.setRange(ADXL345_RANGE_16_G); /* Set the range to whatever is appropriate for your project */
+    mAccelerometer.setRange(ADXL345_RANGE_16_G); // Set the range to whatever is appropriate for your project
     return 0;
 }   //ADXL45 SETUP END
 
@@ -32,8 +32,21 @@ int PmmImu::initGyroscope() //L2G4200D Setup
     mGyroscopeObject.enableDefault();
     return 0;
 }
+*/
+int PmmImu::initMpu()
+{
+    mMpu.initialize();
 
-int PmmImu::initMagnetometer() //HMC5884 Setup
+    if(mMpu.testConnection())
+    {
+        DEBUG_PRINT("MPU6050 init successful");
+        return 0;
+    }
+    DEBUG_PRINT("MPU6050 init failed");
+    return 1;
+}
+
+int PmmImu::initMagnetometer()
 {
     if(!mMagnetometerObject.begin()) // Initialise the sensor
         return 1;
@@ -49,32 +62,44 @@ int PmmImu::initBMP()  //BMP085 Setup
 
 int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 {
+    mNextMillisBarometer = 0;
     mPmmErrorsCentral = pmmErrorsCentral;
+    int foundError = 0;
+
     if (initBMP())
     {
-        mPmmErrorsCentral->setBarometerIsWorking(0);
-        //DEBUG_PRINT("BAROMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        DEBUG_PRINT("BAROMETER INIT ERROR");
+        mPmmErrorsCentral->reportErrorByCode(ERROR_BAROMETER_INIT);
+        foundError = 1;
     }
+
+    /* Now uses MPU6050! (Acc & gyro)
     if (initAccelerometer())
     {
         mPmmErrorsCentral->setAccelerometerIsWorking(0);
         //DEBUG_PRINT("ACCELEROMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        //pmmErrorsCentral.reportErrorByCode(ERROR_ACCELEROMETER_INIT);
     }
     if (initGyroscope())
     {
         mPmmErrorsCentral->setGyroscopeIsWorking(0);
         //DEBUG_PRINT("GYROSCOPE INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
+
+    }*/
+    if (initMpu())
+    {
+        DEBUG_PRINT("ACCELEROMETER INIT ERROR");
+        mPmmErrorsCentral->reportErrorByCode(ERROR_ACCELEROMETER_INIT);
+        mPmmErrorsCentral->reportErrorByCode(ERROR_GYROSCOPE_INIT);
+        foundError = 1;
     }
     if (initMagnetometer())
     {
-        mPmmErrorsCentral->setMagnetometerIsWorking(0);
-        //DEBUG_PRINT("MAGNETOMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        DEBUG_PRINT("MAGNETOMETER INIT ERROR");
+        mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
+        foundError = 1;
     }
-    return 0;
+    return foundError? 1: 0;
 }
 
 
@@ -93,7 +118,6 @@ int PmmImu::updateGyroscope()
 
 int PmmImu::updateAccelerometer()
 {
-    mAccelerometerObject.getEvent(&mEvent);
 
     mPmmImuStruct.accelerometer[0] = mEvent.acceleration.x;
     mPmmImuStruct.accelerometer[1] = mEvent.acceleration.y;
@@ -103,7 +127,6 @@ int PmmImu::updateAccelerometer()
 
 int PmmImu::updateMagnetometer()
 {
-    mMagnetometerObject.getEvent(&mEvent);
 
     mPmmImuStruct.magnetometer[0] = (float) mEvent.magnetic.x;
     mPmmImuStruct.magnetometer[1] = (float) mEvent.magnetic.y;

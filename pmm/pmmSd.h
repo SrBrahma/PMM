@@ -1,5 +1,5 @@
 /* pmmSd.h
- * 
+ *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #ifndef PMM_SD_h
@@ -18,12 +18,12 @@ private:
     SdFatSdioEX mSdEx;
     File mFile;
     char mFilename[PMM_SD_FILENAME_MAX_LENGTH];
-    unsigned mFileId;
-    unsigned mSdIsWorking;
+    uint16_t mFileId;
+    PmmErrorsCentral *mPmmErrorsCentral;
 
 public:
     PmmSd();
-    int init(pmmErrorsCentral pmmErrorsCentral);
+    int init(PmmErrorsCentral* pmmErrorsCentral);
     void setFilename(char *filename);
     int setFilenameAutoId(const char* baseName, const char* suffix);
     int writeToFilename(char *filename, char *arrayToWrite, int32_t length);

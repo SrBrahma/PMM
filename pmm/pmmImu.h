@@ -51,23 +51,21 @@ typedef struct
 class PmmImu
 {
 private:
-    Adafruit_BMP085_Unified mBmpObject;
-    Adafruit_ADXL345_Unified mAccelerometerObject;
-    Adafruit_HMC5883_Unified mMagnetometerObject;
-    L3G mGyroscopeObject;
-    sensors_event_t mEvent;
+    BMP085 mBarometer;
+    MPU6050 mMpu;
     unsigned long mNextMillisBarometer;
     PmmErrorsCentral *mPmmErrorsCentral;
     pmmImuStructType mPmmImuStruct;
 
+    int initMpu();
+    int initMagnetometer();
+    int initBMP();
+
 public:
     PmmImu();
-    int initAccelerometer(); //ADXL45 SETUP
-    int initGyroscope(); //L2G4200D Setup
-    int initMagnetometer(); //HMC5884 Setup
-    int initBMP();  //BMP085 Setup
-
-    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed
+    /*
+    int initAccelerometer();
+    int initGyroscope(); */
 
     int updateGyroscope();
     int updateAccelerometer();

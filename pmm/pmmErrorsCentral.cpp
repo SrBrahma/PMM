@@ -6,11 +6,11 @@
 
 void PmmErrorsCentral::addError(pmmErrorCodeType errorCode)
 {
-    // No need to treat the values, as them will be treated on the reportErrorByCode().
-
-    mErrorsArray[mActualNumberOfErrors].code = errorCode;
-    mErrorsArray[mActualNumberOfErrors].timeMs = millis();
-    mErrorsArray[mActualNumberOfErrors].packageLogId = *mPackageLogIdPtr;
+    // No need to treat the values, as them will be treated on the reportErrorByCodeByCode().
+    mErrorsStructArray[mActualNumberOfErrors].code = errorCode;
+    mErrorsStructArray[mActualNumberOfErrors].timeMs = millis();
+    mErrorsStructArray[mActualNumberOfErrors].packageLogId = *mPackageLogIdPtr;
+    mActualNumberOfErrors++;
 }
 
 PmmErrorsCentral::PmmErrorsCentral()
@@ -26,6 +26,7 @@ int PmmErrorsCentral::init (const uint32_t* packageLogIdPtr)
 }
 
 // Getters
+const pmmErrorStructType* PmmErrorsCentral::getErrorsStructArray() { return mErrorsStructArray; }
 int PmmErrorsCentral::getNumberOfErrors() { return mActualNumberOfErrors; }
 int PmmErrorsCentral::getSdIsWorking() { return mSdIsWorking; }
 int PmmErrorsCentral::getTelemetryIsWorking() { return mTelemetryIsWorking; }
@@ -56,10 +57,6 @@ void PmmErrorsCentral::reportErrorByCode(pmmErrorCodeType errorCode)
             break;
 
         case (ERROR_RF_INIT):
-            mTelemetryIsWorking = 0;
-            break;
-
-        case (ERROR_RF_SET_FREQ):
             mTelemetryIsWorking = 0;
             break;
 

@@ -36,7 +36,7 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral)
 
     if (mSdEx.init())
     {
-        DEBUG_PRINT("SD init FAILED!");
+        PMM_DEBUG_PRINT("SD init FAILED!");
         mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
     }
     else
@@ -61,13 +61,13 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral)
     {
         if (mPmmSd.writeToFile(SD_LOG_HEADER, strlen(SD_LOG_HEADER)))
         {
-            DEBUG_PRINT("sdIsWorking = False");
+            PMM_DEBUG_PRINT("sdIsWorking = False");
             sdIsWorking = 0;
             pmmErrorsCentral.reportErrorByCode(ERROR_SD);
         }
         else
         {
-            DEBUG_PRINT("sdIsWorking = True");
+            PMM_DEBUG_PRINT("sdIsWorking = True");
         }
     }
     //END of Setup Modulo SD--------------------------------//

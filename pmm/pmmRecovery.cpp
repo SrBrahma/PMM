@@ -13,7 +13,7 @@ if (recCount == REC_COUNT_NEEDED)
 {
   digitalWrite(2, HIGH);
   recoveryActivated = 1;
-  DEBUG_PRINT("Recovery Activated!");
+  PMM_DEBUG_PRINT("Recovery Activated!");
   recCount = 0;
   pmmErrorsCentral.reportRecuperation(packetIDul, sdIsWorking, rfIsWorking);
 }

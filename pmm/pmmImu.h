@@ -41,12 +41,14 @@ For more codes : github.com/engmaronas
 
 typedef struct
 {
-    float accelerometer[3]; //Posicoes 1,2,3, respectivamente sao as Aceleracoes em x,y,z
-    float magnetometer[3]; //Posicoes 1,2,3, respectivamente sao as Campos Magneticos em x,y,z
-    float gyroscope[3]; //Posicoes 1, 2, 3, respectivamente sao a velocidade angular em x,y,z
-    float barometer;
+    float accelerometerArray[3]; //Posicoes 1,2,3, respectivamente sao as Aceleracoes em x,y,z
+    float magnetometerArray[3]; //Posicoes 1,2,3, respectivamente sao as Campos Magneticos em x,y,z
+    float gyroscopeArray[3]; //Posicoes 1, 2, 3, respectivamente sao a velocidade angular em x,y,z
+    float pressure;
     float altitudeBarometer;
     float temperature;
+    float headingDegree;
+    float headingRadian;
 } pmmImuStructType;
 
 class PmmImu
@@ -54,13 +56,24 @@ class PmmImu
 private:
     BMP085 mBarometer;
     MPU6050 mMpu;
+    HMC5883L mMagnetometer;
+
+    int16_t mMagnetometerRaw[3];
+    int16_t mAccelerometerRaw[3];
+    int16_t mGyroscopeRaw[3];
+
+
     unsigned long mNextMillisBarometer;
     PmmErrorsCentral *mPmmErrorsCentral;
     pmmImuStructType mPmmImuStruct;
 
     int initMpu();
     int initMagnetometer();
-    int initBMP();
+    int initBmp();
+
+    int updateMpu();
+    int updateMagnetometer();
+    int updateBmp();
 
 public:
     PmmImu();
@@ -70,12 +83,7 @@ public:
 
     int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed. Also, inits everything.
 
-    int updateGyroscope();
-    int updateAccelerometer();
-    int updateMagnetometer();
-    int updateBMP();
-
-    int update(); // Gets all the sensor above
+    int update(); // Gets all the sensors
 
     /* These returns safely a copy of the variables */
     void  getAccelerometer(float destinationArray[3]);

@@ -69,28 +69,30 @@ void Pmm::init()
 
     #if PMM_USE_TELEMETRY                       /* Telemetry */
         PmmTelemetry mPmmTelemetry;
-        mPmmTelemetry.init();
+        mPmmTelemetry.init(&mPmmErrorsCentral);
     #endif
 
     #if PMM_USE_GPS                             /* GPS */
     PmmGps mPmmGps;
-    mPmmGps.init();
+    mPmmGps.init(&mPmmErrorsCentral);
     #endif
 
     #if PMM_USE_SD                              /* SD */
         PmmSd mPmmSd;
-        mPmmSd.init();
+        mPmmSd.init(&mPmmErrorsCentral);
     #endif
 
     PmmImu mPmmImu;                             /* IMU */
-    mPmmImu.init();
+    mPmmImu.init(&mPmmErrorsCentral);
+
+    PmmPackageLog mPmmPackageLog;
 
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
-    mPmmPackage.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
-    mPmmPackage.addImu(mPmmImu.getImuStructPtr());
-    mPmmPackage.addGps(mPmmGps.getGpsStructPtr());
+    mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
+    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
+    mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
 
     #if PMM_DEBUG_SERIAL
         unsigned long serialDebugTimeout = millis();
@@ -98,8 +100,8 @@ void Pmm::init()
         while (!Serial);        // wait for serial port to connect. Needed for native USB port only
     #endif
 
-    DEBUG_PRINT("\nMinerva Rockets - UFRJ");
-    // DEBUG_PRINT(SD_LOG_HEADER);
+    PMM_DEBUG_PRINT("\nMinerva Rockets - UFRJ");
+    // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
 
@@ -110,18 +112,18 @@ void Pmm::update()
 
     mPmmImu.update();
 
-    DEBUG_PRINT(1);
+    PMM_DEBUG_PRINT(1);
 
     /* GPS */
     #if PMM_USE_GPS
         mPmmGps.update();
     #endif
-    DEBUG_PRINT(2);
+    PMM_DEBUG_PRINT(2);
 
 //---------------SD Logging Code---------------//
     #if PMM_USE_SD
     #endif
-    DEBUG_PRINT(3);
+    PMM_DEBUG_PRINT(3);
 
 //-------------- Send RF package ---------------//
     #if PMM_USE_TELEMETRY
@@ -131,7 +133,7 @@ void Pmm::update()
     pmmErrorsCentral.updateLedsAndBuzzer();
     mPackageId ++;
 
-    DEBUG_PRINT(4);
+    PMM_DEBUG_PRINT(4);
 
     /*if (packetIDul % 100 == 0)
     {

@@ -35,28 +35,28 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
         if (++initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
         {
             mPmmErrorsCentral->reportErrorByCode(ERROR_RF_INIT);
-            DEBUG_PRINT("LoRa didn't initialized after all these attempts.");
+            PMM_DEBUG_PRINT("LoRa didn't initialized after all these attempts.");
             return 1;
         }
     }
 
     /* So it initialized! */
 
-    mRf95.setFrequency(PMM_LORA_FREQUENCY)))
+    mRf95.setFrequency(PMM_LORA_FREQUENCY);
     mRf95.setTxPower(23, false);
-    DEBUG_PRINT("LoRa initialized successfully!");
+    PMM_DEBUG_PRINT_MORE("LoRa initialized successfully!");
 }
 
 int PmmTelemetry::updateTransmission()
 {
-    if (millis() >= nextMillis_rf)
+    if (millis() >= mNextMillisPackageLog)
     {
-        nextMillis_rf = millis() + DELAY_MS_RF;
-        if (rfIsWorking)
+        mNextMillisPackageLog = millis() + 300;
+        if (mPmmErrorsCentral->getTelemetryIsWorking())
         {
-            mPmmErrorsCentral->blinkRfLED(HIGH);
+            //mPmmErrorsCentral->blinkRfLED(HIGH);
             mRf95.sendArrayOfPointersOf4Bytes(mRfPayload, RF_WORDS_IN_PACKET);
-            mPmmErrorsCentral->blinkRfLED(LOW);
+            //mPmmErrorsCentral->blinkRfLED(LOW);
         }
         return 1;
     }

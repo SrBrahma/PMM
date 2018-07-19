@@ -1,6 +1,37 @@
 #include <pmmPackageLog.h>
 #include <pmmConsts.h>
 
+#define typeToSize(x) _Generic((x), \
+        uint8_t:    1, \
+        int8_t:     1, \
+        uint16_t:   2, \
+        int16_t:    2, \
+        uint32_t:   4, \
+        int32_t:    4, \
+        float:      4, \
+        uint64_t:   8, \
+        int64_t:    8, \
+        double:     8, \
+        default:    0)
+
+#define typeToIdentifier(x) _Generic((x), \
+        uint8_t:    0, \
+        int8_t:     1, \
+        uint16_t:   2, \
+        int16_t:    3, \
+        uint32_t:   4, \
+        int32_t:    5, \
+        float:      6, \
+        uint64_t:   8, \
+        int64_t:    9, \
+        double:     10, \
+        default:    0)
+
+PmmPackageLog::PmmPackageLog()
+{
+    mPackageSizeInBytes = 0;
+    mActualNumberVariables = 0;
+}
 uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
@@ -32,14 +63,36 @@ uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 
 void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
-    if (mActualNumberVariables < PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
+    uint8_t varSize = variableTypeToVariableSize(variableType);
+    if (mActualNumberVariables >= PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
     {
-        mVariableName[mActualNumberVariables] = variableName;
-        mVariableType[mActualNumberVariables] = variableType;
-        mVariableSize[mActualNumberVariables] = variableTypeToVariableSize(variableType);
-        mVariableAddress[mActualNumberVariables] = (uint8_t *) variableAddress;
-        mActualNumberVariables ++;
+        #if PMM_DEBUG_SERIAL
+            Serial.print("PmmPackage #1: Failed to add the variable \"");
+            Serial.print(variableName);
+            Serial.print("\". Exceeds the maximum number of variables in the Package Log.\n");
+        #endif
+        return;
     }
+    if ((mPackageSizeInBytes + varSize) <= PMM_TELEMETRY_MAX_PAYLOAD_LENGTH)
+    {
+        #if PMM_DEBUG_SERIAL
+            Serial.print("PmmPackage #2: Failed to add the variable \"");
+            Serial.print(variableName);
+            Serial.print("\". Exceeds the maximum payload length (tried to be ");
+            Serial.print((mPackageSizeInBytes + varSize));
+            Serial.print(", maximum is ");
+            Serial.print(PMM_TELEMETRY_MAX_PAYLOAD_LENGTH);
+            Serial.print(".");
+        #endif
+        return;
+    }
+
+    mVariableName[mActualNumberVariables] = variableName;
+    mVariableType[mActualNumberVariables] = variableType;
+    mVariableSize[mActualNumberVariables] = varSize;
+    mVariableAddress[mActualNumberVariables] = (uint8_t*) variableAddress;
+    mActualNumberVariables ++;
+    mPackageSizeInBytes += varSize;
 
 }
 
@@ -51,54 +104,59 @@ void PmmPackageLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packag
     includeVariableInPackage(packageTimeString, PMM_TELEMETRY_TYPE_UINT32, packageTimeMsPtr);
 }
 
-void PmmPackageLog::addMagnetometer(float* magnetometerArray[3])
+
+void PmmPackageLog::addMagnetometer(PMM_PACKAGE_LOG_MAGNETOMETER_TYPE magnetometerArray[3])
 {
     const PROGMEM char* magnetometerXString = "magnetometerX(uT)";
-    const PROGMEM char* magnetometerYString = "magnetometerX(uT)";
-    const PROGMEM char* magnetometerZString = "magnetometerX(uT)";
-    includeVariableInPackage(magnetometerXString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[0]);
-    includeVariableInPackage(magnetometerYString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[1]);
-    includeVariableInPackage(magnetometerZString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[2]);
+    const PROGMEM char* magnetometerYString = "magnetometerY(uT)";
+    const PROGMEM char* magnetometerZString = "magnetometerZ(uT)";
+    includeVariableInPackage(magnetometerXString, typeToIdentifier(magnetometerArray[0]), &magnetometerArray[0]);
+    includeVariableInPackage(magnetometerYString, typeToIdentifier(magnetometerArray[1]), &magnetometerArray[1]);
+    includeVariableInPackage(magnetometerZString, typeToIdentifier(magnetometerArray[2]), &magnetometerArray[2]);
 }
 
-void PmmPackageLog::addGyroscope(float* gyroscopeArray[3])
+void PmmPackageLog::addGyroscope(PMM_PACKAGE_LOG_GYROSCOPE_TYPE gyroscopeArray[3])
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
     const PROGMEM char* gyroscopeXString = "gyroscopeX()";
     const PROGMEM char* gyroscopeYString = "gyroscopeY()";
     const PROGMEM char* gyroscopeZString = "gyroscopeZ()";
-    includeVariableInPackage(gyroscopeXString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[0]);
-    includeVariableInPackage(gyroscopeYString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[1]);
-    includeVariableInPackage(gyroscopeZString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[2]);
+    includeVariableInPackage(gyroscopeXString, type, &gyroscopeArray[0]);
+    includeVariableInPackage(gyroscopeYString, type, &gyroscopeArray[1]);
+    includeVariableInPackage(gyroscopeZString, type, &gyroscopeArray[2]);
 }
 
-void PmmPackageLog::addAccelerometer(float* accelerometerArray[3])
+void PmmPackageLog::addAccelerometer(PMM_PACKAGE_LOG_ACCELEROMETER_TYPE accelerometerArray[3])
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
     const PROGMEM char* accelerometerXString = "accelerometerX(m/s^2)";
     const PROGMEM char* accelerometerYString = "accelerometerY(m/s^2)";
     const PROGMEM char* accelerometerZString = "accelerometerZ(m/s^2)";
-    includeVariableInPackage(accelerometerXString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[0]);
-    includeVariableInPackage(accelerometerYString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[1]);
-    includeVariableInPackage(accelerometerZString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[2]);
+    includeVariableInPackage(accelerometerXString, type, &accelerometerArray[0]);
+    includeVariableInPackage(accelerometerYString, type, &accelerometerArray[1]);
+    includeVariableInPackage(accelerometerZString, type, &accelerometerArray[2]);
 }
 
-void PmmPackageLog::addBarometer(float* barometer)
+void PmmPackageLog::addBarometer(PMM_PACKAGE_LOG_BAROMETER_TYPE* barometer)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
-
-    includeVariableInPackage(barometerPressureString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray);
+    includeVariableInPackage(barometerPressureString, type, &barometerArray);
 
 }
 
-void PmmPackageLog::addAltitudeBarometer(float* altitudeBarometer)
+void PmmPackageLog::addAltitudeBarometer(PMM_PACKAGE_LOG_ALTITUDE_BAROMETER_TYPE* altitudeBarometer)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerAltitudeString = "barometerAltitude(m)";
     includeVariableInPackage(barometerAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray);
 }
 
-void PmmPackageLog::addThermometer(float* thermometerPtr)
+void PmmPackageLog::addThermometer(PMM_PACKAGE_THERMOMETER_TYPE* thermometerPtr)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* thermometerString = "temperature(C)";
-    includeVariableInPackage(thermometerString, PMM_TELEMETRY_TYPE_FLOAT, thermometerPtr);
+    includeVariableInPackage(thermometerString, type, thermometerPtr);
 }
 
 void PmmPackageLog::addImu(pmmImuStructType *pmmImuStructPtr)
@@ -159,10 +217,19 @@ void PmmPackageLog::addCustomVariable(const char* variableName, uint8_t variable
     includeVariableInPackage(variableName, variableType, variableAddress);
 }
 
+uint8_t PmmPackageLog::returnPackageSizeInBytes()
+{
+    return mPackageSizeInBytes;
+}
+
+
+
+
+#if PMM_DEBUG_SERIAL
 // Note for the 2 functions below:
 // There are faster ways to print the debugs, but since it isn't something that is going to be used frequently,
 // I (HB :) ) will spend my precious time on other stuffs)
-#if PMM_DEBUG_SERIAL
+
 void PmmPackageLog::debugPrintLogHeader()
 {
     unsigned variableIndex;
@@ -170,7 +237,7 @@ void PmmPackageLog::debugPrintLogHeader()
     for (variableIndex = 0; variableIndex < mActualNumberVariables; variableIndex ++)
     {
         strncat(buffer, mVariableName[variableIndex], 512);
-        Serial.print(buffer);
+        Serial.println(buffer);
     }
 }
 void PmmPackageLog::debugPrintLogContent()

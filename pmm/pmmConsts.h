@@ -12,15 +12,23 @@
 //  Debug
 // =======================================================================
 #define PMM_DEBUG_SERIAL                    1
+#define PMM_DEBUG_SERIAL_MORE               1 // Additional debug messages.
+
 #define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 /* [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
 computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
 the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket! */
 #define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     3000 // The maximum wait time for the above option. Default is 3 seconds (3000ms).
 
 #if PMM_DEBUG_SERIAL
-    #define DEBUG_PRINT(x) Serial.println(x)
+    #define PMM_DEBUG_PRINT(x) Serial.println(x)
 #else
-    #define DEBUG_PRINT(x) do {} while (0)
+    #define PMM_DEBUG_PRINT(x) do {} while (0)
+#endif
+
+#if PMM_DEBUG_SERIAL_MORE
+    #define PMM_DEBUG_PRINT_MORE(x) Serial.println(x)
+#else
+    #define PMM_DEBUG_PRINT_MORE(x) do {} while (0)
 #endif
 
 // =======================================================================
@@ -36,6 +44,8 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 #define PMM_PIN_LED_ERRORS              9
 #define PMM_PIN_ALL_OK_AND_TELEMETRY    9
 
+#define PMM_VARIABLE_STRING_LENGTH          22
+
 // =======================================================================
 //  SD
 // =======================================================================
@@ -44,7 +54,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 #define PMM_USE_SD                  1
 #define PMM_SD_FILENAME_MAX_LENGTH  64
 const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};
-const char FILENAME_BASE_SUFFIX
+const char FILENAME_BASE_SUFFIX[] = {".csv"};
 
 // =======================================================================
 //  Telemetry
@@ -57,7 +67,7 @@ const char PMM_TELEMETRY_HEADER_STRING[5]   = {"MSTR"};
 
 
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32
-#define PMM_VARIABLE_STRING_LENGTH          22
+#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH    251 // Must be 251 (LoRa max is 255, 4 bytes are used as default headers by the RadioHead lib (maybe will remove/change it on future)). read recv2() in RH_RF95.cpp.
 
 // =======================================================================
 //  LoRa

@@ -30,13 +30,14 @@ For more codes : github.com/engmaronas
 
 #define DELAY_MS_BAROMETER 100 //random value
 
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BMP085_U.h>
-#include <Adafruit_ADXL345_U.h>
-#include <L3G.h>
-#include <Adafruit_HMC5883_U.h>
+#include <pmmConsts.h>
+#include <pmmImu.h>
 #include <pmmErrorsCentral.h>
+#include <MPU6050.h>
+#include <HMC5883L.h>
+#include <BMP085.h>
+#include <Wire.h>
+#include <I2Cdev.h>
 
 typedef struct
 {
@@ -75,6 +76,8 @@ public:
     /*
     int initAccelerometer();
     int initGyroscope(); */
+
+    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed. Also, inits everything.
 
     int updateGyroscope();
     int updateAccelerometer();

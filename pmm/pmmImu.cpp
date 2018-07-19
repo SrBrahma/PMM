@@ -11,6 +11,11 @@
 #include <pmmConsts.h>
 #include <pmmImu.h>
 #include <pmmErrorsCentral.h>
+#include <MPU6050.h>
+#include <HMC5883L.h>
+#include <BMP085.h>
+#include <Wire.h>
+#include <I2Cdev.h>
 
 PmmImu::PmmImu()
 {
@@ -26,10 +31,10 @@ int PmmImu::initAccelerometer() //ADXL45 SETUP
 
 int PmmImu::initGyroscope() //L2G4200D Setup
 {
-    if (!mGyroscopeObject.init())
+    if (!mGyroscope.init())
         return 1;
 
-    mGyroscopeObject.enableDefault();
+    mGyroscope.enableDefault();
     return 0;
 }
 */
@@ -48,14 +53,15 @@ int PmmImu::initMpu()
 
 int PmmImu::initMagnetometer()
 {
-    if(!mMagnetometerObject.begin()) // Initialise the sensor
+    if(!mMagnetometer.begin()) // Initialise the sensor
         return 1;
     return 0;
 }
 
 int PmmImu::initBMP()  //BMP085 Setup
 {
-    if(!mBmpObject.begin())
+    mBarometer.initialize();
+    if(!mBarometer.testConnection())
         return 1;
     return 0;
 }
@@ -108,11 +114,11 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 
 int PmmImu::updateGyroscope()
 {
-    mGyroscopeObject.read();
+    mGyroscope.read();
 
-    mPmmImuStruct.gyroscope[0] = mGyroscopeObject.g.x;
-    mPmmImuStruct.gyroscope[1] = mGyroscopeObject.g.y;
-    mPmmImuStruct.gyroscope[2] = mGyroscopeObject.g.z;
+    mPmmImuStruct.gyroscope[0] = mGyroscope.g.x;
+    mPmmImuStruct.gyroscope[1] = mGyroscope.g.y;
+    mPmmImuStruct.gyroscope[2] = mGyroscope.g.z;
     return 0;
 }
 
@@ -136,11 +142,21 @@ int PmmImu::updateMagnetometer()
 
 int PmmImu::updateBMP()
 {
-    mBmpObject.getEvent(&mEvent);
+    mBarometer.setControl(BMP085_MODE_TEMPERATURE);
 
-    mPmmImuStruct.barometer = (float) mEvent.pressure;
-    mPmmImuStruct.altitudeBarometer = (float) mBmpObject.pressureToAltitude(SENSORS_PRESSURE_SEALEVELHPA, mEvent.pressure);
-    mPmmImuStruct.temperature = mBmpObject.getTemperature();
+    // read calibrated temperature value in degrees Celsius
+    mPmmImuStruct.temperature = mBarometer.getTemperatureC();
+
+    // request pressure (3x oversampling mode, high detail, 23.5ms delay)
+    mBarometer.setControl(BMP085_MODE_PRESSURE_3);
+
+    // read calibrated pressure value in Pascals (Pa)
+    mPmmImuStruct.barometer = mBarometer.getPressure();
+
+    // calculate absolute altitude in meters based on known pressure
+    // (may pass a second "sea level pressure" parameter here,
+    // otherwise uses the standard value of 101325 Pa)
+    mPmmImuStruct.altitudeBarometer = mBarometer.getAltitude(pressure);
     return 0;
 }
 
@@ -182,7 +198,7 @@ void PmmImu::getMagnetometer(float destinationArray[3])
 }
 float PmmImu::getBarometer()
 {
-    return mPmmImuStruct.barometer;
+    return mPmmImuStruct.mBarometer;
 }
 float PmmImu::getAltitudeBarometer()
 {
@@ -213,7 +229,7 @@ float* PmmImu::getMagnetometerPtr()
 }
 float* PmmImu::getBarometerPtr()
 {
-    return &mPmmImuStruct.barometer;
+    return &mPmmImuStruct.mBarometer;
 }
 float* PmmImu::getAltitudeBarometerPtr()
 {

@@ -61,15 +61,6 @@ private:
     int initMpu();
     int initMagnetometer();
     int initBMP();
-<<<<<<< Updated upstream
-=======
-
-public:
-    PmmImu();
-    /*
-    int initAccelerometer();
-    int initGyroscope(); */
->>>>>>> Stashed changes
 
 public:
     PmmImu();

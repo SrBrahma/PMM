@@ -116,7 +116,7 @@ void PmmPackageLog::addAccelerometer(float accelerometerArray[3])
     includeVariableInPackage(accelerometerZString, type, &accelerometerArray[2]);
 }
 
-void PmmPackageLog::addBarometer(float* barometer)
+void PmmPackageLog::addBarometer(PMM_PACKAGE_LOG_BAROMETER_TYPE* barometer)
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
@@ -131,7 +131,7 @@ void PmmPackageLog::addAltitudeBarometer(float* altitudePressure)
     includeVariableInPackage(barometerAltitudeString, type, &altitudePressure);
 }
 
-void PmmPackageLog::addThermometer(float* thermometerPtr)
+void PmmPackageLog::addThermometer(PMM_PACKAGE_THERMOMETER_TYPE* thermometerPtr)
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* thermometerString = "temperature(C)";

@@ -80,7 +80,7 @@ void Pmm::init()
 
     mPmmImu.init(&mPmmErrorsCentral); /* IMU */
 
-    PmmPackageLog mPmmPackageLog;
+    
 
     mPackageLogId = 0;
     mPackageTimeMs = 0;

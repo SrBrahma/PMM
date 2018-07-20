@@ -3,9 +3,10 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <pmmConsts.h>
-#include <SdFat.h>
+
 #include <pmmSd.h>
 #include <pmmErrorsCentral.h>
+#include <SdFat.h>
 // Replace "weak" system yield() function.
 void PmmSd::yield()
 {

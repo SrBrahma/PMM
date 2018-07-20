@@ -1,3 +1,8 @@
+/* pmmPackageLog.cpp
+ * Code for the Inertial Measure Unit (IMU!)
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #include <pmmPackageLog.h>
 #include <pmmConsts.h>
 
@@ -116,7 +121,7 @@ void PmmPackageLog::addAccelerometer(float accelerometerArray[3])
     includeVariableInPackage(accelerometerZString, type, &accelerometerArray[2]);
 }
 
-void PmmPackageLog::addBarometer(PMM_PACKAGE_LOG_BAROMETER_TYPE* barometer)
+void PmmPackageLog::addBarometer(float* barometer)
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
@@ -131,7 +136,7 @@ void PmmPackageLog::addAltitudeBarometer(float* altitudePressure)
     includeVariableInPackage(barometerAltitudeString, type, &altitudePressure);
 }
 
-void PmmPackageLog::addThermometer(PMM_PACKAGE_THERMOMETER_TYPE* thermometerPtr)
+void PmmPackageLog::addThermometer(float* thermometerPtr)
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* thermometerString = "temperature(C)";
@@ -206,7 +211,7 @@ uint8_t PmmPackageLog::getPackageSizeInBytes()
 const char** PmmPackageLog::getVariableNameArray()  { return mVariableNameArray;}
 uint8_t* PmmPackageLog::getVariableTypeArray()      { return mVariableTypeArray;}
 uint8_t* PmmPackageLog::getVariableSizeArray()      { return mVariableSizeArray;}
-void** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}
+uint8_t** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}
 
 
 

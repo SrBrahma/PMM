@@ -47,6 +47,7 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPac
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
     mRf95.setTxPower(23, false);
     PMM_DEBUG_PRINT_MORE("LoRa initialized successfully!");
+    return 0;
 }
 
 int PmmTelemetry::updateTransmission()

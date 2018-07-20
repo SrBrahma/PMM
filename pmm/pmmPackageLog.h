@@ -1,3 +1,8 @@
+/* pmmPackageLog.h
+ * Code for the Inertial Measure Unit (IMU!)
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef PMM_PACKAGE_h
 #define PMM_PACKAGE_h
 
@@ -40,7 +45,7 @@ private:
     const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
-    void* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
+    uint8_t* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
     uint8_t mActualNumberVariables;
     uint8_t mPackageSizeInBytes;
@@ -81,7 +86,7 @@ public:
     const char** getVariableNameArray();
     uint8_t* getVariableTypeArray();
     uint8_t* getVariableSizeArray();
-    void** getVariableAddressArray();
+    uint8_t** getVariableAddressArray();
 
     #if PMM_DEBUG_SERIAL
         void debugPrintLogHeader();

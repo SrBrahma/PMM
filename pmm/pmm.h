@@ -31,6 +31,8 @@ private:
 
     PmmImu mPmmImu;
 
+    PmmPackageLog mPmmPackageLog;
+    
     PmmErrorsCentral mPmmErrorsCentral;         /* Errors */
 
     #if PMM_USE_TELEMETRY                       /* Telemetry */

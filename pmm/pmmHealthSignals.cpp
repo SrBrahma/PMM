@@ -6,15 +6,17 @@
 
 #include <pmmConsts.h>
 #include <pmmErrorsCentral.h>
+#include <pmmHealthSignals.h>
 
 PmmHealthSignals::PmmHealthSignals()
 {
 }
 
 // Initializer
-void PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
+int PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
 {
-    PmmErrorsCentral *pmmErrorsCentral;
+    mPmmErrorsCentral = pmmErrorsCentral;
+    mErrorsStructArray = mPmmErrorsCentral->getErrorsStructArray();
     mMillisNextSignalState = 0;
 
     pinMode(PMM_PIN_LED_RECOVERY, OUTPUT);
@@ -34,7 +36,7 @@ void PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
 //       ..........     ..........
 //  .....          .....          .....
 // A confusing but working code.
-void PmmHealthSignals::update()
+int PmmHealthSignals::update()
 {
     if (millis() >= mMillisNextSignalState)
     {
@@ -120,7 +122,7 @@ void PmmHealthSignals::update()
                     }
                     else // If the signal starter is now 0, start the error code signal.
                     {
-                        mSignalActualErrorCounter = mErrorsArray[mSignalActualErrorIndex]; // Short beeps are over, load the next error
+                        mSignalActualErrorCounter = mErrorsStructArray[mSignalActualErrorIndex].code; // Short beeps are over, load the next error
                         mMillisNextSignalState = millis() + 500;
                     }
                 }
@@ -138,6 +140,7 @@ void PmmHealthSignals::update()
             }
         }
     }
+    return 0;
 }
 
 

@@ -64,42 +64,47 @@
 
 void Pmm::init()
 {
-    PmmErrorsCentral mPmmErrorsCentral;   /* Errors and Signals */
     mPmmErrorsCentral.init(&mPackageLogId);
 
-    #if PMM_USE_TELEMETRY                       /* Telemetry */
-        PmmTelemetry mPmmTelemetry;
-        mPmmTelemetry.init();
-    #endif
+        #if PMM_USE_TELEMETRY                       /* Telemetry */
+    mPmmTelemetry.init(&mPmmErrorsCentral, &mPmmPackageLog);
+        #endif
 
-    #if PMM_USE_GPS                             /* GPS */
-    PmmGps mPmmGps;
-    mPmmGps.init();
-    #endif
+        #if PMM_USE_GPS                             /* GPS */
+    mPmmGps.init(&mPmmErrorsCentral);
+        #endif
 
-    #if PMM_USE_SD                              /* SD */
-        PmmSd mPmmSd;
-        mPmmSd.init();
-    #endif
+        #if PMM_USE_SD                              /* SD */
+    mPmmSd.init(&mPmmErrorsCentral);
+        #endif
 
-    PmmImu mPmmImu;                             /* IMU */
-    mPmmImu.init();
+    mPmmImu.init(&mPmmErrorsCentral); /* IMU */
+
+    PmmPackageLog mPmmPackageLog;
 
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
-    mPmmPackage.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
-    mPmmPackage.addImu(mPmmImu.getImuStructPtr());
-    mPmmPackage.addGps(mPmmGps.getGpsStructPtr());
+    mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
+    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
+    mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
 
     #if PMM_DEBUG_SERIAL
         unsigned long serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
-        while (!Serial);        // wait for serial port to connect. Needed for native USB port only
+
+        #if PMM_DEBUG_SERIAL_TIMEOUT_ENABLED
+        while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_SERIAL_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
+
+        #else
+        while (!Serial);
+
+        #endif
+
     #endif
 
-    DEBUG_PRINT("\nMinerva Rockets - UFRJ");
-    // DEBUG_PRINT(SD_LOG_HEADER);
+    PMM_DEBUG_PRINT("\nMinerva Rockets - UFRJ");
+    // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
 
@@ -110,28 +115,28 @@ void Pmm::update()
 
     mPmmImu.update();
 
-    DEBUG_PRINT(1);
+    PMM_DEBUG_PRINT(1);
 
     /* GPS */
     #if PMM_USE_GPS
         mPmmGps.update();
     #endif
-    DEBUG_PRINT(2);
+    PMM_DEBUG_PRINT(2);
 
 //---------------SD Logging Code---------------//
     #if PMM_USE_SD
     #endif
-    DEBUG_PRINT(3);
+    PMM_DEBUG_PRINT(3);
 
 //-------------- Send RF package ---------------//
     #if PMM_USE_TELEMETRY
-        pmmTelemetry.updateTransmission();
+        mPmmTelemetry.updateTransmission();
     #endif
 
-    pmmErrorsCentral.updateLedsAndBuzzer();
-    mPackageId ++;
+    //mPmmErrorsCentral.updateLedsAndBuzzer();
+    mPackageLogId ++;
 
-    DEBUG_PRINT(4);
+    PMM_DEBUG_PRINT(4);
 
     /*if (packetIDul % 100 == 0)
     {

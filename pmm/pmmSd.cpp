@@ -26,25 +26,25 @@ void PmmSd::yield()
     yieldMicros += m;*/
 }
 
-PmmSd::PmmSd() {}
+PmmSd::PmmSd()
+{
+}
 
-int PmmSd::init(pmmErrorsCentral pmmErrorsCentral)
+int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
-    // SETUP SD //
+
     if (mSdEx.init())
     {
-        DEBUG_PRINT("SD init FAILED!");
-        mPmmErrorsCentral->reportError(ERROR_SD, 0);
-        mPmmErrorsCentral->setSdIsWorking(0);
-        mSdIsWorking = 0;
+        PMM_DEBUG_PRINT("SD init FAILED!");
+        mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
     }
     else
     {
-        mFileId = mPmmSd.setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
+        mFileId = setFilenameAutoId(PMM_SD_FILENAME_BASE_PREFIX, PMM_SD_FILENAME_BASE_SUFFIX);
         #if PMM_DEBUG_SERIAL
             char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
-            mPmmSd.getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
+            getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
             Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
         #endif
     }
@@ -55,38 +55,24 @@ int PmmSd::init(pmmErrorsCentral pmmErrorsCentral)
     // make sdEx the current volume.
     mSdEx.chvol();
     return 0;
-
+}
+/* wt was that
     if (sdIsWorking) // This conditional exists so you can disable sd writing by changing the initial sdIsWorking value on the variable declaration.
     {
         if (mPmmSd.writeToFile(SD_LOG_HEADER, strlen(SD_LOG_HEADER)))
         {
-            DEBUG_PRINT("sdIsWorking = False");
+            PMM_DEBUG_PRINT("sdIsWorking = False");
             sdIsWorking = 0;
-            pmmErrorsCentral.reportError(ERROR_SD, 0, sdIsWorking, rfIsWorking);
+            pmmErrorsCentral.reportErrorByCode(ERROR_SD);
         }
         else
         {
-            DEBUG_PRINT("sdIsWorking = True");
+            PMM_DEBUG_PRINT("sdIsWorking = True");
         }
     }
-//END of Setup Modulo SD--------------------------------//
+    //END of Setup Modulo SD--------------------------------//
 
-if (sdIsWorking)
-{
-    DEBUG_MAINLOOP_PRINT(8.1);
-    if (sdManager.writeToFile(logString, logStringLength))
-    {
-        DEBUG_PRINT("SD WRITING ERROR!");
-        sdIsWorking = 0;
-        pmmErrorsCentral.reportError(ERROR_SD_WRITE, packetIDul, sdIsWorking, rfIsWorking);
-    }
-}
-else
-{
-
-}
-
-}
+}*/
 
 void PmmSd::setFilename(char *sourceFilename)
 {

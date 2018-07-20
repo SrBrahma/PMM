@@ -79,6 +79,7 @@ public:
 
     /* By Henrique Bruno - UFRJ Minerva Rockets*/
     void              spiBurstWriteArrayOfPointersOf4Bytes(uint8_t reg, uint8_t** src, uint8_t number4BytesVariables);
+    void              spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables);
     /// Set or change the pin to be used for SPI slave select.
     /// This can be called at any time to change the
     /// pin that will be used for slave select in subsquent SPI operations.

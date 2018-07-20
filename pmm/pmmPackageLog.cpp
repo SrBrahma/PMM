@@ -1,6 +1,15 @@
 #include <pmmPackageLog.h>
 #include <pmmConsts.h>
 
+
+PmmPackageLog::PmmPackageLog()
+{
+    mPackageSizeInBytes = 0;
+    mActualNumberVariables = 0;
+}
+
+
+
 uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
@@ -32,14 +41,36 @@ uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 
 void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
-    if (mActualNumberVariables < PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
+    uint8_t varSize = variableTypeToVariableSize(variableType);
+    if (mActualNumberVariables >= PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
     {
-        mVariableName[mActualNumberVariables] = variableName;
-        mVariableType[mActualNumberVariables] = variableType;
-        mVariableSize[mActualNumberVariables] = variableTypeToVariableSize(variableType);
-        mVariableAddress[mActualNumberVariables] = (uint8_t *) variableAddress;
-        mActualNumberVariables ++;
+        #if PMM_DEBUG_SERIAL
+            Serial.print("PmmPackage #1: Failed to add the variable \"");
+            Serial.print(variableName);
+            Serial.print("\". Exceeds the maximum number of variables in the Package Log.\n");
+        #endif
+        return;
     }
+    if ((mPackageSizeInBytes + varSize) <= PMM_TELEMETRY_MAX_PAYLOAD_LENGTH)
+    {
+        #if PMM_DEBUG_SERIAL
+            Serial.print("PmmPackage #2: Failed to add the variable \"");
+            Serial.print(variableName);
+            Serial.print("\". Exceeds the maximum payload length (tried to be ");
+            Serial.print((mPackageSizeInBytes + varSize));
+            Serial.print(", maximum is ");
+            Serial.print(PMM_TELEMETRY_MAX_PAYLOAD_LENGTH);
+            Serial.print(".");
+        #endif
+        return;
+    }
+
+    mVariableNameArray[mActualNumberVariables] = variableName;
+    mVariableTypeArray[mActualNumberVariables] = variableType;
+    mVariableSizeArray[mActualNumberVariables] = varSize;
+    mVariableAddressArray[mActualNumberVariables] = (uint8_t*) variableAddress;
+    mActualNumberVariables ++;
+    mPackageSizeInBytes += varSize;
 
 }
 
@@ -51,83 +82,89 @@ void PmmPackageLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packag
     includeVariableInPackage(packageTimeString, PMM_TELEMETRY_TYPE_UINT32, packageTimeMsPtr);
 }
 
-void PmmPackageLog::addMagnetometer(float* magnetometerArray[3])
+
+void PmmPackageLog::addMagnetometer(float magnetometerArray[3])
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
     const PROGMEM char* magnetometerXString = "magnetometerX(uT)";
-    const PROGMEM char* magnetometerYString = "magnetometerX(uT)";
-    const PROGMEM char* magnetometerZString = "magnetometerX(uT)";
-    includeVariableInPackage(magnetometerXString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[0]);
-    includeVariableInPackage(magnetometerYString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[1]);
-    includeVariableInPackage(magnetometerZString, PMM_TELEMETRY_TYPE_FLOAT, &magnetometerArray[2]);
+    const PROGMEM char* magnetometerYString = "magnetometerY(uT)";
+    const PROGMEM char* magnetometerZString = "magnetometerZ(uT)";
+    includeVariableInPackage(magnetometerXString, type, &magnetometerArray[0]);
+    includeVariableInPackage(magnetometerYString, type, &magnetometerArray[1]);
+    includeVariableInPackage(magnetometerZString, type, &magnetometerArray[2]);
 }
 
-void PmmPackageLog::addGyroscope(float* gyroscopeArray[3])
+void PmmPackageLog::addGyroscope(float gyroscopeArray[3])
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
     const PROGMEM char* gyroscopeXString = "gyroscopeX()";
     const PROGMEM char* gyroscopeYString = "gyroscopeY()";
     const PROGMEM char* gyroscopeZString = "gyroscopeZ()";
-    includeVariableInPackage(gyroscopeXString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[0]);
-    includeVariableInPackage(gyroscopeYString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[1]);
-    includeVariableInPackage(gyroscopeZString, PMM_TELEMETRY_TYPE_FLOAT, &gyroscopeArray[2]);
+    includeVariableInPackage(gyroscopeXString, type, &gyroscopeArray[0]);
+    includeVariableInPackage(gyroscopeYString, type, &gyroscopeArray[1]);
+    includeVariableInPackage(gyroscopeZString, type, &gyroscopeArray[2]);
 }
 
-void PmmPackageLog::addAccelerometer(float* accelerometerArray[3])
+void PmmPackageLog::addAccelerometer(float accelerometerArray[3])
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
     const PROGMEM char* accelerometerXString = "accelerometerX(m/s^2)";
     const PROGMEM char* accelerometerYString = "accelerometerY(m/s^2)";
     const PROGMEM char* accelerometerZString = "accelerometerZ(m/s^2)";
-    includeVariableInPackage(accelerometerXString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[0]);
-    includeVariableInPackage(accelerometerYString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[1]);
-    includeVariableInPackage(accelerometerZString, PMM_TELEMETRY_TYPE_FLOAT, &accelerometerArray[2]);
+    includeVariableInPackage(accelerometerXString, type, &accelerometerArray[0]);
+    includeVariableInPackage(accelerometerYString, type, &accelerometerArray[1]);
+    includeVariableInPackage(accelerometerZString, type, &accelerometerArray[2]);
 }
 
 void PmmPackageLog::addBarometer(float* barometer)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
-
-    includeVariableInPackage(barometerPressureString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray);
+    includeVariableInPackage(barometerPressureString, type, &barometer);
 
 }
 
-void PmmPackageLog::addAltitudeBarometer(float* altitudeBarometer)
+void PmmPackageLog::addAltitudeBarometer(float* altitudePressure)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* barometerAltitudeString = "barometerAltitude(m)";
-    includeVariableInPackage(barometerAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, &barometerArray);
+    includeVariableInPackage(barometerAltitudeString, type, &altitudePressure);
 }
 
 void PmmPackageLog::addThermometer(float* thermometerPtr)
 {
+    uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even CLEAR (change a variable instead of changing the function argument!) type definition!
     const PROGMEM char* thermometerString = "temperature(C)";
-    includeVariableInPackage(thermometerString, PMM_TELEMETRY_TYPE_FLOAT, thermometerPtr);
+    includeVariableInPackage(thermometerString, type, thermometerPtr);
 }
 
 void PmmPackageLog::addImu(pmmImuStructType *pmmImuStructPtr)
 {
-    addMagnetometer(&pmmImuStructPtr.magnetometer);
-    addGyroscope(&pmmImuStructPtr.gyroscope);
-    addAccelerometer(&pmmImuStructPtr.accelerometer);
-    addBarometer(&pmmImuStructPtr.barometer);
-    addAltitudeBarometer(&pmmImuStructPtr.altitude);
-    addThermometer(&pmmImuStructPtr.thermometer);
+    addMagnetometer(pmmImuStructPtr->magnetometerArray);
+    addGyroscope(pmmImuStructPtr->gyroscopeArray);
+    addAccelerometer(pmmImuStructPtr->accelerometerArray);
+    addBarometer(&pmmImuStructPtr->pressure);
+    addAltitudeBarometer(&pmmImuStructPtr->altitudePressure);
+    addThermometer(&pmmImuStructPtr->temperature);
 }
 
-void PmmPackageLog::addGps(pmmGpsStructType pmmGpsStruct)
+void PmmPackageLog::addGps(pmmGpsStructType* pmmGpsStruct)
 {
     #ifdef GPS_FIX_LOCATION
         const PROGMEM char* gpsLatitudeString = "gpsLatitude";
         const PROGMEM char* gpsLongitudeString = "gpsLongitude";
-        includeVariableInPackage(gpsLatitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.latitude));
-        includeVariableInPackage(gpsLongitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.longitude));
+        includeVariableInPackage(gpsLatitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->latitude));
+        includeVariableInPackage(gpsLongitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->longitude));
     #endif
 
     #ifdef GPS_FIX_ALTITUDE
         const PROGMEM char* gpsAltitudeString = "gpsAltitude(m)";
-        includeVariableInPackage(gpsAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.altitude));
+        includeVariableInPackage(gpsAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->altitude));
     #endif
 
     #ifdef GPS_FIX_SATELLITES
         const PROGMEM char* gpsSatellitesString = "gpsSatellites";
-        includeVariableInPackage(gpsSatellitesString, PMM_TELEMETRY_TYPE_UINT8, &(pmmGpsStruct.satellites));
+        includeVariableInPackage(gpsSatellitesString, PMM_TELEMETRY_TYPE_UINT8, &(pmmGpsStruct->satellites));
     #endif
 
     #ifdef GPS_FIX_SPEED
@@ -135,42 +172,57 @@ void PmmPackageLog::addGps(pmmGpsStructType pmmGpsStruct)
         const PROGMEM char* gpsNorthSpeedString = "gpsNorthSpeed(m/s)";
         const PROGMEM char* gpsEastSpeedString = "gpsEastSpeed(m/s)";
         const PROGMEM char* gpsHeadingDegreeString = "gpsHeadingDegree";
-        includeVariableInPackage(gpsHorizontalSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.horizontalSpeed));
-        includeVariableInPackage(gpsNorthSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.northSpeed));
-        includeVariableInPackage(gpsEastSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.eastSpeed));
-        includeVariableInPackage(gpsHeadingDegreeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct.headingDegree));
+        includeVariableInPackage(gpsHorizontalSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->horizontalSpeed));
+        includeVariableInPackage(gpsNorthSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->northSpeed));
+        includeVariableInPackage(gpsEastSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->eastSpeed));
+        includeVariableInPackage(gpsHeadingDegreeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->headingDegree));
 
         #ifdef GPS_FIX_ALTITUDE
             const PROGMEM char* gpsUpSpeedString = "gpsSpeedUp(m/s)";
-            includeVariableInPackage(gpsUpSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &pmmGpsStruct.upSpeed);
+            includeVariableInPackage(gpsUpSpeedString, PMM_TELEMETRY_TYPE_FLOAT, &pmmGpsStruct->upSpeed);
         #endif
     #endif
 }
 
 
 
-unsigned PmmPackageLog::returnNumberOfVariables()
-{
-    return mActualNumberVariables;
-}
+
 
 void PmmPackageLog::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
 {
     includeVariableInPackage(variableName, variableType, variableAddress);
 }
 
+uint8_t PmmPackageLog::getNumberOfVariables()
+{
+    return mActualNumberVariables;
+}
+
+uint8_t PmmPackageLog::getPackageSizeInBytes()
+{
+    return mPackageSizeInBytes;
+}
+
+const char** PmmPackageLog::getVariableNameArray()  { return mVariableNameArray;}
+uint8_t* PmmPackageLog::getVariableTypeArray()      { return mVariableTypeArray;}
+uint8_t* PmmPackageLog::getVariableSizeArray()      { return mVariableSizeArray;}
+void** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}
+
+
+
+#if PMM_DEBUG_SERIAL
 // Note for the 2 functions below:
 // There are faster ways to print the debugs, but since it isn't something that is going to be used frequently,
 // I (HB :) ) will spend my precious time on other stuffs)
-#if PMM_DEBUG_SERIAL
+
 void PmmPackageLog::debugPrintLogHeader()
 {
     unsigned variableIndex;
     char buffer[512]; // No static needed, as it is called only once.
     for (variableIndex = 0; variableIndex < mActualNumberVariables; variableIndex ++)
     {
-        strncat(buffer, mVariableName[variableIndex], 512);
-        Serial.print(buffer);
+        strncat(buffer, mVariableNameArray[variableIndex], 512);
+        Serial.println(buffer);
     }
 }
 void PmmPackageLog::debugPrintLogContent()
@@ -179,37 +231,37 @@ void PmmPackageLog::debugPrintLogContent()
     static char buffer[512]; // Static for optimization
     for (variableIndex = 0; variableIndex < mActualNumberVariables; variableIndex ++)
     {
-        switch(mVariableType[variableIndex])
+        switch(mVariableTypeArray[variableIndex])
         {
             case PMM_TELEMETRY_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%f,", buffer, *(float*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%f,", buffer, *(float*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu,", buffer, *(uint32_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%lu,", buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li,", buffer, *(int32_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%li,", buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u,", buffer, *(uint8_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%u,", buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i,", buffer, *(int8_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%i,", buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u,", buffer, *(uint16_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%u,", buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i,", buffer, *(int16_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%i,", buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT64:
-                snprintf(buffer, 512, "%s%llu,", buffer, *(uint64_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%llu,", buffer, *(uint64_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT64:
-                snprintf(buffer, 512, "%s%lli,", buffer, *(int64_t*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%lli,", buffer, *(int64_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%f,", buffer, *(double*) (mVariableAddress[variableIndex]));
+                snprintf(buffer, 512, "%s%f,", buffer, *(double*) (mVariableAddressArray[variableIndex]));
                 break;
             default:    // If none above,
                 snprintf(buffer, 512, "%s%s,", buffer, ">TYPE ERROR HERE!<");

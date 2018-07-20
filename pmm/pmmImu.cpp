@@ -1,120 +1,122 @@
-// GY-80 IMU Library especially written for use with Teensy 3.6
-// Code written by Marcelo Maronas @ Minerva Rockets (Federal University of Rio de Janeiro Rocketry Team) - February 19, 2018
-// Edited by Henrique Bruno @ Minerva Rockets - April 14, 2018
-// Using Adafruit Libraries.
-// Contact : marcelomaronas at poli.ufrj.br
-// For more codes : github.com/engmaronas
-#include <pmmConsts.h>
-#include <pmmImu.h>
-#include <pmmErrorsCentral.h>
+/* pmmImu.cpp
+ * Code for the Inertial Measure Unit (IMU!)
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
+#include <Wire.h>
+#include <I2Cdev.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <BMP085.h>
-#include <Wire.h>
-#include <I2Cdev.h>
+#include <pmmConsts.h>
+#include <pmmImu.h>
+#include <pmmErrorsCentral.h>
 
 PmmImu::PmmImu()
 {
-    mNextMillisBarometer = 0;
 }
 
-int PmmImu::initAccelerometer() //ADXL45 SETUP
+int PmmImu::initMpu()
 {
-    if(!mAccelerometer.begin()) /* Initialise the sensor */
-        return 1;
-    mAccelerometer.setRange(ADXL345_RANGE_16_G); /* Set the range to whatever is appropriate for your project */
-    return 0;
-}   //ADXL45 SETUP END
+    mMpu.initialize();
 
-int PmmImu::initGyroscope() //L2G4200D Setup
-{
-    if (!mGyroscope.init())
-        return 1;
+    if(mMpu.testConnection())
+    {
+        PMM_DEBUG_PRINT("PmmImu #1: MPU6050 INIT FAILED");
+        return 0;
+    }
 
-    mGyroscope.enableDefault();
-    return 0;
+    PMM_DEBUG_PRINT_MORE("PmmImu: MPU6050 INIT SUCCESS!");
+    return 1;
 }
+
+
 
 int PmmImu::initMagnetometer()
 {
-    if(!mMagnetometer.begin()) // Initialise the sensor
+    mMagnetometer.initialize();
+
+    if (mMagnetometer.testConnection())
+    {
+        PMM_DEBUG_PRINT("PmmImu #2: MAGNETOMETER INIT ERROR");
         return 1;
+    }
+
+    PMM_DEBUG_PRINT_MORE("PmmImu: MAGNETOMETER INIT SUCCESS!");
     return 0;
 }
 
-int PmmImu::initBMP()  //BMP085 Setup
+
+
+int PmmImu::initBmp()  //BMP085 Setup
 {
     mBarometer.initialize();
     if(!mBarometer.testConnection())
+    {
+        PMM_DEBUG_PRINT("PmmImu #3: BAROMETER INIT ERROR");
         return 1;
+    }
+    PMM_DEBUG_PRINT_MORE("PmmImu: BAROMETER INIT ERROR");
     return 0;
 }
+
+
 
 int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 {
+    mNextMillisBarometer = 0;
     mPmmErrorsCentral = pmmErrorsCentral;
-    if (initBMP())
+
+    Wire.begin(); // as seen in the sensors example!
+
+    int foundError = 0;
+
+    if (initBmp())
     {
-        mPmmErrorsCentral->setBarometerIsWorking(0);
-        //DEBUG_PRINT("BAROMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_BAROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+
+        mPmmErrorsCentral->reportErrorByCode(ERROR_BAROMETER_INIT);
+        foundError = 1;
     }
-    if (initAccelerometer())
+
+    if (initMpu())
     {
-        mPmmErrorsCentral->setAccelerometerIsWorking(0);
-        //DEBUG_PRINT("ACCELEROMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_ACCELEROMETER_INIT, 0, sdIsWorking, rfIsWorking);
+
+        mPmmErrorsCentral->reportErrorByCode(ERROR_ACCELEROMETER_INIT);
+        mPmmErrorsCentral->reportErrorByCode(ERROR_GYROSCOPE_INIT);
+        foundError = 1;
     }
-    if (initGyroscope())
-    {
-        mPmmErrorsCentral->setGyroscopeIsWorking(0);
-        //DEBUG_PRINT("GYROSCOPE INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_GYROSCOPE_INIT, 0, sdIsWorking, rfIsWorking);
-    }
+
     if (initMagnetometer())
     {
-        mPmmErrorsCentral->setMagnetometerIsWorking(0);
-        //DEBUG_PRINT("MAGNETOMETER INIT ERROR");
-        //pmmErrorsCentral.reportError(ERROR_MAGNETOMETER_INIT, 0, sdIsWorking, rfIsWorking);
+        mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
+        foundError = 1;
     }
-    return 0;
+    return foundError? 1: 0;
 }
 
 
 
-
-
-int PmmImu::updateGyroscope()
+int PmmImu::updateMpu()
 {
-    mGyroscope.read();
-
-    mPmmImuStruct.gyroscope[0] = mGyroscope.g.x;
-    mPmmImuStruct.gyroscope[1] = mGyroscope.g.y;
-    mPmmImuStruct.gyroscope[2] = mGyroscope.g.z;
+    mMpu.getMotion6(&mAccelerometerRaw[0], &mAccelerometerRaw[1], &mAccelerometerRaw[2], &mGyroscopeRaw[0], &mGyroscopeRaw[1], &mGyroscopeRaw[2]);
     return 0;
 }
 
-int PmmImu::updateAccelerometer()
-{
-    mAccelerometer.getEvent(&mEvent);
 
-    mPmmImuStruct.accelerometer[0] = mEvent.acceleration.x;
-    mPmmImuStruct.accelerometer[1] = mEvent.acceleration.y;
-    mPmmImuStruct.accelerometer[2] = mEvent.acceleration.z;
-    return 0;
-}
 
 int PmmImu::updateMagnetometer()
 {
-    mMagnetometer.getEvent(&mEvent);
-
-    mPmmImuStruct.magnetometer[0] = (float) mEvent.magnetic.x;
-    mPmmImuStruct.magnetometer[1] = (float) mEvent.magnetic.y;
-    mPmmImuStruct.magnetometer[2] = (float) mEvent.magnetic.z;
+    mMagnetometer.getHeading(&mMagnetometerRaw[0], &mMagnetometerRaw[1], &mMagnetometerRaw[2]);
+    mPmmImuStruct.headingRadian = atan2(mMagnetometerRaw[1], mMagnetometerRaw[0]); //argument is (mY, mX).
+    if(mPmmImuStruct.headingRadian < 0)
+        mPmmImuStruct.headingRadian += 2 * M_PI;
+    mPmmImuStruct.headingDegree = mPmmImuStruct.headingRadian * 180/M_PI;
     return 0;
 }
 
-int PmmImu::updateBMP()
+
+
+int PmmImu::updateBmp()
 {
     mBarometer.setControl(BMP085_MODE_TEMPERATURE);
 
@@ -125,31 +127,31 @@ int PmmImu::updateBMP()
     mBarometer.setControl(BMP085_MODE_PRESSURE_3);
 
     // read calibrated pressure value in Pascals (Pa)
-    mPmmImuStruct.barometer = mBarometer.getPressure();
+    mPmmImuStruct.pressure = mBarometer.getPressure();
 
     // calculate absolute altitude in meters based on known pressure
     // (may pass a second "sea level pressure" parameter here,
     // otherwise uses the standard value of 101325 Pa)
-    mPmmImuStruct.altitudeBarometer = mBarometer.getAltitude(pressure);
+    mPmmImuStruct.altitudePressure = mBarometer.getAltitude(mPmmImuStruct.pressure);
     return 0;
 }
 
 int PmmImu::update()
 {
     if (mPmmErrorsCentral->getAccelerometerIsWorking())//accelIsWorking)
-        getAccelerometer();
-
+        updateMpu();
+    /*
     if (mPmmErrorsCentral->getGyroscopeIsWorking())//gyroIsWorking)
         getGyroscope();
-
+    */
     if (mPmmErrorsCentral->getMagnetometerIsWorking())//magnIsWorking)
-        getMagnetometer();
+        updateMagnetometer();
 
     if (millis() >= mNextMillisBarometer)
     {
         mNextMillisBarometer = millis() + DELAY_MS_BAROMETER;
         if (mPmmErrorsCentral->getBarometerIsWorking())//baroIsWorking)
-            getBMP();
+            updateBmp();
     }
     return 0;
 }
@@ -160,23 +162,23 @@ int PmmImu::update()
 
 void PmmImu::getAccelerometer(float destinationArray[3])
 {
-    memcpy(destinationArray, mPmmImuStruct.accelerometer, 3);
+    memcpy(destinationArray, mPmmImuStruct.accelerometerArray, 3);
 }
 void PmmImu::getGyroscope(float destinationArray[3])
 {
-    memcpy(destinationArray, mPmmImuStruct.gyroscope, 3);
+    memcpy(destinationArray, mPmmImuStruct.gyroscopeArray, 3);
 }
 void PmmImu::getMagnetometer(float destinationArray[3])
 {
-    memcpy(destinationArray, mPmmImuStruct.magnetometer, 3);
+    memcpy(destinationArray, mPmmImuStruct.magnetometerArray, 3);
 }
 float PmmImu::getBarometer()
 {
-    return mPmmImuStruct.mBarometer;
+    return mPmmImuStruct.pressure;
 }
 float PmmImu::getAltitudeBarometer()
 {
-    return mPmmImuStruct.altitudeBarometer;
+    return mPmmImuStruct.altitudePressure;
 }
 float PmmImu::getTemperature()
 {
@@ -191,23 +193,23 @@ pmmImuStructType PmmImu::getImuStruct()
 
 float* PmmImu::getAccelerometerPtr()
 {
-    return &mPmmImuStruct.accelerometer;
+    return mPmmImuStruct.accelerometerArray;
 }
 float* PmmImu::getGyroscopePtr()
 {
-    return &mPmmImuStruct.gyroscope;
+    return mPmmImuStruct.gyroscopeArray;
 }
 float* PmmImu::getMagnetometerPtr()
 {
-    return &mPmmImuStruct.magnetometer;
+    return mPmmImuStruct.magnetometerArray;
 }
 float* PmmImu::getBarometerPtr()
 {
-    return &mPmmImuStruct.mBarometer;
+    return &mPmmImuStruct.pressure;
 }
 float* PmmImu::getAltitudeBarometerPtr()
 {
-    return &mPmmImuStruct.altitudeBarometer;
+    return &mPmmImuStruct.altitudePressure;
 }
 float* PmmImu::getTemperaturePtr()
 {
@@ -216,3 +218,4 @@ float* PmmImu::getTemperaturePtr()
 pmmImuStructType* PmmImu::getImuStructPtr()
 {
     return &mPmmImuStruct;
+}

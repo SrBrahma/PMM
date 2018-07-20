@@ -5,24 +5,29 @@
 #ifndef PMM_TELEMETRY_h
 #define PMM_TELEMETRY_h
 
+
 #include <Arduino.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmSd.h>
-
-#define PMM_TELEMETRY_PAYLOAD_LENGTH 255 // Must be 255. recv2() in RH_RF95.cpp.
+#include <pmmPackageLog.h>
 
 class PmmTelemetry
 {
+    //PmmTelemetry(); // https://stackoverflow.com/a/12927220
+
 private:
-    RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
-    uint8_t mRfPayload[PMM_TELEMETRY_PAYLOAD_LENGTH];
+    uint8_t mRfPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     PmmErrorsCentral *mPmmErrorsCentral;
+    PmmPackageLog *mPmmPackageLog;
+    RH_RF95 mRf95;
+    uint32_t mNextMillisPackageLog;
 
 public:
     PmmTelemetry();
-    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPackageLog);
     int update();
+    int updateReception();
+    int updateTransmission();
 
 };
 

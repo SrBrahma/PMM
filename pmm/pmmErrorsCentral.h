@@ -16,7 +16,6 @@ typedef enum
     ERROR_SD,
     ERROR_SD_WRITE,
     ERROR_RF_INIT,
-    ERROR_RF_SET_FREQ,
     ERROR_GPS,
     ERROR_ACCELEROMETER_INIT,
     ERROR_GYROSCOPE_INIT,
@@ -31,7 +30,6 @@ const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
     "SD init fail",             // ERROR_SD,
     "SD write fail",            // ERROR_SD_WRITE,
     "RF init fail",             // ERROR_RF_INIT,
-    "RF Set Freq fail",         // ERROR_RF_SET_FREQ,
     "GPS fail",                 // ERROR_GPS
     "Accelerometer init fail",  // ERROR_ACCELEROMETER_INIT,
     "Gyroscope init fail",      // ERROR_GYROSCOPE_INIT,
@@ -53,7 +51,7 @@ const PROGMEM char recuperationActivatedString[] = "Recuperation Activated!";
 class PmmErrorsCentral
 {
 private:
-    pmmErrorStructType mErrorsArray[ERRORS_ARRAY_SIZE]; // Total erros in the system.
+    pmmErrorStructType mErrorsStructArray[ERRORS_ARRAY_SIZE]; // Total erros in the system.
 
     int mActualNumberOfErrors; // Total errors in the system number
     int mSdIsWorking, mTelemetryIsWorking, mGpsIsWorking, mBarometerIsWorking, mAccelerometerIsWorking, mGyroscopeIsWorking, mMagnetometerIsWorking; // are int for faster access.
@@ -68,7 +66,7 @@ public:
     int init (const uint32_t* packageLogIdPtr);
 
     // Getters
-    pmmErrorStructType getErrorStruct(int errorIndex);  // Returns the struct of the error of the given index.
+    const pmmErrorStructType* getErrorsStructArray();
     void getErrorStructPtr(); // Returns the pointer of the struct
     int getNumberOfErrors();
     int getSdIsWorking();

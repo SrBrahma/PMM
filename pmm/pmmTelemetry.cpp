@@ -5,17 +5,21 @@
 #include <pmmTelemetry.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
+#include <pmmPackageLog.h>
 
 PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
     mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)
 {}
 
-int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
+int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPackageLog)
 {
-    mPmmErrorsCentral = pmmErrorsCentral;
-    RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
     int initCounter = 0;
-    int tempRfIsWorking = 1;
+
+    mPmmErrorsCentral = pmmErrorsCentral;
+    mPmmPackageLog = pmmPackageLog;
+
+    RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
+
     pinMode(PMM_PIN_RFM95_RST, OUTPUT);
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
 
@@ -30,12 +34,12 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     while (!mRf95.init()) // Keep trying! ...
     {
         #if PMM_DEBUG_SERIAL
-            Serial.print("LoRa didn't initialized, attempt number "); Serial.println(initCounter);
+            Serial.print("PmmTelemetry: LoRa didn't initialized, attempt number "); Serial.println(initCounter);
         #endif
         if (++initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
         {
             mPmmErrorsCentral->reportErrorByCode(ERROR_RF_INIT);
-            PMM_DEBUG_PRINT("LoRa didn't initialized after all these attempts.");
+            PMM_DEBUG_PRINT("PmmTelemetry #1: LoRa didn't initialized after all these attempts.");
             return 1;
         }
     }
@@ -43,19 +47,23 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     /* So it initialized! */
 
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
-    mRf95.setTxPower(23, false);
-    PMM_DEBUG_PRINT_MORE("LoRa initialized successfully!");
+    mRf95.setTxPower(10, false);
+    PMM_DEBUG_PRINT_MORE("PmmTelemetry: LoRa initialized successfully!");
+    return 0;
 }
 
 int PmmTelemetry::updateTransmission()
 {
-    if (millis() >= mNextMillisPackageLog)
+    uint8_t arr[4] = {1,2,3,4};
+    if (1) //millis() >= mNextMillisPackageLog)
     {
         mNextMillisPackageLog = millis() + 300;
         if (mPmmErrorsCentral->getTelemetryIsWorking())
         {
             //mPmmErrorsCentral->blinkRfLED(HIGH);
-            mRf95.sendArrayOfPointersOf4Bytes(mRfPayload, RF_WORDS_IN_PACKET);
+            mRf95.send(arr, 4);
+            //mRf95.sendArrayOfPointersOfSmartSizes(mPmmPackageLog->getVariableAddressArray(),
+            //mPmmPackageLog->getVariableSizeArray(), mPmmPackageLog->getNumberOfVariables(), mPmmPackageLog->getPackageSizeInBytes());
             //mPmmErrorsCentral->blinkRfLED(LOW);
         }
         return 1;

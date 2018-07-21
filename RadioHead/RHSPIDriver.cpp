@@ -105,15 +105,16 @@ void RHSPIDriver::spiBurstWriteArrayOfPointersOf4Bytes(uint8_t reg, uint8_t** sr
 }
 
 /* By Henrique Bruno - UFRJ Minerva Rockets*/
-void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t sizesArrayLength)
+void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables)
 {
     // uint8_t status = 0;
     ATOMIC_BLOCK_START;
     _spi.beginTransaction();
     digitalWrite(_slaveSelectPin, LOW);
     //status = below line was here
+    Serial.println("heythere!");
     _spi.transfer(reg | RH_SPI_WRITE_MASK); // Send the start address with the write mask on
-    while (sizesArrayLength--)
+    while (numberVariables--)
     {
         switch (*sizesArray) // Faster than a loop!
         {
@@ -142,9 +143,9 @@ void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t*
                 break;
             default: // Maybe will avoid random cosmic rays problems! (this isn't a proper error avoidance, time is always running out :P, but this is better than nothing)
                 break;
-            src++;
-        }
-
+        } // End of switch!
+        src++;
+        sizesArray++;
     }
     digitalWrite(_slaveSelectPin, HIGH);
     _spi.endTransaction();

@@ -3,9 +3,10 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <pmmConsts.h>
-#include <SdFat.h>
+
 #include <pmmSd.h>
 #include <pmmErrorsCentral.h>
+#include <SdFat.h>
 // Replace "weak" system yield() function.
 void PmmSd::yield()
 {
@@ -33,27 +34,23 @@ PmmSd::PmmSd()
 int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
-
-    if (mSdEx.init())
+        if (!mSdEx.begin())
     {
-        PMM_DEBUG_PRINT("SD init FAILED!");
+        PMM_DEBUG_PRINT("PmmSd #1: SD init failed!");
         mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
-    }
-    else
-    {
-        mFileId = setFilenameAutoId(FILENAME_BASE_PREFIX, FILENAME_BASE_SUFFIX);
-        #if PMM_DEBUG_SERIAL
-            char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
-            mPmmSd.getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
-            Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
-        #endif
+        return 1;
     }
 
-    if (!mSdEx.begin())
-        return 1; // Didnt initialized successfully
+    mFileId = setFilenameAutoId(PMM_SD_FILENAME_BASE_PREFIX, PMM_SD_FILENAME_BASE_SUFFIX);
+    #if PMM_DEBUG_SERIAL
+        char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+        getFilename(tempFilename, PMM_SD_FILENAME_MAX_LENGTH);
+        Serial.print("Filename is = \""); Serial.print(tempFilename); Serial.println("\"");
+    #endif
 
     // make sdEx the current volume.
     mSdEx.chvol();
+    PMM_DEBUG_PRINT_MORE("PmmSd: Initialized successfully!");
     return 0;
 }
 /* wt was that

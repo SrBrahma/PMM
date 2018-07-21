@@ -65,12 +65,13 @@ PmmGps::PmmGps(){}
 int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
-    Serial4.begin(9600);
+    Serial1.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
         mLastReadMillis = 0;
     #endif
     return 0;
+    PMM_DEBUG_PRINT_MORE("PmmGps: Initialized successfully!");
 }
 
 int PmmGps::update()

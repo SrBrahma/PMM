@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmSd.h>
+#include <pmmPackageLog.h>
 
 class PmmTelemetry
 {
@@ -18,12 +18,13 @@ class PmmTelemetry
 private:
     uint8_t mRfPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     PmmErrorsCentral *mPmmErrorsCentral;
+    PmmPackageLog *mPmmPackageLog;
     RH_RF95 mRf95;
     uint32_t mNextMillisPackageLog;
 
 public:
     PmmTelemetry();
-    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPackageLog);
     int update();
     int updateReception();
     int updateTransmission();

@@ -17,7 +17,7 @@
 #define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 /* [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
 computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
 the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket! */
-#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     3000 // The maximum wait time for the above option. Default is 3 seconds (3000ms).
+#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 3 seconds (3000ms).
 
 #if PMM_DEBUG_SERIAL
     #define PMM_DEBUG_PRINT(x) Serial.println(x)
@@ -34,15 +34,15 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  General
 // =======================================================================
-#define PMM_USE_BUZZER              1
-#define PMM_USE_LED_RECOVERY        1
-#define PMM_USE_LED_ERRORS          1
-#define PMM_USE_LED_ALL_OK_AND_RF   1
+#define PMM_USE_BUZZER              0
+#define PMM_USE_LED_RECOVERY        0
+#define PMM_USE_LED_ERRORS          0
+#define PMM_USE_LED_ALL_OK_AND_RF   0
 
-#define PMM_PIN_BUZZER                  9
-#define PMM_PIN_LED_RECOVERY            9
-#define PMM_PIN_LED_ERRORS              9
-#define PMM_PIN_ALL_OK_AND_TELEMETRY    9
+#define PMM_PIN_BUZZER                  99
+#define PMM_PIN_LED_RECOVERY            99
+#define PMM_PIN_LED_ERRORS              99
+#define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
 
 #define PMM_VARIABLE_STRING_LENGTH          22
 
@@ -54,7 +54,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 #define PMM_USE_SD                  1
 #define PMM_SD_FILENAME_MAX_LENGTH  64
 const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};
-const char FILENAME_BASE_SUFFIX[] = {".csv"};
+const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
 
 // =======================================================================
 //  Telemetry
@@ -74,9 +74,9 @@ const char PMM_TELEMETRY_HEADER_STRING[5]   = {"MSTR"};
 // =======================================================================
 #define PMM_RF_INIT_MAX_TRIES   10
 
-#define PMM_PIN_RFM95_CS        99
-#define PMM_PIN_RFM95_RST       99
-#define PMM_PIN_RFM95_INT       99
+#define PMM_PIN_RFM95_CS        9
+#define PMM_PIN_RFM95_RST       38
+#define PMM_PIN_RFM95_INT       5
 #define PMM_LORA_FREQUENCY      915.0
 
 // =======================================================================

@@ -328,7 +328,7 @@ bool RH_RF95::sendArrayOfPointersOf4Bytes(uint8_t** data, uint8_t number4BytesVa
     return true;
 }
 
-bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t sizesArrayLength, uint8_t totalByteSize)
+bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize)
 {
     //unsigned long timeTo = millis();
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
@@ -345,8 +345,9 @@ bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray
     spiWrite(RH_RF95_REG_00_FIFO, _txHeaderId);
     spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFlags);
     // The message data
-    spiBurstWriteArrayOfPointersOfSmartSizes(RH_RF95_REG_00_FIFO, data, sizesArray, sizesArrayLength);
-
+    spiBurstWriteArrayOfPointersOfSmartSizes(RH_RF95_REG_00_FIFO, data, sizesArray, numberVariables);
+    Serial.print("given i is = ");
+    Serial.println(totalByteSize);
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, totalByteSize + RH_RF95_HEADER_LEN);
 
     setModeTx(); // Start the transmitter

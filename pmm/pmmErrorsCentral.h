@@ -25,18 +25,7 @@ typedef enum
     ERRORS_CODE_AMOUNT
 } pmmErrorCodeType;
 
-const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
-    "No errors",                // OK,
-    "SD init fail",             // ERROR_SD,
-    "SD write fail",            // ERROR_SD_WRITE,
-    "RF init fail",             // ERROR_RF_INIT,
-    "GPS fail",                 // ERROR_GPS
-    "Accelerometer init fail",  // ERROR_ACCELEROMETER_INIT,
-    "Gyroscope init fail",      // ERROR_GYROSCOPE_INIT,
-    "Magnetometer init fail",   // ERROR_MAGNETOMETER_INIT,
-    "Barometer init fail",      // ERROR_BAROMETER_INIT
-    "Programming error"         // ERROR_PROGRAMMING
-};
+
 
 typedef struct
 {

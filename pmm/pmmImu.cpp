@@ -26,7 +26,7 @@ int PmmImu::initMpu()
         return 0;
     }
 
-    PMM_DEBUG_PRINT_MORE("PmmImu: MPU6050 INIT SUCCESS!");
+    PMM_DEBUG_PRINT_MORE("PmmImu: MPU6050 initialized successfully!");
     return 1;
 }
 
@@ -41,8 +41,8 @@ int PmmImu::initMagnetometer()
         PMM_DEBUG_PRINT("PmmImu #2: MAGNETOMETER INIT ERROR");
         return 1;
     }
-
-    PMM_DEBUG_PRINT_MORE("PmmImu: MAGNETOMETER INIT SUCCESS!");
+    //mMagnetometer.setMode(HMC5883L_MODE_CONTINUOUS); // works without.
+    PMM_DEBUG_PRINT_MORE("PmmImu: Magnetometer initialized successfully!");
     return 0;
 }
 
@@ -56,7 +56,7 @@ int PmmImu::initBmp()  //BMP085 Setup
         PMM_DEBUG_PRINT("PmmImu #3: BAROMETER INIT ERROR");
         return 1;
     }
-    PMM_DEBUG_PRINT_MORE("PmmImu: BAROMETER INIT ERROR");
+    PMM_DEBUG_PRINT_MORE("PmmImu: BMP initialized successfully!");
     return 0;
 }
 
@@ -73,14 +73,12 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 
     if (initBmp())
     {
-
         mPmmErrorsCentral->reportErrorByCode(ERROR_BAROMETER_INIT);
         foundError = 1;
     }
 
     if (initMpu())
     {
-
         mPmmErrorsCentral->reportErrorByCode(ERROR_ACCELEROMETER_INIT);
         mPmmErrorsCentral->reportErrorByCode(ERROR_GYROSCOPE_INIT);
         foundError = 1;
@@ -132,26 +130,37 @@ int PmmImu::updateBmp()
     // calculate absolute altitude in meters based on known pressure
     // (may pass a second "sea level pressure" parameter here,
     // otherwise uses the standard value of 101325 Pa)
-    mPmmImuStruct.altitudeBarometer = mBarometer.getAltitude(mPmmImuStruct.pressure);
+    mPmmImuStruct.altitudePressure = mBarometer.getAltitude(mPmmImuStruct.pressure);
     return 0;
 }
 
+#define PMM_DEBUG_PRINT_IMU_MORE 1
 int PmmImu::update()
 {
+
     if (mPmmErrorsCentral->getAccelerometerIsWorking())//accelIsWorking)
         updateMpu();
+        #if PMM_DEBUG_PRINT_IMU_MORE
+            PMM_DEBUG_PRINT("PmmImu: Mpu updated!");
+        #endif
     /*
     if (mPmmErrorsCentral->getGyroscopeIsWorking())//gyroIsWorking)
         getGyroscope();
     */
     if (mPmmErrorsCentral->getMagnetometerIsWorking())//magnIsWorking)
         updateMagnetometer();
+        #if PMM_DEBUG_PRINT_IMU_MORE
+            PMM_DEBUG_PRINT("PmmImu: Magnetometer updated!");
+        #endif
 
     if (millis() >= mNextMillisBarometer)
     {
         mNextMillisBarometer = millis() + DELAY_MS_BAROMETER;
         if (mPmmErrorsCentral->getBarometerIsWorking())//baroIsWorking)
             updateBmp();
+            #if PMM_DEBUG_PRINT_IMU_MORE
+                PMM_DEBUG_PRINT("PmmImu: Barometer updated!");
+            #endif
     }
     return 0;
 }
@@ -178,7 +187,7 @@ float PmmImu::getBarometer()
 }
 float PmmImu::getAltitudeBarometer()
 {
-    return mPmmImuStruct.altitudeBarometer;
+    return mPmmImuStruct.altitudePressure;
 }
 float PmmImu::getTemperature()
 {
@@ -209,7 +218,7 @@ float* PmmImu::getBarometerPtr()
 }
 float* PmmImu::getAltitudeBarometerPtr()
 {
-    return &mPmmImuStruct.altitudeBarometer;
+    return &mPmmImuStruct.altitudePressure;
 }
 float* PmmImu::getTemperaturePtr()
 {

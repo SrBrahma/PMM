@@ -18,17 +18,17 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPac
     mPmmErrorsCentral = pmmErrorsCentral;
     mPmmPackageLog = pmmPackageLog;
 
-    RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
+    //RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
 
     pinMode(PMM_PIN_RFM95_RST, OUTPUT);
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
 
     /* These delays are the default of the lora code. Maybe they aren't even needed. */
-    delay(100);
-    digitalWrite(PMM_PIN_RFM95_RST, LOW);
-    delay(10);
-    digitalWrite(PMM_PIN_RFM95_RST, HIGH);
-    delay(10);
+    //delay(100);
+    //digitalWrite(PMM_PIN_RFM95_RST, LOW);
+    //delay(10);
+    //digitalWrite(PMM_PIN_RFM95_RST, HIGH);
+    //delay(10);
 
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
@@ -61,7 +61,13 @@ int PmmTelemetry::updateTransmission()
         if (mPmmErrorsCentral->getTelemetryIsWorking())
         {
             //mPmmErrorsCentral->blinkRfLED(HIGH);
+            PMM_DEBUG_PRINT("SENDING!");
             mRf95.send(arr, 4);
+            PMM_DEBUG_PRINT("SENT 1!");
+            sei();
+            mRf95.waitPacketSent();
+            PMM_DEBUG_PRINT("SENT 2");
+
             //mRf95.sendArrayOfPointersOfSmartSizes(mPmmPackageLog->getVariableAddressArray(),
             //mPmmPackageLog->getVariableSizeArray(), mPmmPackageLog->getNumberOfVariables(), mPmmPackageLog->getPackageSizeInBytes());
             //mPmmErrorsCentral->blinkRfLED(LOW);

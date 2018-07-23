@@ -28,6 +28,10 @@ RH_RF95::RH_RF95(uint8_t slaveSelectPin, uint8_t interruptPin, RHGenericSPI& spi
     RHSPIDriver(slaveSelectPin, spi),
     _rxBufValid(0)
 {
+    Serial.print("cs is = ");
+    Serial.println(slaveSelectPin);
+    Serial.print("int is = ");
+    Serial.println(interruptPin);
     _interruptPin = interruptPin;
     _myInterruptIndex = 0xff; // Not allocated yet
 }

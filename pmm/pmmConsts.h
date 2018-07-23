@@ -51,7 +51,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 
 
-#define PMM_USE_SD                  1
+#define PMM_USE_SD                  0
 #define PMM_SD_FILENAME_MAX_LENGTH  64
 const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};
 const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
@@ -74,9 +74,9 @@ const char PMM_TELEMETRY_HEADER_STRING[5]   = {"MSTR"};
 // =======================================================================
 #define PMM_RF_INIT_MAX_TRIES   10
 
-#define PMM_PIN_RFM95_CS        9
+#define PMM_PIN_RFM95_CS        10
 #define PMM_PIN_RFM95_RST       38
-#define PMM_PIN_RFM95_INT       5
+#define PMM_PIN_RFM95_INT       6
 #define PMM_LORA_FREQUENCY      915.0
 
 // =======================================================================

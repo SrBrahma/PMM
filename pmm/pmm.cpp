@@ -67,7 +67,7 @@ void Pmm::init()
     #if PMM_DEBUG_SERIAL
         unsigned long serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
-        Serial.println("Serial initialized!");
+        Serial.println("Pmm: Serial initialized!");
         #if PMM_DEBUG_SERIAL_TIMEOUT_ENABLED
         while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_SERIAL_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
 
@@ -100,13 +100,14 @@ void Pmm::init()
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
+    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
     mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
-    //mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
-    //mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
+
+    mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
 
 
 
-    PMM_DEBUG_PRINT("\nMinerva Rockets - UFRJ");
+    PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmPackageLog.debugPrintLogHeader();
     // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }

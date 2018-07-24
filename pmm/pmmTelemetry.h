@@ -20,7 +20,8 @@ private:
     PmmErrorsCentral *mPmmErrorsCentral;
     PmmPackageLog *mPmmPackageLog;
     RH_RF95 mRf95;
-    uint32_t mNextMillisPackageLog;
+    uint32_t mPreviousPackageLogTransmissionMillis;
+    uint32_t mPackageLogDelayMillis;
 
 public:
     PmmTelemetry();

@@ -42,6 +42,8 @@ private:
     int16_t mAccelerometerRaw[3];
     int16_t mGyroscopeRaw[3];
 
+    float mAccelerometerScale;
+    float mGyroscopeScale;
 
     unsigned long mNextMillisBarometer;
     PmmErrorsCentral *mPmmErrorsCentral;
@@ -55,6 +57,7 @@ private:
     int updateMagnetometer();
     int updateBmp();
 
+    int updateScales();
 public:
     PmmImu();
     /*

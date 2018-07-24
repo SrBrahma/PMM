@@ -103,9 +103,9 @@ void PmmPackageLog::addMagnetometer(float magnetometerArray[3])
 void PmmPackageLog::addGyroscope(float gyroscopeArray[3])
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
-    const PROGMEM char* gyroscopeXString = "gyroscopeX()";
-    const PROGMEM char* gyroscopeYString = "gyroscopeY()";
-    const PROGMEM char* gyroscopeZString = "gyroscopeZ()";
+    const PROGMEM char* gyroscopeXString = "gyroscopeX(degree/s)";
+    const PROGMEM char* gyroscopeYString = "gyroscopeY(degree/s)";
+    const PROGMEM char* gyroscopeZString = "gyroscopeZ(degree/s)";
     includeVariableInPackage(gyroscopeXString, type, &gyroscopeArray[0]);
     includeVariableInPackage(gyroscopeYString, type, &gyroscopeArray[1]);
     includeVariableInPackage(gyroscopeZString, type, &gyroscopeArray[2]);
@@ -114,9 +114,9 @@ void PmmPackageLog::addGyroscope(float gyroscopeArray[3])
 void PmmPackageLog::addAccelerometer(float accelerometerArray[3])
 {
     uint8_t type = PMM_TELEMETRY_TYPE_FLOAT; // For an even faster (Change ONE line instead of THREE!) type definition!
-    const PROGMEM char* accelerometerXString = "accelerometerX(m/s^2)";
-    const PROGMEM char* accelerometerYString = "accelerometerY(m/s^2)";
-    const PROGMEM char* accelerometerZString = "accelerometerZ(m/s^2)";
+    const PROGMEM char* accelerometerXString = "accelerometerX(g)";
+    const PROGMEM char* accelerometerYString = "accelerometerY(g)";
+    const PROGMEM char* accelerometerZString = "accelerometerZ(g)";
     includeVariableInPackage(accelerometerXString, type, &accelerometerArray[0]);
     includeVariableInPackage(accelerometerYString, type, &accelerometerArray[1]);
     includeVariableInPackage(accelerometerZString, type, &accelerometerArray[2]);
@@ -146,9 +146,10 @@ void PmmPackageLog::addThermometer(float* thermometerPtr)
 
 void PmmPackageLog::addImu(pmmImuStructType *pmmImuStructPtr)
 {
-    addMagnetometer(pmmImuStructPtr->magnetometerArray);
-    addGyroscope(pmmImuStructPtr->gyroscopeArray);
     addAccelerometer(pmmImuStructPtr->accelerometerArray);
+    addGyroscope(pmmImuStructPtr->gyroscopeArray);
+    addMagnetometer(pmmImuStructPtr->magnetometerArray);
+
     addBarometer(&pmmImuStructPtr->pressure);
     addAltitudeBarometer(&pmmImuStructPtr->altitudePressure);
     addThermometer(&pmmImuStructPtr->temperature);
@@ -237,46 +238,47 @@ void PmmPackageLog::debugPrintLogContent()
 {
     unsigned variableIndex;
     static char buffer[512]; // Static for optimization
+    buffer[0] = '\0';
     for (variableIndex = 0; variableIndex < mActualNumberVariables; variableIndex ++)
     {
         switch(mVariableTypeArray[variableIndex])
         {
             case PMM_TELEMETRY_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%f,", buffer, *(float*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%f, ", buffer, *(float*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu,", buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%lu, ", buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li,", buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%li, ", buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u,", buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u, ", buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i,", buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i, ", buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u,", buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u, ", buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i,", buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i, ", buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_UINT64:
-                snprintf(buffer, 512, "%s%llu,", buffer, *(uint64_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%llu, ", buffer, *(uint64_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_INT64:
-                snprintf(buffer, 512, "%s%lli,", buffer, *(int64_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%lli, ", buffer, *(int64_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_TELEMETRY_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%f,", buffer, *(double*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%f, ", buffer, *(double*) (mVariableAddressArray[variableIndex]));
                 break;
             default:    // If none above,
-                snprintf(buffer, 512, "%s%s,", buffer, ">TYPE ERROR HERE!<");
+                snprintf(buffer, 512, "%s%s, ", buffer, ">TYPE ERROR HERE!<");
                 break;
         } // switch end
-        Serial.println(buffer);
     } // for loop end
+    Serial.println(buffer);
 } // end of function debugPrintLogContent()
 
 

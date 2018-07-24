@@ -16,6 +16,44 @@ PmmImu::PmmImu()
 {
 }
 
+int PmmImu::updateScales() // https://electronics.stackexchange.com/a/176705
+// The I2CDdev lib says the sensitivity of the accelerometer is 8k for the 2g, but it's wrong!
+// It's actually 16k, as 16k * 2(g) = 32k, the half of 64k (2^16, the register size), as it is signed.
+{
+    switch(mMpu.getFullScaleAccelRange())
+    {
+        case MPU6050_ACCEL_FS_2:
+            mAccelerometerScale = 16384;
+            break;
+        case MPU6050_ACCEL_FS_4:
+            mAccelerometerScale = 8192;
+            break;
+        case MPU6050_ACCEL_FS_8:
+            mAccelerometerScale = 4096;
+            break;
+        case MPU6050_ACCEL_FS_16:
+            mAccelerometerScale = 2048;
+            break;
+    }
+
+    switch(mMpu.getFullScaleGyroRange())
+    {
+        case MPU6050_GYRO_FS_250:
+            mGyroscopeScale = 131;
+            break;
+        case MPU6050_GYRO_FS_500:
+            mGyroscopeScale = 65.5;
+            break;
+        case MPU6050_GYRO_FS_1000:
+            mGyroscopeScale = 32.8;
+            break;
+        case MPU6050_GYRO_FS_2000:
+            mGyroscopeScale = 16.4;
+            break;
+    }
+    return 0;
+}
+
 int PmmImu::initMpu()
 {
     mMpu.initialize();
@@ -23,11 +61,11 @@ int PmmImu::initMpu()
     if(mMpu.testConnection())
     {
         PMM_DEBUG_PRINT("PmmImu #1: MPU6050 INIT FAILED");
-        return 0;
+        return 1;
     }
 
-    PMM_DEBUG_PRINT_MORE("PmmImu: MPU6050 initialized successfully!");
-    return 1;
+    PMM_DEBUG_PRINT_MORE("PmmImu [M]: MPU6050 initialized successfully!");
+    return 0;
 }
 
 
@@ -42,7 +80,7 @@ int PmmImu::initMagnetometer()
         return 1;
     }
     //mMagnetometer.setMode(HMC5883L_MODE_CONTINUOUS); // works without.
-    PMM_DEBUG_PRINT_MORE("PmmImu: Magnetometer initialized successfully!");
+    PMM_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer initialized successfully!");
     return 0;
 }
 
@@ -56,7 +94,7 @@ int PmmImu::initBmp()  //BMP085 Setup
         PMM_DEBUG_PRINT("PmmImu #3: BAROMETER INIT ERROR");
         return 1;
     }
-    PMM_DEBUG_PRINT_MORE("PmmImu: BMP initialized successfully!");
+    PMM_DEBUG_PRINT_MORE("PmmImu [M]: BMP initialized successfully!");
     return 0;
 }
 
@@ -89,6 +127,9 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
         mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
         foundError = 1;
     }
+
+    updateScales();
+
     return foundError? 1: 0;
 }
 
@@ -97,6 +138,15 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 int PmmImu::updateMpu()
 {
     mMpu.getMotion6(&mAccelerometerRaw[0], &mAccelerometerRaw[1], &mAccelerometerRaw[2], &mGyroscopeRaw[0], &mGyroscopeRaw[1], &mGyroscopeRaw[2]);
+
+    mPmmImuStruct.accelerometerArray[0] = mAccelerometerRaw[0] / mAccelerometerScale;
+    mPmmImuStruct.accelerometerArray[1] = mAccelerometerRaw[1] / mAccelerometerScale;
+    mPmmImuStruct.accelerometerArray[2] = mAccelerometerRaw[2] / mAccelerometerScale;
+
+    mPmmImuStruct.gyroscopeArray[0] = mGyroscopeRaw[0] / mGyroscopeScale;
+    mPmmImuStruct.gyroscopeArray[1] = mGyroscopeRaw[1] / mGyroscopeScale;
+    mPmmImuStruct.gyroscopeArray[2] = mGyroscopeRaw[2] / mGyroscopeScale;
+
     return 0;
 }
 
@@ -134,24 +184,27 @@ int PmmImu::updateBmp()
     return 0;
 }
 
-#define PMM_DEBUG_PRINT_IMU_MORE 1
 int PmmImu::update()
 {
 
     if (mPmmErrorsCentral->getAccelerometerIsWorking())//accelIsWorking)
+    {
         updateMpu();
         #if PMM_DEBUG_PRINT_IMU_MORE
-            PMM_DEBUG_PRINT("PmmImu: Mpu updated!");
+            PMM_DEBUG_PRINT_MORE("PmmImu [M]: Mpu updated!");
         #endif
+    }
     /*
     if (mPmmErrorsCentral->getGyroscopeIsWorking())//gyroIsWorking)
         getGyroscope();
     */
     if (mPmmErrorsCentral->getMagnetometerIsWorking())//magnIsWorking)
+    {
         updateMagnetometer();
         #if PMM_DEBUG_PRINT_IMU_MORE
-            PMM_DEBUG_PRINT("PmmImu: Magnetometer updated!");
+            PMM_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer updated!");
         #endif
+    }
 
     if (millis() >= mNextMillisBarometer)
     {
@@ -159,7 +212,7 @@ int PmmImu::update()
         if (mPmmErrorsCentral->getBarometerIsWorking())//baroIsWorking)
             updateBmp();
             #if PMM_DEBUG_PRINT_IMU_MORE
-                PMM_DEBUG_PRINT("PmmImu: Barometer updated!");
+                PMM_DEBUG_PRINT_MORE("PmmImu [M]: Barometer updated!");
             #endif
     }
     return 0;

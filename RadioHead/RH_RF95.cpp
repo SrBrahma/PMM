@@ -350,8 +350,7 @@ bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray
     spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFlags);
     // The message data
     spiBurstWriteArrayOfPointersOfSmartSizes(RH_RF95_REG_00_FIFO, data, sizesArray, numberVariables);
-    Serial.print("given i is = ");
-    Serial.println(totalByteSize);
+
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, totalByteSize + RH_RF95_HEADER_LEN);
 
     setModeTx(); // Start the transmitter

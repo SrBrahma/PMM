@@ -112,7 +112,6 @@ void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t*
     _spi.beginTransaction();
     digitalWrite(_slaveSelectPin, LOW);
     //status = below line was here
-    Serial.println("heythere!");
     _spi.transfer(reg | RH_SPI_WRITE_MASK); // Send the start address with the write mask on
     while (numberVariables--)
     {

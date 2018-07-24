@@ -14,6 +14,7 @@ PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
 int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPackageLog)
 {
     int initCounter = 0;
+    mPreviousPackageLogTransmissionMillis = mPackageLogDelayMillis = 0;
 
     mPmmErrorsCentral = pmmErrorsCentral;
     mPmmPackageLog = pmmPackageLog;
@@ -24,11 +25,11 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPac
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
 
     /* These delays are the default of the lora code. Maybe they aren't even needed. */
-    //delay(100);
-    //digitalWrite(PMM_PIN_RFM95_RST, LOW);
-    //delay(10);
-    //digitalWrite(PMM_PIN_RFM95_RST, HIGH);
-    //delay(10);
+    delay(100);
+    digitalWrite(PMM_PIN_RFM95_RST, LOW);
+    delay(10);
+    digitalWrite(PMM_PIN_RFM95_RST, HIGH);
+    delay(10);
 
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
@@ -54,24 +55,40 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral, PmmPackageLog *pmmPac
 
 int PmmTelemetry::updateTransmission()
 {
-    uint8_t arr[4] = {1,2,3,4};
-    if (1) //millis() >= mNextMillisPackageLog)
+    uint32_t tempMillis;
+
+    if (millis() >= mPreviousPackageLogTransmissionMillis + mPackageLogDelayMillis)
     {
-        mNextMillisPackageLog = millis() + 300;
+        tempMillis = millis();
+
+        mRf95.waitPacketSent();
+
+        mPackageLogDelayMillis += millis() - tempMillis;
+
+        #if PMM_DEBUG_SERIAL_MORE
+            Serial.print("PmmTelemetry [M]: Time taken waiting previous package to be sent = ");
+            Serial.print(millis() - tempMillis);
+            Serial.println("ms.");
+
+            Serial.print("PmmTelemetry [M]: Delay is = ");
+            Serial.print(mPackageLogDelayMillis);
+            Serial.println("ms.");
+        #endif
+
+
         if (mPmmErrorsCentral->getTelemetryIsWorking())
         {
             //mPmmErrorsCentral->blinkRfLED(HIGH);
-            PMM_DEBUG_PRINT("SENDING!");
-            mRf95.send(arr, 4);
-            PMM_DEBUG_PRINT("SENT 1!");
-            sei();
-            mRf95.waitPacketSent();
-            PMM_DEBUG_PRINT("SENT 2");
+            //PMM_DEBUG_PRINT("SENDING!");
+            mRf95.sendArrayOfPointersOfSmartSizes(mPmmPackageLog->getVariableAddressArray(), mPmmPackageLog->getVariableSizeArray(),
+                                                  mPmmPackageLog->getNumberOfVariables(), mPmmPackageLog->getPackageSizeInBytes());
+            //mRf95.send(arr, 4);
 
-            //mRf95.sendArrayOfPointersOfSmartSizes(mPmmPackageLog->getVariableAddressArray(),
-            //mPmmPackageLog->getVariableSizeArray(), mPmmPackageLog->getNumberOfVariables(), mPmmPackageLog->getPackageSizeInBytes());
+            //PMM_DEBUG_PRINT("SENT 2");
+
             //mPmmErrorsCentral->blinkRfLED(LOW);
         }
+        mPreviousPackageLogTransmissionMillis = millis();
         return 1;
     }
     return 0;

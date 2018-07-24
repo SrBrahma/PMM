@@ -31,6 +31,8 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
     #define PMM_DEBUG_PRINT_MORE(x) do {} while (0)
 #endif
 
+#define PMM_DEBUG_PRINT_IMU_MORE 1 // Prints "barometer updated!" etc
+
 // =======================================================================
 //  General
 // =======================================================================

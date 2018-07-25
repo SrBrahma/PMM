@@ -44,6 +44,9 @@ private:
 
     float mAccelerometerScale;
     float mGyroscopeScale;
+    float mMagnetometerScale;
+    
+    float mMagnetometerDeclinationRad;
 
     unsigned long mNextMillisBarometer;
     PmmErrorsCentral *mPmmErrorsCentral;

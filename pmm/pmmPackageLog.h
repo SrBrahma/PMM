@@ -47,9 +47,11 @@ private:
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
+    uint16_t mMlinStringCrc;
     uint8_t mActualNumberVariables;
     uint8_t mPackageSizeInBytes;
 
+    void updateMlinStringCrc();
 public:
     PmmPackageLog();
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);

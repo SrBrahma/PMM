@@ -1,8 +1,12 @@
 /* pmmPackageLog.cpp
- * Code for the Inertial Measure Unit (IMU!)
+ * Defines the Package Log (MLOG) and the Package Log Information (MLIN).
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+#define PMM_PACKAGE_LOG_DATA_INDEX 2
+// 0 is MLOG
+// 1 is MLIN String CRC
+// 2 is data (PMM_PACKAGE_LOG_DATA_INDEX)
 #include <crc16.h>
 #include <pmmPackageLog.h>
 #include <pmmConsts.h>
@@ -13,9 +17,25 @@ PmmPackageLog::PmmPackageLog()
 {
     mPackageSizeInBytes = 0;
     mActualNumberVariables = 0;
+
+    const PROGMEM char* packageLogHeader = "packageLogHeader"; // It isn't actually used. But will leave it for the future. (CMON 11 BYTES AT PROGMEM IS NOTHING)
+    addCustomVariable(packageLogHeader, PMM_TELEMETRY_TYPE_UINT32, (void*)PMM_TELEMETRY_HEADER_LOG); // MLOG, the header. (void*) is to convert const* void to void*.
+
+    const PROGMEM char* mlinStrincCrc = "mlinStrCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
+    addCustomVariable(mlinStrincCrc, PMM_TELEMETRY_TYPE_UINT16, &mMlinStringCrc); // MLIN String CRC
 }
 
 
+
+void PmmPackageLog::updateMlinStringCrc()
+{
+    char buffer[512] = {0}; // No static needed, as it is called only once.
+    unsigned variableIndex;
+    for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX; variableIndex < mActualNumberVariables; variableIndex ++)
+        strncat(buffer, mVariableNameArray[variableIndex], 512);
+
+    mMlinStringCrc = crc16(buffer, strlen(buffer));
+}
 
 uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 {
@@ -80,6 +100,8 @@ void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t v
     mActualNumberVariables ++;
     mPackageSizeInBytes += varSize;
 
+    if (mActualNumberVariables > PMM_PACKAGE_LOG_DATA_INDEX) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
+        updateMlinStringCrc(); // Updates the Mlin string CRC.
 }
 
 void PmmPackageLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
@@ -228,14 +250,19 @@ void PmmPackageLog::debugPrintLogHeader()
 {
     unsigned variableIndex;
     char buffer[512] = {0}; // No static needed, as it is called only once.
-    if (mActualNumberVariables > 1)
-        snprintf(buffer, 512, "%s", mVariableNameArray[0]);
-    for (variableIndex = 1; variableIndex < mActualNumberVariables; variableIndex ++)
+
+    if (mActualNumberVariables > PMM_PACKAGE_LOG_DATA_INDEX)
+        snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PACKAGE_LOG_DATA_INDEX]);
+
+    for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX + 1; variableIndex < mActualNumberVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }
     Serial.println(buffer);
 }
+
+
+
 void PmmPackageLog::debugPrintLogContent()
 {
     unsigned variableIndex;

@@ -1,15 +1,14 @@
+/* crc16.h
+ * Code for a CRC16 calculation.
+ * The credits for it goes to the author, found on the Stack Overflow link in crc16.cpp.
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #ifndef CRC16_h
 #define CRC16_h
-/*
-//                                      16   12   5
-// this is the CCITT CRC 16 polynomial X  + X  + X  + 1.
-// This works out to be 0x1021, but the way the algorithm works
-// lets us use 0x8408 (the reverse of the bit pattern).  The high
-// bit is always assumed to be set, thus we only use 16 bits to
-// represent the 17 bit value.
-*/
+/* See the crc16.cpp for some texts. */
+
 #include <stdint.h>
 
-uint16_t crc16(char *data_p, unsigned short length);
+uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = 0xFFFF);
 
 #endif

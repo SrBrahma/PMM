@@ -34,7 +34,7 @@ void PmmPackageLog::updateMlinStringCrc()
     for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX; variableIndex < mActualNumberVariables; variableIndex ++)
         strncat(buffer, mVariableNameArray[variableIndex], 512);
 
-    mMlinStringCrc = crc16(buffer, strlen(buffer));
+    //mMlinStringCrc = crc16(buffer, strlen(buffer));
 }
 
 uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)

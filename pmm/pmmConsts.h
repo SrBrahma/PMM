@@ -17,7 +17,7 @@
 #define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 /* [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
 computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
 the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket! */
-#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 3 seconds (3000ms).
+#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
 
 #if PMM_DEBUG_SERIAL
     #define PMM_DEBUG_PRINT(x) Serial.println(x)

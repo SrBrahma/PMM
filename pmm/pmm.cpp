@@ -65,8 +65,6 @@
 
 void Pmm::init()
 {
-
-
     #if PMM_DEBUG_SERIAL
         unsigned long serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
@@ -98,8 +96,6 @@ void Pmm::init()
 
     mPmmImu.init(&mPmmErrorsCentral); /* IMU */
 
-
-
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
@@ -107,15 +103,11 @@ void Pmm::init()
     mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
     mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
 
-
-
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmPackageLog.debugPrintLogHeader();
     // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
-
-int i = 0;
 void Pmm::update()
 {
     //PMM_DEBUG_PRINT_MORE("Pmm [M]: Looped!");
@@ -148,7 +140,6 @@ void Pmm::update()
 
     //mPmmErrorsCentral.updateLedsAndBuzzer();
     mPackageLogId ++;
-
 
     /*if (packetIDul % 100 == 0)
     {

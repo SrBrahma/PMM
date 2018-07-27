@@ -28,6 +28,14 @@
 #define PMM_TELEMETRY_TYPE_UINT64   9
 #define PMM_TELEMETRY_TYPE_DOUBLE   10
 
+#define PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH 8 // ["MLIN"][CRC of the actual packet: 2B][Packet X of Y - 1: 1B]
+// Header for all packets:
+// [0~3] Package Header
+// [4~5] CRC of the packet
+// [6] Packet X
+// [7] of a total of (Y - 1)
+#define PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH
+#define PMM_TELEMETRY_PACKAGE_LOG_INFO_RAW_MAX_LENGTH 1024
 
 const char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] = {"altitude(m)"};
 const char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] = {"gpsLongitude"};
@@ -41,6 +49,7 @@ private:
 
     uint8_t variableTypeToVariableSize(uint8_t variableType);
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
+    void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
 
     const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
@@ -51,28 +60,24 @@ private:
     uint8_t mActualNumberVariables;
     uint8_t mPackageSizeInBytes;
 
+    char mPackageLogInfoRawArray[PMM_TELEMETRY_PACKAGE_LOG_INFO_RAW_MAX_LENGTH];
+    uint16_t mPackageLogInfoArrayLength;
+    uint8_t mPackageLogInfoNumberOfPackets;
+
+    void updatePackageLogInfoRaw();
     void updateMlinStringCrc();
 public:
     PmmPackageLog();
+    uint8_t getPackageLogInfoInTelemetryFormat(uint8_t* arrayToCopyTo, uint8_t requestedPacket);
+
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
-    #define PMM_PACKAGE_LOG_MAGNETOMETER_TYPE float
-    void addMagnetometer(PMM_PACKAGE_LOG_MAGNETOMETER_TYPE magnetometerArray[3]);
-
-    #define PMM_PACKAGE_LOG_GYROSCOPE_TYPE float
-    void addGyroscope(PMM_PACKAGE_LOG_GYROSCOPE_TYPE gyroscopeArray[3]);
-
-    #define PMM_PACKAGE_LOG_ACCELEROMETER_TYPE float
-    void addAccelerometer(PMM_PACKAGE_LOG_ACCELEROMETER_TYPE accelerometerArray[3]);
-
-    #define PMM_PACKAGE_LOG_BAROMETER_TYPE float
-    void addBarometer(PMM_PACKAGE_LOG_BAROMETER_TYPE* barometerPtr);
-
-    #define PMM_PACKAGE_LOG_ALTITUDE_BAROMETER_TYPE float
-    void addAltitudeBarometer(PMM_PACKAGE_LOG_ALTITUDE_BAROMETER_TYPE* altitudePtr);
-
-    #define PMM_PACKAGE_THERMOMETER_TYPE float
-    void addThermometer(PMM_PACKAGE_THERMOMETER_TYPE* thermometerPtr);
+    void addMagnetometer(void* magnetometerArray);
+    void addGyroscope(void* gyroscopeArray);
+    void addAccelerometer(void* accelerometerArray);
+    void addBarometer(void* barometerPtr);
+    void addAltitudeBarometer(void* altitudePtr);
+    void addThermometer(void* thermometerPtr);
 
     void addImu(pmmImuStructType* pmmImuStructPtr);
     void addGps(pmmGpsStructType* pmmGpsStruct);

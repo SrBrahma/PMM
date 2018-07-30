@@ -62,6 +62,7 @@
 #endif
 
 
+
 void Pmm::init()
 {
     #if PMM_DEBUG_SERIAL
@@ -95,38 +96,31 @@ void Pmm::init()
 
     mPmmImu.init(&mPmmErrorsCentral); /* IMU */
 
-
-
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
-    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
     mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
-
+    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
     mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
-
-
 
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmPackageLog.debugPrintLogHeader();
     // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
-
-int i = 0;
 void Pmm::update()
 {
-    PMM_DEBUG_PRINT("looped!");
-    PMM_DEBUG_PRINT(i++);
+    //PMM_DEBUG_PRINT_MORE("Pmm [M]: Looped!");
+    //PMM_DEBUG_PRINT(i++);
     mPackageTimeMs = millis();                  // Packet time, in miliseconds. (unsigned long)
 
     mPmmImu.update();
-    PMM_DEBUG_PRINT_MORE("updated Imu!");
+    //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Imu!");
 
     /* GPS */
     #if PMM_USE_GPS
         mPmmGps.update();
-        PMM_DEBUG_PRINT_MORE("updated Gps!");
+        //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
     #endif
 
 //---------------SD Logging Code---------------//
@@ -136,12 +130,16 @@ void Pmm::update()
 //-------------- Send RF package ---------------//
     #if PMM_USE_TELEMETRY
         mPmmTelemetry.updateTransmission();
-        PMM_DEBUG_PRINT_MORE("updated Telemetry!");
+        //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
+    #endif
+
+    #if PMM_DEBUG_SERIAL
+        mPmmPackageLog.debugPrintLogContent();
+        Serial.println();
     #endif
 
     //mPmmErrorsCentral.updateLedsAndBuzzer();
     mPackageLogId ++;
-
 
     /*if (packetIDul % 100 == 0)
     {

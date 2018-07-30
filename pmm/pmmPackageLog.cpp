@@ -271,7 +271,7 @@ uint8_t PmmPackageLog::getPackageLogInfoInTelemetryFormat(uint8_t* arrayToCopyTo
     // arrayToCopy[7] of a total of (Y - 1)
 
     uint16_t packetLength = PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH; // The Package Header default length.
-    uint8_t totalNumberOfPackets
+    uint8_t totalNumberOfPackets;
     uint16_t crc16Var;
     uint16_t payloadBytesInThisPacket;
 
@@ -279,24 +279,27 @@ uint8_t PmmPackageLog::getPackageLogInfoInTelemetryFormat(uint8_t* arrayToCopyTo
         return 0;
 
     payloadBytesInThisPacket = mPackageLogInfoArrayLength - (requestedPacket * PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH);
-    if (payloadBytesInThisPacket >
-    memcpy(arrayToCopyTo, (void*) PMM_TELEMETRY_HEADER_LOG_INFO, 4); // Adds the Package Header.
+    if (payloadBytesInThisPacket > PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH)
+        payloadBytesInThisPacket = PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH;
 
-    // 4~5 are the crc16, it's added on the next lines!
+    // First add the Package Header.
+    memcpy(arrayToCopyTo, (void*) PMM_TELEMETRY_HEADER_LOG_INFO, 4);
 
+    // Then the requested packet and the total number of packets - 1.
     arrayToCopyTo[6] = requestedPacket;
     arrayToCopyTo[7] = mPackageLogInfoNumberOfPackets - 1;
 
-    memcpy(arrayToCopyTo, (void*) PMM_TELEMETRY_HEADER_LOG_INFO, packetLength);
+    // Now adds the data, which was built on updatePackageLogInfoRaw()
+    memcpy(arrayToCopyTo + 8, mPackageLogInfoRawArray, packetLength);
 
-    crc16Var = crc16(arrayToCopyTo+6, strlen(mStrings[requestedStringId]) + 2, crc16(arrayToCopyTo, 4));
+    crc16Var = crc16(arrayToCopyTo + 6, payloadBytesInThisPacket + 2, crc16(arrayToCopyTo, 4));
     // It first does the CRC16 of the Package Header (length 4),
-    // Then skips the Header and these 2 bytes destined to the CRC16 and do the CRC of the rest (strlen(string) + (String X of Y ( = 2)).
+    // Then skips the Header and these 2 bytes destined to the CRC16 (+ 6) and do the CRC of the rest, payloadBytesInThisPacket + (String X of Y ( = 2)).
 
-    arrayToCopyTo[4] = crc16Var & 0x0F; // Little endian! First the Least Significant Byte!
-    arrayToCopyTo[5] = crc16Var & 0xF0; // Little endian! Then the Most Significant Byte!
+    arrayToCopyTo[4] = ((uint8_t) (&crc16Var))[0]; // To follow the endianess
+    arrayToCopyTo[5] = (uint8_t) crc16Var[1]; //
 
-    return packageLength;
+    return payloadBytesInThisPacket + PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH;
 }
 
 

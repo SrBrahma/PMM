@@ -66,7 +66,9 @@ private:
 
     void updatePackageLogInfoRaw();
     void updateMlinStringCrc();
+
 public:
+    
     PmmPackageLog();
     uint8_t getPackageLogInfoInTelemetryFormat(uint8_t* arrayToCopyTo, uint8_t requestedPacket);
 

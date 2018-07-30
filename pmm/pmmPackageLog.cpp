@@ -68,6 +68,13 @@ uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
     }
 }
 
+void PmmPackageLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
+{
+    uint8_t counter;
+    for (counter = 0; counter < arraySize; counter++)
+        includeVariableInPackage(*variableName++, arrayType, (uint8_t*) arrayAddress + (variableTypeToVariableSize(arrayType) * counter));
+}
+
 void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);

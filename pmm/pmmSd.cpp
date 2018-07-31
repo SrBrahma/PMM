@@ -7,6 +7,7 @@
 #include <pmmSd.h>
 #include <pmmErrorsCentral.h>
 #include <SdFat.h>
+/*
 // Replace "weak" system yield() function.
 void PmmSd::yield()
 {
@@ -20,13 +21,13 @@ void PmmSd::yield()
     while (sdBusy()) {
     // Do something here.
     }
-    /*m = micros() - m;
-    if (m > yieldMaxUsec) {
-    yieldMaxUsec = m;
-    }
-    yieldMicros += m;*/
+    //m = micros() - m;
+    //if (m > yieldMaxUsec) {
+    //yieldMaxUsec = m;
+    //}
+    //yieldMicros += m;
 }
-
+*/
 PmmSd::PmmSd()
 {
 }

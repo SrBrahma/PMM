@@ -14,7 +14,7 @@
 class PmmSd
 {
 private:
-    void yield(); // Not really sure if it is needed.
+    //void yield(); // Not really sure if it is needed.
     SdFatSdioEX mSdEx;
     File mFile;
     char mFilename[PMM_SD_FILENAME_MAX_LENGTH];

@@ -68,12 +68,7 @@ uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
     }
 }
 
-void PmmPackageLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
-{
-    uint8_t counter;
-    for (counter = 0; counter < arraySize; counter++)
-        includeVariableInPackage(*variableName++, arrayType, (uint8_t*) arrayAddress + (variableTypeToVariableSize(arrayType) * counter));
-}
+
 
 void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
@@ -223,22 +218,7 @@ void PmmPackageLog::addCustomVariable(const char* variableName, uint8_t variable
 
 
 
-/* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-uint8_t PmmPackageLog::getNumberOfVariables()
-{
-    return mActualNumberVariables;
-}
-
-uint8_t PmmPackageLog::getPackageLogSizeInBytes()
-{
-    return mPackageLogSizeInBytes;
-}
-
-const char** PmmPackageLog::getVariableNameArray()  { return mVariableNameArray;}
-uint8_t* PmmPackageLog::getVariableTypeArray()      { return mVariableTypeArray;}
-uint8_t* PmmPackageLog::getVariableSizeArray()      { return mVariableSizeArray;}
-uint8_t** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}
-
+// Log Info Package in Telemetry format (MLIN)
 void PmmPackageLog::updatePackageLogInfoRaw()
 {
     uint8_t variableCounter;
@@ -324,6 +304,26 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
 
 
 
+/* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+uint8_t PmmPackageLog::getNumberOfVariables()
+{
+    return mActualNumberVariables;
+}
+
+uint8_t PmmPackageLog::getPackageLogSizeInBytes()
+{
+    return mPackageLogSizeInBytes;
+}
+
+const char** PmmPackageLog::getVariableNameArray()  { return mVariableNameArray;}
+uint8_t* PmmPackageLog::getVariableTypeArray()      { return mVariableTypeArray;}
+uint8_t* PmmPackageLog::getVariableSizeArray()      { return mVariableSizeArray;}
+uint8_t** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}
+
+
+
+
+
 
 /* Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
@@ -335,7 +335,7 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
 void PmmPackageLog::debugPrintLogHeader()
 {
     unsigned variableIndex;
-    char buffer[512] = {0}; // No static needed, as it is called only once.
+    char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
     if (mActualNumberVariables > PMM_PACKAGE_LOG_DATA_INDEX)
         snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PACKAGE_LOG_DATA_INDEX]);

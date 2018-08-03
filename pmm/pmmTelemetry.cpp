@@ -98,10 +98,10 @@ int PmmTelemetry::updateReception()
 {
     if (mRf95.recv2(mRfPayload))
     {
+        #if PMM_IS_PDA
         if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_LOG, 4)) // MLOG
         {
-            // save in bin
-            // save in .csv
+            mPmmPackageLog->
             return 1;
         }
         else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_STRING, 4)) // MSTR
@@ -116,6 +116,7 @@ int PmmTelemetry::updateReception()
         }
         else
             return 0;
+        #endif
     }
     else
         return 0;

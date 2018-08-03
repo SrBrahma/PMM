@@ -11,6 +11,8 @@
 // changing the crc value is useful for doing multiple crc's in sequence, like
 // crc("123456", 6) is the same as
 // crc("456", 3, crc("123", 3))
+
+// uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = 0xFFFF);
 uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc)
 {
     uint8_t x;

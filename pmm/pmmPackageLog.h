@@ -32,12 +32,13 @@ const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 #define PMM_TELEMETRY_TYPE_UINT64   9
 #define PMM_TELEMETRY_TYPE_DOUBLE   10
 
-#define PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH 8 // ["MLIN"][CRC of the actual packet: 2B][Packet X of Y - 1: 1B]
+#define PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH 9 // ["MLIN"][CRC of the actual packet: 2B][CRC of the actual package: 2B][Packet X of Y - 1: 1B]
 // Header for all packets:
 // [0~3] Package Header
 // [4~5] CRC of the packet
-// [6] Packet X
-// [7] of a total of (Y - 1)
+// [6~7] CRC of the package
+// [8: 4 MSbits] Packet X [8: 4 LSbits] of a total of (Y - 1)
+
 #define PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH
 #define PMM_PACKAGE_LOG_INFO_RAW_MAX_LENGTH         1024
 #define PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS (PMM_PACKAGE_LOG_INFO_RAW_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH)
@@ -49,9 +50,6 @@ const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 // packets = (packageRawSize + (headerSize * packets) + packetSize - 1) / packetSize
 // with some math magic trick, it can be rewritten as
 // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
-
-
-
 
 class PmmPackageLog
 {
@@ -66,7 +64,7 @@ private:
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
-    uint16_t mMlinStringCrc;
+    uint16_t mMlinStringCrc; // Will use the entire mlin package crc instead!
     uint8_t mActualNumberVariables;
     uint8_t mPackageLogSizeInBytes;
 
@@ -80,10 +78,22 @@ private:
     void updatePackageLogInfoRaw();
     void updateMlinStringCrc();
 
+    struct receivedPackageInfoStruct
+    {
+        uint16_t entirePackageCrc;
+        uint16_t receivedPacketsInBits; // Each bit corresponds to the successful packet received.
+        uint8_t totalNumberPackets;
+        bool finishedReceptionNumberVariables;
+        bool finishedReceptionVariableTypes;
+        bool finishedReceptionVariableStrings;
+    }
+
 public:
 
     PmmPackageLog();
-    
+
+    void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);
+
     void updatePackageLogInfoInTelemetryFormat();
 
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);

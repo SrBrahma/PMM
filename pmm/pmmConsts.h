@@ -48,6 +48,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 
 #define PMM_VARIABLE_STRING_LENGTH          22
 
+#define PMM_IS_PDA 0
 // =======================================================================
 //  SD
 // =======================================================================

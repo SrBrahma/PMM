@@ -6,9 +6,9 @@
 #ifndef CRC16_h
 #define CRC16_h
 /* See the crc16.cpp for some texts. */
-
+#define CRC16_DEFAULT_VALUE 0xFFFF
 #include <stdint.h>
 
-uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = 0xFFFF);
+uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = CRC16_DEFAULT_VALUE);
 
 #endif

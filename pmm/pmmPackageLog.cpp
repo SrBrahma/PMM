@@ -28,6 +28,31 @@ PmmPackageLog::PmmPackageLog()
 
 
 
+// Receive Package Info Package
+void PmmPackageLog::receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize)
+{
+    /*
+    struct receivedPackageInfoStruct
+    {
+        uint16_t entirePackageCrc;
+        uint16_t receivedPacketsInBits; // Each bit corresponds to the successful packet received.
+        uint8_t totalNumberPackets;
+        bool finishedReceptionNumberVariables;
+        bool finishedReceptionVariableTypes;
+        bool finishedReceptionVariableStrings;
+    }
+    */
+
+    if (packetSize < PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH) // If the packet size is smaller than the packet header length, it's invalid
+        return;
+
+    // First test the CRC, to see if the packet is valid.
+    if ((packetArray[4] | (packetArray[5] << 8)) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, 4)))
+        return;
+
+    // If is the first packet or if changed the entirePackageCrc, reset some parameters
+}
+
 void PmmPackageLog::updateMlinStringCrc()
 {
     char buffer[512] = {0}; // No static needed, as it is called only once.
@@ -259,12 +284,12 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
     //
     // Header for all packets:
     // arrayToCopy[0~3] Package Header
-    // arrayToCopy[4~5] CRC of the packet
-    // arrayToCopy[6] Packet X
-    // arrayToCopy[7] of a total of (Y - 1)
+    // arrayToCopy[4~5] CRC of the actual packet
+    // arrayToCopy[6~7] CRC of the entire package
+    // arrayToCopy[8] Packet X of a total of (Y - 1)
 
     uint16_t packetLength; // The Package Header default length.
-    uint16_t crc16Var;
+    uint16_t crc16ThisPacket, crc16Package = CRC16_DEFAULT_VALUE;
     uint16_t payloadBytesInThisPacket;
     uint8_t packetCounter;
 
@@ -284,18 +309,37 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
         memcpy(mPackageLogInfoTelemetryArray[packetCounter], (void*) PMM_TELEMETRY_HEADER_LOG_INFO, 4);
 
         // Then the requested packet and the total number of packets - 1.
-        mPackageLogInfoTelemetryArray[packetCounter][6] = packetCounter;
-        mPackageLogInfoTelemetryArray[packetCounter][7] = mPackageLogInfoNumberOfPackets - 1;
+        mPackageLogInfoTelemetryArray[packetCounter][6] = (packetCounter << 4) | (mPackageLogInfoNumberOfPackets - 1);
 
-        // Now adds the data, which was built on updatePackageLogInfoRaw(). +8 skips the Package header.
-        memcpy(mPackageLogInfoTelemetryArray[packetCounter] + 8, mPackageLogInfoRawArray, payloadBytesInThisPacket);
+        // Now adds the data, which was built on updatePackageLogInfoRaw(). + skips the packet header.
+        memcpy(mPackageLogInfoTelemetryArray[packetCounter] + PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH, mPackageLogInfoRawArray, payloadBytesInThisPacket);
 
-        crc16Var = crc16(mPackageLogInfoTelemetryArray[packetCounter] + 6, payloadBytesInThisPacket + 2, crc16(mPackageLogInfoTelemetryArray[packetCounter], 4));
-        // It first does the CRC16 of the Package Header (length 4),
-        // Then skips the Header and these 2 bytes destined to the CRC16 (+ 6) and do the CRC of the rest, payloadBytesInThisPacket + (String X of Y ( = 2)).
+        // Set the CRC16 of this packet fields as 0 (to calculate the entire packet CRC16 without caring about positions and changes in headers, etc)
+        mPackageLogInfoTelemetryArray[packetCounter][4] = 0;
+        mPackageLogInfoTelemetryArray[packetCounter][5] = 0;
 
-        mPackageLogInfoTelemetryArray[packetCounter][4] = crc16Var;        // Little endian!
-        mPackageLogInfoTelemetryArray[packetCounter][5] = crc16Var >> 8;   //
+        // Set the CRC16 of the entire package to 0.
+        mPackageLogInfoTelemetryArray[packetCounter][6] = 0;
+        mPackageLogInfoTelemetryArray[packetCounter][7] = 0;
+
+        crc16Package = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength, crc16Package); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
+    }
+
+    // Assign the entire package crc16 to all packets.
+    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
+    {
+        mPackageLogInfoTelemetryArray[packetCounter][6] = crc16Package;        // Little endian!
+        mPackageLogInfoTelemetryArray[packetCounter][7] = crc16Package >> 8;   //
+    }
+
+    // CRC16 of this packet:
+    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
+    {
+        crc16ThisPacket = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength); // As the temporary CRC16 of this packet is know to be 0,
+        //it can do the crc16 of the packet without skipping the crc16 fields
+
+        mPackageLogInfoTelemetryArray[packetCounter][4] = crc16ThisPacket;        // Little endian!
+        mPackageLogInfoTelemetryArray[packetCounter][5] = crc16ThisPacket >> 8;   //
 
         mPackageLogInfoTelemetryArrayLengths[packetCounter] = packetLength;
     }

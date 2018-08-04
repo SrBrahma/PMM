@@ -16,17 +16,15 @@
 PmmPackageLog::PmmPackageLog()
 {
     mPackageLogSizeInBytes = 0;
-    mActualNumberVariables = 0;
+    mLogNumberOfVariables = 0;
+    mPackageLogInfoNumberOfPackets = 0; // For receptor.
 
-    const PROGMEM char* packageLogHeader = "packageLogHeader"; // It isn't actually used. But will leave it for the future. (CMON 11 BYTES AT PROGMEM IS NOTHING)
-    addCustomVariable(packageLogHeader, PMM_TELEMETRY_TYPE_UINT32, (void*)PMM_TELEMETRY_HEADER_LOG); // MLOG, the header. (void*) is to convert const* void to void*.
+    const PROGMEM char* packageLogHeaderStr = "packageLogHeader"; // It isn't actually used. But will leave it for the future. (CMON 11 BYTES AT PROGMEM IS NOTHING)
+    addCustomVariable(packageLogHeaderStr, PMM_TELEMETRY_TYPE_UINT32, (void *)PMM_TELEMETRY_HEADER_LOG); // MLOG, the header. (void*) is to convert const* void to void*.
 
-    const PROGMEM char* mlinStrincCrc = "mlinStrCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
-    addCustomVariable(mlinStrincCrc, PMM_TELEMETRY_TYPE_UINT16, &mMlinStringCrc); // MLIN String CRC
+    const PROGMEM char* logInfoPackageCrcStr = "logInfoPackageCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
+    addCustomVariable(logInfoPackageCrcStr, PMM_TELEMETRY_TYPE_UINT16, &mLogInfoPackageCrc); // Package Log Info CRC
 
-    #if PMM_IS_PDA
-        mReceivedPackageInfoStruct.hasReceivedAnyPackageInfoBefore = 0;
-    #endif
 }
 
 
@@ -65,7 +63,7 @@ uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);
-    if (mActualNumberVariables >= PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
+    if (mLogNumberOfVariables >= PMM_TELEMETRY_LOG_NUMBER_VARIABLES)
     {
         #if PMM_DEBUG_SERIAL
             Serial.print("PmmPackage #1: Failed to add the variable \"");
@@ -88,14 +86,14 @@ void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t v
         return;
     }
 
-    mVariableNameArray[mActualNumberVariables] = variableName;
-    mVariableTypeArray[mActualNumberVariables] = variableType;
-    mVariableSizeArray[mActualNumberVariables] = varSize;
-    mVariableAddressArray[mActualNumberVariables] = (uint8_t*) variableAddress;
-    mActualNumberVariables ++;
+    mVariableNameArray[mLogNumberOfVariables] = variableName;
+    mVariableTypeArray[mLogNumberOfVariables] = variableType;
+    mVariableSizeArray[mLogNumberOfVariables] = varSize;
+    mVariableAddressArray[mLogNumberOfVariables] = (uint8_t*) variableAddress;
+    mLogNumberOfVariables ++;
     mPackageLogSizeInBytes += varSize;
 
-    if (mActualNumberVariables > PMM_PACKAGE_LOG_DATA_INDEX) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
+    if (mLogNumberOfVariables > PMM_PACKAGE_LOG_DATA_INDEX) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
         updateMlinStringCrc(); // Updates the Mlin string CRC.
 }
 
@@ -216,11 +214,11 @@ void PmmPackageLog::updatePackageLogInfoRaw()
     uint8_t variableCounter;
     uint16_t stringLength;
 
-    mPackageLogInfoRawArray[0] = mActualNumberVariables;
+    mPackageLogInfoRawArray[0] = mLogNumberOfVariables;
     mPackageLogInfoRawArrayLength = 1;
 
     /* Add the variable types */
-    for (variableCounter = 0; variableCounter < mActualNumberVariables; variableCounter++)
+    for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {
         if (variableCounter % 2) // If is odd (if rest is 1)
         {
@@ -230,11 +228,11 @@ void PmmPackageLog::updatePackageLogInfoRaw()
         else // Is even (rest is 0). As it happens first than the odd option, no logical OR is needed.
             mPackageLogInfoRawArray[mPackageLogInfoRawArrayLength] = mVariableTypeArray[variableCounter] << 4; // Shift Left 4 positions to add to the left
     }
-    if (variableCounter % 2) // If for loop ended on a even number (and now the variable is odd due to the final increment that made it >= mActualNumberVariables)
+    if (variableCounter % 2) // If for loop ended on a even number (and now the variable is odd due to the final increment that made it >= mLogNumberOfVariables)
         mPackageLogInfoRawArrayLength++; // As this variable only increased in odd numbers.
 
     /* Now add the strings of each variable */
-    for (variableCounter = 0; variableCounter < mActualNumberVariables; variableCounter++)
+    for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {
         stringLength = strlen(mVariableNameArray[variableCounter]) + 1; // + 1 Adds the \0 char.
         memcpy(mPackageLogInfoRawArray + mPackageLogInfoRawArrayLength, mVariableNameArray[variableCounter], stringLength);
@@ -256,7 +254,8 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
     // arrayToCopy[8] Packet X of a total of (Y - 1)
 
     uint16_t packetLength; // The Package Header default length.
-    uint16_t crc16ThisPacket, crc16Package = CRC16_DEFAULT_VALUE;
+    uint16_t crc16ThisPacket;
+    mLogInfoPackageCrc = CRC16_DEFAULT_VALUE;
     uint16_t payloadBytesInThisPacket;
     uint8_t packetCounter;
 
@@ -289,14 +288,14 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
         mPackageLogInfoTelemetryArray[packetCounter][6] = 0;
         mPackageLogInfoTelemetryArray[packetCounter][7] = 0;
 
-        crc16Package = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength, crc16Package); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
+        mLogInfoPackageCrc = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength, mLogInfoPackageCrc); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
     }
 
     // Assign the entire package crc16 to all packets.
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
     {
-        mPackageLogInfoTelemetryArray[packetCounter][6] = crc16Package;        // Little endian!
-        mPackageLogInfoTelemetryArray[packetCounter][7] = crc16Package >> 8;   //
+        mPackageLogInfoTelemetryArray[packetCounter][6] = mLogInfoPackageCrc;        // Little endian!
+        mPackageLogInfoTelemetryArray[packetCounter][7] = mLogInfoPackageCrc >> 8;   //
     }
 
     // CRC16 of this packet:
@@ -318,7 +317,7 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 uint8_t PmmPackageLog::getNumberOfVariables()
 {
-    return mActualNumberVariables;
+    return mLogNumberOfVariables;
 }
 
 uint8_t PmmPackageLog::getPackageLogSizeInBytes()
@@ -348,10 +347,10 @@ void PmmPackageLog::debugPrintLogHeader()
     unsigned variableIndex;
     char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
-    if (mActualNumberVariables > PMM_PACKAGE_LOG_DATA_INDEX)
+    if (mLogNumberOfVariables > PMM_PACKAGE_LOG_DATA_INDEX)
         snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PACKAGE_LOG_DATA_INDEX]);
 
-    for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX + 1; variableIndex < mActualNumberVariables; variableIndex ++)
+    for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX + 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }
@@ -365,7 +364,7 @@ void PmmPackageLog::debugPrintLogContent()
     unsigned variableIndex;
     static char buffer[512]; // Static for optimization
     buffer[0] = '\0';
-    for (variableIndex = 0; variableIndex < mActualNumberVariables; variableIndex ++)
+    for (variableIndex = 0; variableIndex < mLogNumberOfVariables; variableIndex ++)
     {
         switch(mVariableTypeArray[variableIndex])
         {

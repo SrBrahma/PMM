@@ -51,7 +51,7 @@ const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 // with some math magic trick, it can be rewritten as
 // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
 
-class PmmPackageLog
+class PmmPackageLog // Intended to have >1 Objects of this class! Maybe someday we will want to have one object for reception, and another for transmission!
 {
 private:
 
@@ -59,16 +59,20 @@ private:
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
     void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
 
+    // Build the Package Log Info Package
     void updatePackageLogInfoRaw();
-    void updateMlinStringCrc();
-    
+    void updatePackageLogInfoInTelemetryFormat();
+
+    // Uses the received packets via telemetry to get the Package Log Info
+    void unitePackageInfoPackets();
+
     const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
-    uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
+    uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
 
-    uint16_t mMlinStringCrc; // Will use the entire mlin package crc instead!
-    uint8_t mActualNumberVariables;
+    uint16_t mLogInfoPackageCrc;
+    uint8_t mLogNumberOfVariables;
     uint8_t mPackageLogSizeInBytes;
 
     uint8_t mPackageLogInfoRawArray[PMM_PACKAGE_LOG_INFO_RAW_MAX_LENGTH];
@@ -78,17 +82,6 @@ private:
     uint8_t mPackageLogInfoTelemetryArray[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     uint8_t mPackageLogInfoTelemetryArrayLengths[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS];
 
-
-    #if PMM_IS_PDA
-    struct
-    {
-        uint16_t entirePackageCrc;
-        uint16_t receivedPacketsInBits; // Each bit corresponds to the successful packet received.
-        uint8_t totalNumberPackets;
-        bool hasReceivedAnyPackageInfoBefore;
-    } mReceivedPackageInfoStruct;
-    #endif
-
 public:
 
     PmmPackageLog();
@@ -97,10 +90,6 @@ public:
     #if PMM_IS_PDA
         void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);
     #endif
-
-
-    void updatePackageLogInfoInTelemetryFormat();
-
 
     // Add variables to the package log. The types are specified in pmmPackageLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);

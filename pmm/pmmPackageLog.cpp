@@ -24,44 +24,11 @@ PmmPackageLog::PmmPackageLog()
     const PROGMEM char* mlinStrincCrc = "mlinStrCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
     addCustomVariable(mlinStrincCrc, PMM_TELEMETRY_TYPE_UINT16, &mMlinStringCrc); // MLIN String CRC
 
+    #if PMM_IS_PDA
+        mReceivedPackageInfoStruct.hasReceivedAnyPackageInfoBefore = 0;
+    #endif
 }
 
-
-
-// Receive Package Info Package
-void PmmPackageLog::receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize)
-{
-    /*
-    struct receivedPackageInfoStruct
-    {
-        uint16_t entirePackageCrc;
-        uint16_t receivedPacketsInBits; // Each bit corresponds to the successful packet received.
-        uint8_t totalNumberPackets;
-        bool finishedReceptionNumberVariables;
-        bool finishedReceptionVariableTypes;
-        bool finishedReceptionVariableStrings;
-    }
-    */
-
-    if (packetSize < PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH) // If the packet size is smaller than the packet header length, it's invalid
-        return;
-
-    // First test the CRC, to see if the packet is valid.
-    if ((packetArray[4] | (packetArray[5] << 8)) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, 4)))
-        return;
-
-    // If is the first packet or if changed the entirePackageCrc, reset some parameters
-}
-
-void PmmPackageLog::updateMlinStringCrc()
-{
-    char buffer[512] = {0}; // No static needed, as it is called only once.
-    unsigned variableIndex;
-    for (variableIndex = PMM_PACKAGE_LOG_DATA_INDEX; variableIndex < mActualNumberVariables; variableIndex ++)
-        strncat(buffer, mVariableNameArray[variableIndex], 512);
-
-    //mMlinStringCrc = crc16(buffer, strlen(buffer));
-}
 
 uint8_t PmmPackageLog::variableTypeToVariableSize(uint8_t variableType)
 {

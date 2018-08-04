@@ -59,6 +59,9 @@ private:
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
     void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
 
+    void updatePackageLogInfoRaw();
+    void updateMlinStringCrc();
+    
     const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
@@ -75,27 +78,31 @@ private:
     uint8_t mPackageLogInfoTelemetryArray[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     uint8_t mPackageLogInfoTelemetryArrayLengths[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS];
 
-    void updatePackageLogInfoRaw();
-    void updateMlinStringCrc();
 
-    struct receivedPackageInfoStruct
+    #if PMM_IS_PDA
+    struct
     {
         uint16_t entirePackageCrc;
         uint16_t receivedPacketsInBits; // Each bit corresponds to the successful packet received.
         uint8_t totalNumberPackets;
-        bool finishedReceptionNumberVariables;
-        bool finishedReceptionVariableTypes;
-        bool finishedReceptionVariableStrings;
-    }
+        bool hasReceivedAnyPackageInfoBefore;
+    } mReceivedPackageInfoStruct;
+    #endif
 
 public:
 
     PmmPackageLog();
 
-    void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);
+
+    #if PMM_IS_PDA
+        void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);
+    #endif
+
 
     void updatePackageLogInfoInTelemetryFormat();
 
+
+    // Add variables to the package log. The types are specified in pmmPackageLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
     void addMagnetometer(void* magnetometerArray);
@@ -113,6 +120,7 @@ public:
     // Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
     void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
 
+    // Getters
     uint8_t getNumberOfVariables();
     uint8_t getPackageLogSizeInBytes();
 
@@ -121,12 +129,13 @@ public:
     uint8_t* getVariableSizeArray();
     uint8_t** getVariableAddressArray();
 
+
+    // Debug!
     #if PMM_DEBUG_SERIAL
         void debugPrintLogHeader();
         void debugPrintLogContent();
     #endif
 
-
-};
+}; // End of the class
 
 #endif

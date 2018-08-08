@@ -5,7 +5,6 @@
 #include <pmmTelemetry.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmPackageLog.h>
 
 PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
     mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)
@@ -99,18 +98,18 @@ int PmmTelemetry::updateReception()
     if (mRf95.recv2(mRfPayload))
     {
         #if PMM_IS_PDA
-        if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_LOG, 4)) // MLOG
+        if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
         {
             mPmmPackageLog->
             return 1;
         }
-        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_STRING, 4)) // MSTR
+        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_STRING, 4)) // MSTR
         {
             // save in txt
 
             return 1;
         }
-        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_LOG_INFO, 4)) // MLIN
+        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MLIN
         {
             return 1;
         }

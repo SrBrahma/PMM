@@ -64,10 +64,11 @@ const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
 // =======================================================================
 #define PMM_USE_TELEMETRY       1
 
-const char PMM_TELEMETRY_HEADER_LOG[5]      = {"MLOG"}; // These are strings for snprintf(), on string package.
-const char PMM_TELEMETRY_HEADER_LOG_INFO[5] = {"MLIN"};
-const char PMM_TELEMETRY_HEADER_STRING[5]   = {"MSTR"};
+const char PMM_TELEMETRY_HEADER_TYPE_LOG[5]      = {"MLOG"}; // These are strings, just for faster changing.
+const char PMM_TELEMETRY_HEADER_TYPE_LOG_INFO[5] = {"MLIN"};
+const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
 
+#define PMM_TELEMETRY_HEADER_TYPE_LENGTH           4         // The length of chars of the header type.
 
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32
 #define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH    251 // Must be 251 (LoRa max is 255, 4 bytes are used as default headers by the RadioHead lib (maybe will remove/change it on future)). read recv2() in RH_RF95.cpp.

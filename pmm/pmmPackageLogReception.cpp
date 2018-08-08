@@ -22,7 +22,7 @@ void PmmPackageLog::receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize
         return;
 
     // First test the CRC, to see if the packet is valid.
-    if ((packetArray[4] | (packetArray[5] << 8)) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, 4)))
+    if ((packetArray[5] << 8) | (packetArray[4]) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, PMM_TELEMETRY_HEADER_TYPE_LENGTH)))
         return;
 
     tempPackageCrc = packetArray[6] | (packetArray[7] << 8);

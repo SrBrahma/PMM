@@ -20,7 +20,7 @@ PmmPackageLog::PmmPackageLog()
     mPackageLogInfoNumberOfPackets = 0; // For receptor.
 
     const PROGMEM char* packageLogHeaderStr = "packageLogHeader"; // It isn't actually used. But will leave it for the future. (CMON 11 BYTES AT PROGMEM IS NOTHING)
-    addCustomVariable(packageLogHeaderStr, PMM_TELEMETRY_TYPE_UINT32, (void *)PMM_TELEMETRY_HEADER_LOG); // MLOG, the header. (void*) is to convert const* void to void*.
+    addCustomVariable(packageLogHeaderStr, PMM_TELEMETRY_TYPE_UINT32, (void *)PMM_TELEMETRY_HEADER_TYPE_LOG); // MLOG, the header. (void*) is to convert const* void to void*.
 
     const PROGMEM char* logInfoPackageCrcStr = "logInfoPackageCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
     addCustomVariable(logInfoPackageCrcStr, PMM_TELEMETRY_TYPE_UINT16, &mLogInfoPackageCrc); // Package Log Info CRC
@@ -94,7 +94,10 @@ void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t v
     mPackageLogSizeInBytes += varSize;
 
     if (mLogNumberOfVariables > PMM_PACKAGE_LOG_DATA_INDEX) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
-        updateMlinStringCrc(); // Updates the Mlin string CRC.
+    {
+        updatePackageLogInfoRaw();
+        updatePackageLogInfoInTelemetryFormat();
+    }
 }
 
 void PmmPackageLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
@@ -212,7 +215,7 @@ void PmmPackageLog::addCustomVariable(const char* variableName, uint8_t variable
 void PmmPackageLog::updatePackageLogInfoRaw()
 {
     uint8_t variableCounter;
-    uint16_t stringLength;
+    uint16_t stringLengthWithNull;
 
     mPackageLogInfoRawArray[0] = mLogNumberOfVariables;
     mPackageLogInfoRawArrayLength = 1;
@@ -234,9 +237,9 @@ void PmmPackageLog::updatePackageLogInfoRaw()
     /* Now add the strings of each variable */
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {
-        stringLength = strlen(mVariableNameArray[variableCounter]) + 1; // + 1 Adds the \0 char.
-        memcpy(mPackageLogInfoRawArray + mPackageLogInfoRawArrayLength, mVariableNameArray[variableCounter], stringLength);
-        mPackageLogInfoRawArrayLength += stringLength;
+        stringLengthWithNull = strlen(mVariableNameArray[variableCounter]) + 1; // + 1 Adds the \0 char.
+        memcpy(mPackageLogInfoRawArray + mPackageLogInfoRawArrayLength, mVariableNameArray[variableCounter], stringLengthWithNull);
+        mPackageLogInfoRawArrayLength += stringLengthWithNull;
     }
     mPackageLogInfoNumberOfPackets = ceil(mPackageLogInfoRawArrayLength / (float) PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PAYLOAD_LENGTH);
     // This is different to PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS, as the macro is the maximum number of packets, and this variable is the actual maximum
@@ -272,7 +275,7 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
         packetLength += payloadBytesInThisPacket;
 
         // First add the Package Header.
-        memcpy(mPackageLogInfoTelemetryArray[packetCounter], (void*) PMM_TELEMETRY_HEADER_LOG_INFO, 4);
+        memcpy(mPackageLogInfoTelemetryArray[packetCounter], (void*) PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, PMM_TELEMETRY_HEADER_TYPE_LENGTH);
 
         // Then the requested packet and the total number of packets - 1.
         mPackageLogInfoTelemetryArray[packetCounter][6] = (packetCounter << 4) | (mPackageLogInfoNumberOfPackets - 1);

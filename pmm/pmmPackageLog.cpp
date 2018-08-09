@@ -10,11 +10,17 @@
 #include <crc16.h>
 #include <pmmPackageLog.h>
 #include <pmmConsts.h>
-
+#include <pmmTelemetry.h>
 
 
 PmmPackageLog::PmmPackageLog()
 {
+}
+
+int PmmPackageLog::init(PmmTelemetry* pmmTelemetry)
+{
+    mPmmTelemetry = pmmTelemetry;
+
     mPackageLogSizeInBytes = 0;
     mLogNumberOfVariables = 0;
     mPackageLogInfoNumberOfPackets = 0; // For receptor.
@@ -25,6 +31,7 @@ PmmPackageLog::PmmPackageLog()
     const PROGMEM char* logInfoPackageCrcStr = "logInfoPackageCrc"; // Same as the above funny commentary. Maybe you can't find it, it isn't funny at all.
     addCustomVariable(logInfoPackageCrcStr, PMM_TELEMETRY_TYPE_UINT16, &mLogInfoPackageCrc); // Package Log Info CRC
 
+    return 0;
 }
 
 

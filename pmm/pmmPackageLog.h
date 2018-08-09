@@ -9,6 +9,7 @@
 #include <pmmConsts.h>
 #include <pmmGps.h> // for GPS struct
 #include <pmmImu.h> // for IMU struct
+#include <pmmTelemetry.h>
 
 const char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] =    {"altitude(m)"};
 const char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] =     {"gpsLongitude"};
@@ -66,6 +67,8 @@ private:
     // Uses the received packets via telemetry to get the Package Log Info
     void unitePackageInfoPackets();
 
+    PmmTelemetry *mPmmTelemetry;
+
     const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
@@ -86,6 +89,7 @@ public:
 
     PmmPackageLog();
 
+    int init(PmmTelemetry* pmmTelemetry);
 
     #if PMM_IS_PDA
         void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);

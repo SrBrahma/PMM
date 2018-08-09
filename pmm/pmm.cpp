@@ -83,7 +83,7 @@ void Pmm::init()
     mPmmErrorsCentral.init(&mPackageLogId);
 
         #if PMM_USE_TELEMETRY                       /* Telemetry */
-    mPmmTelemetry.init(&mPmmErrorsCentral, &mPmmPackageLog);
+    mPmmTelemetry.init(&mPmmErrorsCentral);
         #endif
 
         #if PMM_USE_GPS                             /* GPS */

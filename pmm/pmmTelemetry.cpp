@@ -59,51 +59,81 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     /* So it initialized! */
 
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
-    mRf95.setTxPower(10, false);
+    mRf95.setTxPower(PMM_LORA_TX_POWER, false);
     PMM_DEBUG_PRINT_MORE("PmmTelemetry: LoRa initialized successfully!");
     return 0;
 }
 
 int PmmTelemetry::updateTransmission()
 {
-    uint32_t tempMillis;
+    // uint32_t tempMillis;
+    pmmTelemetryQueueStructType* queueStructPtr;
 
-    if (millis() >= mPreviousPackageLogTransmissionMillis + mPackageLogDelayMillis)
-    {
-        tempMillis = millis();
-
-        mRf95.waitPacketSent();
-
-        mPackageLogDelayMillis += millis() - tempMillis;
-
-        #if PMM_DEBUG_SERIAL_MORE
-            Serial.print("PmmTelemetry [M]: Time taken waiting previous package to be sent = ");
-            Serial.print(millis() - tempMillis);
-            Serial.println("ms.");
-
-            Serial.print("PmmTelemetry [M]: Delay is = ");
-            Serial.print(mPackageLogDelayMillis);
-            Serial.println("ms.");
-        #endif
-
-
-        if (mPmmErrorsCentral->getTelemetryIsWorking())
-        {
-            //mPmmErrorsCentral->blinkRfLED(HIGH);
-            //PMM_DEBUG_PRINT("SENDING!");
-            //mRf95.sendArrayOfPointersOfSmartSizes(mPmmPackageLog->getVariableAddressArray(), mPmmPackageLog->getVariableSizeArray(),
-                                                  //mPmmPackageLog->getNumberOfVariables(), mPmmPackageLog->getPackageLogSizeInBytes());
-            //mRf95.send(arr, 4);
-
-            //PMM_DEBUG_PRINT("SENT 2");
-
-            //mPmmErrorsCentral->blinkRfLED(LOW);
-        }
-        mPreviousPackageLogTransmissionMillis = millis();
+    // 1) Is there any packet being sent?
+    if (mRf95.isAnyPacketBeingSentRH_RF95())
         return 1;
-    }
+
+    /* tempMillis = millis();
+    #if PMM_DEBUG_SERIAL_MORE
+        Serial.print("PmmTelemetry [M]: Time taken waiting previous package to be sent = ");
+        Serial.print(millis() - tempMillis);
+        Serial.println("ms.");
+        Serial.print("PmmTelemetry [M]: Delay is = ");
+        Serial.print(mPackageLogDelayMillis);
+        Serial.println("ms.");
+    #endif  */
+
+    // 2) Is the telemetry working?
+    if (!mPmmErrorsCentral->getTelemetryIsWorking())
+        return 1;
+
+    // 3) Check the queues, following the priorities. What should the PMM send now?
+    if (mHighPriorityQueueStruct.remainingItemsOnQueue)
+        queueStructPtr = &mHighPriorityQueueStruct;
+    else if (mNormalPriorityQueueStruct.remainingItemsOnQueue)
+        queueStructPtr = &mNormalPriorityQueueStruct;
+    else if (mLowPriorityQueueStruct.remainingItemsOnQueue)
+        queueStructPtr = &mLowPriorityQueueStruct;
+    else if (mDefaultPriorityQueueStruct.remainingItemsOnQueue)
+        queueStructPtr = &mDefaultPriorityQueueStruct;
+    // else
+        // Error here! Invalid priority!
+
+    // 4) Which kind of send is it? A normal send(), or a sendOfSmartSizes? (Or a future kind of send!)
+    // Then, send!
+    switch(queueStructPtr->sendTypeArray[queueStructPtr->actualIndex])
+    {
+        case PMM_TELEMETRY_SEND:
+            mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
+                       queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]); // The length
+            break;
+        case PMM_TELEMETRY_SEND_SMART_SIZES:
+            mRf95.sendArrayOfPointersOfSmartSizes(
+                queueStructPtr->uint8_tPtrToPtrArray[queueStructPtr->actualIndex], // The array of data array
+                queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],      // The sizes array
+                queueStructPtr->numberVariablesArray[queueStructPtr->actualIndex], // The number of variables
+                queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]);  // The total byte size
+            break;
+        default:
+            // Error here! Invalid type! Treat it on the future!
+            break;
+
+    } // End of switch
+
+    //
+
+    // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
+    queueStructPtr->actualIndex++;
+    if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
+        queueStructPtr->actualIndex = 0;                            // (the > in >= is just to fix eventual mystical bugs.)
+
+    queueStructPtr->remainingItemsOnQueue--;
+
+    // 6) Done! Sent successfully!
     return 0;
-}
+} // end of updateTransmission()
+
+
 
 int PmmTelemetry::updateReception()
 {
@@ -113,27 +143,29 @@ int PmmTelemetry::updateReception()
         if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
         {
             mPmmPackageLog->
-            return 1;
+            return 0;
         }
         else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_STRING, 4)) // MSTR
         {
             // save in txt
 
-            return 1;
+            return 0;
         }
         else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MLIN
         {
-            return 1;
+
+            return 0;
         }
         else
             return 0;
         #endif
+
     }
     else
         return 0;
 }
 
-/* Returns the index of the new allocated item of the queue (0 ~ the maximum index of the new item in the queue). Returns -1 if not successful.
+/* Returns the index of the new allocated item of the queue (0 ~ the maximum index of the new item in the queue). Returns -1 if not successful (queue may be full!).
  * Also, returns by reference the struct.
  * It does increase the pmmTelemetryQueueStruct.remainingItemsOnQueue at the end */
 int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr)
@@ -175,6 +207,8 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 
     // Now there is a new item on the queue! (Just add the remaining arguments on the function that called this one!)
     pmmTelemetryQueueStructPtr->remainingItemsOnQueue++;
+
+    return newItemIndex; // Returns the index of the new item on the queue!
 }
 
 

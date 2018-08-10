@@ -263,7 +263,7 @@ void PmmPackageLog::updatePackageLogInfoInTelemetryFormat()
     // arrayToCopy[6~7] CRC of the entire package
     // arrayToCopy[8] Packet X of a total of (Y - 1)
 
-    uint16_t packetLength; // The Package Header default length.
+    uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
     mLogInfoPackageCrc = CRC16_DEFAULT_VALUE;
     uint16_t payloadBytesInThisPacket;

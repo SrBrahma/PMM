@@ -271,6 +271,12 @@ uint32_t RH_RF95::recv2(uint8_t* buf)
     return _bufLen - RH_RF95_HEADER_LEN; // aka payload length
 }
 
+// By Henrique Bruno, Minerva Rockets - UFRJ. This suffix is to find it easier across the files lol
+bool RH_RF95::isAnyPacketBeingSentRH_RF95()
+{
+    return isAnyPacketBeingSentRHGenericDriver();
+}
+
 bool RH_RF95::send(const uint8_t* data, uint8_t len)
 {
     if (len > RH_RF95_MAX_MESSAGE_LEN || !len)
@@ -311,7 +317,7 @@ bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray
     setModeIdle();
 
     if (!waitCAD())
-	return false;  // Check channel activity
+        return false;  // Check channel activity
     //Serial.print(millis() - timeTo); Serial.println("ms idle");
     // Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);

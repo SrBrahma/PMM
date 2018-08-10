@@ -76,7 +76,7 @@ uint8_t RHSPIDriver::spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len)
     digitalWrite(_slaveSelectPin, LOW);
     status = _spi.transfer(reg | RH_SPI_WRITE_MASK); // Send the start address with the write mask on
     while (len--)
-	_spi.transfer(*src++);
+        _spi.transfer(*src++);
     digitalWrite(_slaveSelectPin, HIGH);
     _spi.endTransaction();
     ATOMIC_BLOCK_END;

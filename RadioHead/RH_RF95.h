@@ -664,6 +664,9 @@ public:
     /* the return value is 32 bits just for speeding up in 32bits systems, like teensy. */
     uint32_t recv2(uint8_t* buf);
 
+    // By Henrique Bruno, Minerva Rockets - UFRJ. This suffix is to find it easier across the files lol
+    virtual bool isAnyPacketBeingSentRH_RF95();
+    
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then optionally waits for Channel Activity Detection (CAD)
     /// to show the channnel is clear (if the radio supports CAD) by calling waitCAD().

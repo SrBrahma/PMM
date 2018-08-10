@@ -49,10 +49,19 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
     return false;
 }
 
+// By Henrique Bruno, Minerva Rockets - UFRJ
+bool RHGenericDriver::isAnyPacketBeingSentRHGenericDriver()
+{
+    if (_mode == RHModeTx)
+        return true; // Yes! There is a packet being sent!
+
+    return false;    // No! No packet being sent!
+}
+
 bool RHGenericDriver::waitPacketSent()
 {
     while (_mode == RHModeTx)
-	YIELD; // Wait for any previous transmit to finish
+        YIELD; // Wait for any previous transmit to finish
     return true;
 }
 
@@ -82,13 +91,14 @@ bool RHGenericDriver::waitCAD()
     unsigned long t = millis();
     while (isChannelActive())
     {
-         if (millis() - t > _cad_timeout) 
-	     return false;
-#if (RH_PLATFORM == RH_PLATFORM_STM32) // stdlib on STMF103 gets confused if random is redefined
-	 delay(_random(1, 10) * 100);
-#else
-         delay(random(1, 10) * 100); // Should these values be configurable? Macros?
-#endif
+        if (millis() - t > _cad_timeout)
+            return false;
+
+        #if (RH_PLATFORM == RH_PLATFORM_STM32) // stdlib on STMF103 gets confused if random is redefined
+            delay(_random(1, 10) * 100);
+        #else
+            delay(random(1, 10) * 100); // Should these values be configurable? Macros?
+        #endif
     }
 
     return true;

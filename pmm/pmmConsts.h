@@ -48,7 +48,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 
 #define PMM_VARIABLE_STRING_LENGTH          22
 
-#define PMM_IS_PDA 0
+#define PMM_IS_PDA                       1
 // =======================================================================
 //  SD
 // =======================================================================
@@ -83,6 +83,7 @@ const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
 #define PMM_PIN_RFM95_INT       6
 #define PMM_LORA_FREQUENCY      915.0
 
+#define PMM_LORA_TX_POWER       23 // 5~23
 // =======================================================================
 //  GPS
 // =======================================================================

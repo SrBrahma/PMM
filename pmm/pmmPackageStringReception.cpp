@@ -14,8 +14,8 @@ void PmmPackageString::receivedPackageString(uint8_t* packetArray, uint8_t packe
         return;
 
     // First test the CRC, to see if the packet is valid.
-    if ((packetArray[5] << 8) | (packetArray[4]) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, PMM_TELEMETRY_HEADER_TYPE_LENGTH)))
+    if (((packetArray[5] << 8) | (packetArray[4])) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, PMM_TELEMETRY_HEADER_TYPE_LENGTH)))
         return;
 
-    mStrings[PMM_PACKAGE_STRING_MAX_STRINGS]
+    //mStrings[PMM_PACKAGE_STRING_MAX_STRINGS]
 }

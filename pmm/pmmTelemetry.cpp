@@ -131,6 +131,7 @@ int PmmTelemetry::updateTransmission()
 
     // 6) Done! Sent successfully!
     return 0;
+    
 } // end of updateTransmission()
 
 
@@ -199,14 +200,13 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 
         default:    // If for some mystic reason it goes wrong...
             return -1;
-
     } // End of switch
 
     // If there is no room to allocate a new item on the queue
     if (pmmTelemetryQueueStructPtr->remainingItemsOnQueue >= PMM_TELEMETRY_QUEUE_LENGTH)
         return -1;
 
-    newItemIndex = pmmTelemetryQueueStructPtr->actualIndex + pmmTelemetryQueueStructPtr->remainingItemsOnQueue;
+    newItemIndex = (pmmTelemetryQueueStructPtr->actualIndex) + (pmmTelemetryQueueStructPtr->remainingItemsOnQueue);
 
     // If the newItemIndex is a number beyond the maximum length, turns it into a valid index. Hey, in my drawings it make sense.
     if (newItemIndex >= PMM_TELEMETRY_QUEUE_LENGTH)
@@ -224,7 +224,7 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
 int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
 {
-    pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr;
+    pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]"
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
 
     if (newItemIndex == -1)
@@ -246,7 +246,7 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmm
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
 int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
 {
-    pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr;
+    pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
 
     if (newItemIndex == -1)
@@ -275,6 +275,7 @@ uint8_t* PmmTelemetry::getReceivedPacketArray()
 {
     return mReceivedPacketArray;
 }
+
 uint16_t PmmTelemetry::getReceivedPacketLength()
 {
     return mReceivedPacketLength;

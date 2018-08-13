@@ -65,47 +65,63 @@
 
 void Pmm::init()
 {
+    // Debug
     #if PMM_DEBUG_SERIAL
         unsigned long serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         Serial.println("Pmm: Serial initialized!");
         #if PMM_DEBUG_SERIAL_TIMEOUT_ENABLED
-        while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_SERIAL_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
+            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_SERIAL_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
 
         #else
-        while (!Serial);
+            while (!Serial);
 
         #endif
+
         if (Serial)
             PMM_DEBUG_PRINT("Serial initialized!");
     #endif
 
+
     mPmmErrorsCentral.init(&mPackageLogId);
 
-        #if PMM_USE_TELEMETRY                       /* Telemetry */
-    mPmmTelemetry.init(&mPmmErrorsCentral);
-        #endif
+    // Telemetry
+    #if PMM_USE_TELEMETRY
+        mPmmTelemetry.init(&mPmmErrorsCentral);
+    #endif
 
-        #if PMM_USE_GPS                             /* GPS */
-    mPmmGps.init(&mPmmErrorsCentral);
-        #endif
 
-        #if PMM_USE_SD                              /* SD */
-    mPmmSd.init(&mPmmErrorsCentral);
-        #endif
+    // PmmPackageLog
+    mPmmPackageLog.init(&mPmmTelemetry);
+    mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
 
-    mPmmImu.init(&mPmmErrorsCentral); /* IMU */
+
+    // GPS
+    #if PMM_USE_GPS
+        mPmmGps.init(&mPmmErrorsCentral);
+        mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
+    #endif
+
+
+    // SD
+    #if PMM_USE_SD
+        mPmmSd.init(&mPmmErrorsCentral);
+    #endif
+
+
+    // IMU
+    #if PMM_USE_IMU
+        mPmmImu.init(&mPmmErrorsCentral);
+        mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
+    #endif
+
 
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 
-    mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
-    mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
-    mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
 
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmPackageLog.debugPrintLogHeader();
-    // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
 
@@ -124,10 +140,10 @@ void Pmm::update()
     //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Imu!");
 
 
-        #if PMM_USE_GPS
-    mPmmGps.update();
-    //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
-        #endif
+    #if PMM_USE_GPS
+        mPmmGps.update();
+        //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
+    #endif
 
 
 
@@ -156,27 +172,31 @@ void Pmm::update()
 
 
 
-        #if PMM_USE_TELEMETRY
-    switch(mPmmTelemetry.updateReception())
-    {
-        case PMM_PACKAGE_NONE: // This could be with the default case. But will leave it here for A E S T H E T I C S (or bug reporting if default)
-            break;
-        case PMM_PACKAGE_LOG:
-            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-            break;
-        case PMM_PACKAGE_LOG_INFO:
-            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-            break;
-        case PMM_PACKAGE_STRING:
-            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-            break;
-        case PMM_PACKAGE_REQUEST:
-            break;
-        default:
-            break; //https://softwareengineering.stackexchange.com/a/201786
-    }
-    mPmmTelemetry.updateTransmission();
-    //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
+    #if PMM_USE_TELEMETRY
+        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the pmmPackagesXYZ includes the pmmTelemetry, and if pmmTelemetry included the
+        // pmmPackagezXYZ, that would causa a circular dependency, and the code wouldn't compile. I had the idea to use the address of the functions, but that
+        // would make the code a little messy. Give me better alternatives! (but this current alternative isn't bad at all)
+        switch(mPmmTelemetry.updateReception())
+        {
+            case PMM_PACKAGE_NONE: // This could be with the default case. But will leave it here for A E S T H E T I C S (or bug reporting if default - invalid type)
+                break;
+            case PMM_PACKAGE_LOG:
+                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+                break;
+            case PMM_PACKAGE_LOG_INFO:
+                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+                break;
+            case PMM_PACKAGE_STRING:
+                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+                break;
+            case PMM_PACKAGE_REQUEST:
+                break;
+            default:
+                break; // Not used here, but a good information about default in switchs: https://softwareengineering.stackexchange.com/a/201786
+        }
+
+        mPmmTelemetry.updateTransmission();
+        //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
     #endif
 
 

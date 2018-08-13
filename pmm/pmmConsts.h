@@ -8,6 +8,8 @@
 #ifndef PMM_CONSTS_h
 #define PMM_CONSTS_h
 
+
+
 // =======================================================================
 //  Debug
 // =======================================================================
@@ -33,6 +35,8 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 
 #define PMM_DEBUG_PRINT_IMU_MORE 1 // Prints "barometer updated!" etc
 
+
+
 // =======================================================================
 //  General
 // =======================================================================
@@ -49,15 +53,26 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 #define PMM_VARIABLE_STRING_LENGTH          22
 
 #define PMM_IS_PDA                       1
+
+
+
+// =======================================================================
+//  IMU
+// =======================================================================
+#define PMM_USE_IMU              1
+
+
+
 // =======================================================================
 //  SD
 // =======================================================================
-
-
 #define PMM_USE_SD                  0
+
 #define PMM_SD_FILENAME_MAX_LENGTH  64
 const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};
 const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
+
+
 
 // =======================================================================
 //  Telemetry
@@ -73,9 +88,12 @@ const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32
 #define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH    251 // Must be 251 (LoRa max is 255, 4 bytes are used as default headers by the RadioHead lib (maybe will remove/change it on future)). read recv2() in RH_RF95.cpp.
 
+
+
 // =======================================================================
 //  LoRa
 // =======================================================================
+
 #define PMM_RF_INIT_MAX_TRIES   10
 
 #define PMM_PIN_RFM95_CS        10
@@ -84,6 +102,9 @@ const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
 #define PMM_LORA_FREQUENCY      915.0
 
 #define PMM_LORA_TX_POWER       23 // 5~23
+
+
+
 // =======================================================================
 //  GPS
 // =======================================================================

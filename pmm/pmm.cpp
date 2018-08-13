@@ -108,38 +108,77 @@ void Pmm::init()
     // PMM_DEBUG_PRINT(SD_LOG_HEADER);
 }
 
+
+
+
+// Where EVERYTHING happens!
 void Pmm::update()
 {
     //PMM_DEBUG_PRINT_MORE("Pmm [M]: Looped!");
     //PMM_DEBUG_PRINT(i++);
     mPackageTimeMs = millis();                  // Packet time, in miliseconds. (unsigned long)
 
+
+
     mPmmImu.update();
     //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Imu!");
 
-    /* GPS */
-    #if PMM_USE_GPS
-        mPmmGps.update();
-        //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
-    #endif
 
-//---------------SD Logging Code---------------//
-    #if PMM_USE_SD
-    #endif
+        #if PMM_USE_GPS
+    mPmmGps.update();
+    //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
+        #endif
 
-//-------------- Send RF package ---------------//
-    #if PMM_USE_TELEMETRY
-        mPmmTelemetry.updateTransmission();
-        //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
-    #endif
 
-    #if PMM_DEBUG_SERIAL
-        mPmmPackageLog.debugPrintLogContent();
-        Serial.println();
-    #endif
+
+        #if PMM_USE_SD
+        #endif
+
+
+
+
+
+
+
+
+        #if PMM_DEBUG_SERIAL
+    mPmmPackageLog.debugPrintLogContent();
+    Serial.println();
+        #endif
+
+
+
+        uint8_t* getReceivedPacketArray();
+        uint16_t getReceivedPacketLength();
 
     //mPmmErrorsCentral.updateLedsAndBuzzer();
     mPackageLogId ++;
+
+
+
+        #if PMM_USE_TELEMETRY
+    switch(mPmmTelemetry.updateReception())
+    {
+        case PMM_PACKAGE_NONE: // This could be with the default case. But will leave it here for A E S T H E T I C S (or bug reporting if default)
+            break;
+        case PMM_PACKAGE_LOG:
+            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+            break;
+        case PMM_PACKAGE_LOG_INFO:
+            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+            break;
+        case PMM_PACKAGE_STRING:
+            mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+            break;
+        case PMM_PACKAGE_REQUEST:
+            break;
+        default:
+            break; //https://softwareengineering.stackexchange.com/a/201786
+    }
+    mPmmTelemetry.updateTransmission();
+    //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
+    #endif
+
 
     /*if (packetIDul % 100 == 0)
     {

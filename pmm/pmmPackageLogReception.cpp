@@ -11,8 +11,8 @@
 
 
 
-// Receive Package Info Package
-void PmmPackageLog::receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize)
+// Received Package Log Info Package
+void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint8_t packetSize)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;

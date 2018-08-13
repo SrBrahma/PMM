@@ -136,35 +136,41 @@ int PmmTelemetry::updateTransmission()
 
 
 // For now, it is a
-int PmmTelemetry::updateReception()
+pmmPackageType PmmTelemetry::updateReception()
 {
-    if (mRf95.recv2(mRfPayload))
+    // 1.a) Did we get a packet on the RF module?
+    if ((mReceivedPacketLength = mRf95.recv2(mReceivedPacketArray)))
     {
+        // 2) Which kind of packet is it?
+
+        // The PMM will only deal with these packages types if it is a PDA. (may be changed in the future)
         #if PMM_IS_PDA
-        if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
-        {
-            //mPmmPackageLog->
-            return 0;
-        }
-        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_STRING, 4)) // MSTR
-        {
-            // save in txt
+            if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
+                return PMM_PACKAGE_LOG;
 
-            return 0;
-        }
-        else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MLIN
-        {
+            else if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MLIN
+                return PMM_PACKAGE_LOG_INFO;
 
-            return 0;
-        }
-        else
-            return 0;
+            else if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_STRING , 4)) // MSTR
+                return PMM_PACKAGE_STRING;
         #endif
 
+
+        if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MRQT. It is "if" instead of "else if", because if it was an "else if" and
+                                                                                  // PMM_IS_PDA is 0, there wouldn't be an "if" before the "else if" \o/
+            return PMM_PACKAGE_REQUEST;
+
+        // 2.b) If the packet type is unknown / invalid
+        else
+            return PMM_PACKAGE_NONE;
     }
+
+    // 1.b) If nothing is received, or if the packet doesn't have a payload after all, return NONE!
     else
-        return 0;
+        return PMM_PACKAGE_NONE;
 }
+
+
 
 /* Returns the index of the new allocated item of the queue (0 ~ the maximum index of the new item in the queue). Returns -1 if not successful (queue may be full!).
  * Also, returns by reference the struct.
@@ -265,32 +271,11 @@ PmmTelemetry::setTxPower(int value)
     return 0;
 } */
 
-
-uint8_t* PmmTelemetry::getPackageLogPtrThenNullIt()
+uint8_t* PmmTelemetry::getReceivedPacketArray()
 {
-    uint8_t* tempPtr = mPackageLogPtr;
-    if (tempPtr)
-        mPackageLogPtr = NULL;
-    return tempPtr;
+    return mReceivedPacketArray;
 }
-uint8_t* PmmTelemetry::getPackageLogInfoPtrThenNullIt()
+uint16_t PmmTelemetry::getReceivedPacketLength()
 {
-    uint8_t* tempPtr = mPackageLogInfoPtr;
-    if (tempPtr)
-        mPackageLogInfoPtr = NULL;
-    return tempPtr;
-}
-uint8_t* PmmTelemetry::getPackageStringPtrThenNullIt()
-{
-    uint8_t* tempPtr = mPackageStringPtr;
-    if (tempPtr)
-        mPackageStringPtr = NULL;
-    return tempPtr;
-}
-uint8_t* PmmTelemetry::getPackageRequestPtrThenNullIt()
-{
-    uint8_t* tempPtr = mPackageRequest;
-    if (tempPtr)
-        mPackageRequest = NULL;
-    return tempPtr;
+    return mReceivedPacketLength;
 }

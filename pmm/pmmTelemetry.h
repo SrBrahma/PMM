@@ -9,6 +9,7 @@
 #include <Arduino.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
+#include <pmmPackages.h>
 #include <pmmErrorsCentral.h>
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8
@@ -45,7 +46,9 @@ class PmmTelemetry
     //PmmTelemetry(); // https://stackoverflow.com/a/12927220
 
 private:
-    uint8_t mRfPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
+    uint8_t mReceivedPacketArray[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
+    uint16_t mReceivedPacketLength;
+
     PmmErrorsCentral *mPmmErrorsCentral;
     RH_RF95 mRf95;
     uint32_t mPreviousPackageLogTransmissionMillis;
@@ -58,19 +61,18 @@ private:
 
     int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
-    void *mPackageLogReceivedFunctionPtr, *mPackageLogInfoReceivedFunctionPtr, *mPackageStringReceivedFunctionPtr, *mPackageRequestReceivedFunctionPtr;
-
 public:
     PmmTelemetry();
     int init(PmmErrorsCentral *pmmErrorsCentral);
-    int update();
-    int updateReception();
+    pmmPackageType updateReception();
     int updateTransmission();
 
     int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
     int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
 
-    void setPackageLogReceivedFunctionPtr(std::function<double (double,double)> func));
+    uint8_t* getReceivedPacketArray();
+    uint16_t getReceivedPacketLength();
+
     //void setPackageLogInfoReceivedFunctionPtr
     //void setPackageStringReceivedFunctionPtr
     //void setPackageRequestReceivedFunctionPtr;

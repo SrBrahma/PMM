@@ -92,7 +92,7 @@ public:
     int init(PmmTelemetry* pmmTelemetry);
 
     #if PMM_IS_PDA
-        void receivedPackageInfo(uint8_t* packetArray, uint8_t packetSize);
+        void receivedPackageLogInfo(uint8_t* packetArray, uint8_t packetSize);
     #endif
 
     // Add variables to the package log. The types are specified in pmmPackageLog.cpp.

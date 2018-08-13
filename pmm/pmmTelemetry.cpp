@@ -135,6 +135,7 @@ int PmmTelemetry::updateTransmission()
 
 
 
+// For now, it is a
 int PmmTelemetry::updateReception()
 {
     if (mRf95.recv2(mRfPayload))
@@ -142,7 +143,7 @@ int PmmTelemetry::updateReception()
         #if PMM_IS_PDA
         if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
         {
-            mPmmPackageLog->
+            //mPmmPackageLog->
             return 0;
         }
         else if (!memcmp(mRfPayload, PMM_TELEMETRY_HEADER_TYPE_STRING, 4)) // MSTR
@@ -263,3 +264,33 @@ PmmTelemetry::setTxPower(int value)
     mRf95.setTxPower(value, false);
     return 0;
 } */
+
+
+uint8_t* PmmTelemetry::getPackageLogPtrThenNullIt()
+{
+    uint8_t* tempPtr = mPackageLogPtr;
+    if (tempPtr)
+        mPackageLogPtr = NULL;
+    return tempPtr;
+}
+uint8_t* PmmTelemetry::getPackageLogInfoPtrThenNullIt()
+{
+    uint8_t* tempPtr = mPackageLogInfoPtr;
+    if (tempPtr)
+        mPackageLogInfoPtr = NULL;
+    return tempPtr;
+}
+uint8_t* PmmTelemetry::getPackageStringPtrThenNullIt()
+{
+    uint8_t* tempPtr = mPackageStringPtr;
+    if (tempPtr)
+        mPackageStringPtr = NULL;
+    return tempPtr;
+}
+uint8_t* PmmTelemetry::getPackageRequestPtrThenNullIt()
+{
+    uint8_t* tempPtr = mPackageRequest;
+    if (tempPtr)
+        mPackageRequest = NULL;
+    return tempPtr;
+}

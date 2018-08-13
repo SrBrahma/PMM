@@ -52,7 +52,7 @@ const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 // with some math magic trick, it can be rewritten as
 // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
 
-class PmmPackageLog // Intended to have >1 Objects of this class! Maybe someday we will want to have one object for reception, and another for transmission!
+class PmmPackageLog // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
 {
 private:
 

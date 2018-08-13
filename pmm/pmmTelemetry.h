@@ -58,6 +58,8 @@ private:
 
     int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
+    void *mPackageLogReceivedFunctionPtr, *mPackageLogInfoReceivedFunctionPtr, *mPackageStringReceivedFunctionPtr, *mPackageRequestReceivedFunctionPtr;
+
 public:
     PmmTelemetry();
     int init(PmmErrorsCentral *pmmErrorsCentral);
@@ -67,6 +69,11 @@ public:
 
     int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
     int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
+
+    void setPackageLogReceivedFunctionPtr(std::function<double (double,double)> func));
+    //void setPackageLogInfoReceivedFunctionPtr
+    //void setPackageStringReceivedFunctionPtr
+    //void setPackageRequestReceivedFunctionPtr;
 };
 
 

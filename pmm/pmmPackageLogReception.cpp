@@ -3,7 +3,7 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#if PMM_IS_PDA
+
 
 #include <crc16.h>
 #include <pmmPackageLog.h>
@@ -12,7 +12,7 @@
 
 
 // Received Package Log Info Package
-void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint8_t packetSize)
+void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint16_t packetSize)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;
@@ -22,13 +22,13 @@ void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint8_t packetS
         return;
 
     // First test the CRC, to see if the packet is valid.
-    if ((packetArray[5] << 8) | (packetArray[4]) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, PMM_TELEMETRY_HEADER_TYPE_LENGTH)))
+    if (((packetArray[5] << 8) | (packetArray[4])) != (crc16(packetArray + 6, packetSize - 6), crc16(packetArray, PMM_TELEMETRY_HEADER_TYPE_LENGTH)))
         return;
 
     tempPackageCrc = packetArray[6] | (packetArray[7] << 8);
 
     // if changed the CRC16 of the entire package, or is the first packet ever received
-    if (tempPackageCrc != mReceivedPackageInfoStruct.entirePackageCrc || !mPackageLogInfoNumberOfPackets)
+    if (tempPackageCrc != mLogInfoPackageCrc || !mPackageLogInfoNumberOfPackets)
     {
         memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS);
         mLogInfoPackageCrc = tempPackageCrc;
@@ -58,13 +58,14 @@ void PmmPackageLog::unitePackageInfoPackets()
 {
     unsigned packetCounter;
     unsigned payloadLength;
-    unsigned logInfoRawArrayIndex = 0;
-    unsigned stringSize;
+    uint16_t logInfoRawArrayIndex = 0; // unsigned or uint32_t was giving me a "warning: comparison between signed and unsigned integer expressions [-Wsign-compare]". why?
+    unsigned stringSizeWithNullChar;
+    unsigned variableCounter;
 
     mPackageLogInfoRawArrayLength = 0;
 
-    // Copies all the packets into the big raw array
-    for (packetCounter = 0; packetCounter < mReceivedPackageInfoStruct.totalNumberPackets; packetCounter ++)
+    // 1) Copies all the packets into the big raw array
+    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter ++)
     {
         payloadLength = mPackageLogInfoTelemetryArrayLengths[packetCounter] - PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
@@ -78,11 +79,11 @@ void PmmPackageLog::unitePackageInfoPackets()
 
 
 
-    // Now extracts all the info from the raw array.
+    // 2) Now extracts all the info from the raw array.
 
-    mLogNumberOfVariables = mPackageLogInfoRawArray[0]; // First get the number of variables
-
-    // Get the variable types and sizes
+    // 2.1) First get the number of variables
+    mLogNumberOfVariables = mPackageLogInfoRawArray[0];
+    // 2.2) Get the variable types and sizes
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {
         if (variableCounter % 2) // If is odd (if rest is 1)
@@ -97,15 +98,14 @@ void PmmPackageLog::unitePackageInfoPackets()
         mVariableSizeArray[variableCounter] = variableTypeToVariableSize(mVariableTypeArray[variableCounter]);
     }
 
-    // Now get the strings of the variables
+    // 2.3) Now get the strings of the variables
     logInfoRawArrayIndex++;
     for (variableCounter = 0; logInfoRawArrayIndex < mPackageLogInfoRawArrayLength - 1; variableCounter++)
     {
-        stringSize = strlen(mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
-        memcpy(mVariableNameArray[variableCounter], mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSize);
-        logInfoRawArrayIndex += stringSize;
+        stringSizeWithNullChar = strlen((char*) mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
+        memcpy(mVariableNameArray[variableCounter], mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);
+        logInfoRawArrayIndex += stringSizeWithNullChar;
     }
 
     // Finished!
 }
-#endif

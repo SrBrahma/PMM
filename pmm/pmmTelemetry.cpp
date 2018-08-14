@@ -96,8 +96,9 @@ int PmmTelemetry::updateTransmission()
         queueStructPtr = &mLowPriorityQueueStruct;
     else if (mDefaultPriorityQueueStruct.remainingItemsOnQueue)
         queueStructPtr = &mDefaultPriorityQueueStruct;
-    // else
-        // Error here! Invalid priority!
+    else
+        return 0; // Nothing to send!
+
 
     // 4) Which kind of send is it? A normal send(), or a sendOfSmartSizes? (Or a future kind of send!)
     // Then, send!
@@ -131,7 +132,7 @@ int PmmTelemetry::updateTransmission()
 
     // 6) Done! Sent successfully!
     return 0;
-    
+
 } // end of updateTransmission()
 
 

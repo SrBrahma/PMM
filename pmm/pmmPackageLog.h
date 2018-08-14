@@ -52,8 +52,13 @@ const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 // with some math magic trick, it can be rewritten as
 // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
 
+
+
+
+
 class PmmPackageLog // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
 {
+
 private:
 
     uint8_t variableTypeToVariableSize(uint8_t variableType);
@@ -67,9 +72,11 @@ private:
     // Uses the received packets via telemetry to get the Package Log Info
     void unitePackageInfoPackets();
 
+
+
     PmmTelemetry *mPmmTelemetry;
 
-    const char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
+    char* mVariableNameArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableTypeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
     uint8_t mVariableSizeArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAddressArray[PMM_TELEMETRY_LOG_NUMBER_VARIABLES];
@@ -85,15 +92,23 @@ private:
     uint8_t mPackageLogInfoTelemetryArray[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     uint8_t mPackageLogInfoTelemetryArrayLengths[PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS];
 
+
+
+
+
 public:
 
     PmmPackageLog();
 
     int init(PmmTelemetry* pmmTelemetry);
 
-    #if PMM_IS_PDA
-        void receivedPackageLogInfo(uint8_t* packetArray, uint8_t packetSize);
-    #endif
+
+
+    // Reception
+    void receivedPackageLogInfo(uint8_t* packetArray, uint16_t packetSize);
+    // ~
+
+
 
     // Add variables to the package log. The types are specified in pmmPackageLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
@@ -108,10 +123,12 @@ public:
     void addImu(pmmImuStructType* pmmImuStructPtr);
     void addGps(pmmGpsStructType* pmmGpsStruct);
 
-    // For a quick way to add a variable to the package.
-    // Make sure the given variable name and the variable itself is static, global, "const PROGMEM", or any other way that the variable isn't lost during the program run.
-    // Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
+    // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
+    // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
     void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
+    // ~
+
+
 
     // Getters
     uint8_t getNumberOfVariables();
@@ -121,6 +138,8 @@ public:
     uint8_t* getVariableTypeArray();
     uint8_t* getVariableSizeArray();
     uint8_t** getVariableAddressArray();
+    // ~
+
 
 
     // Debug!
@@ -128,6 +147,7 @@ public:
         void debugPrintLogHeader();
         void debugPrintLogContent();
     #endif
+    //  ~
 
 }; // End of the class
 

@@ -93,7 +93,7 @@ void PmmPackageLog::includeVariableInPackage(const char *variableName, uint8_t v
         return;
     }
 
-    mVariableNameArray[mLogNumberOfVariables] = variableName;
+    mVariableNameArray[mLogNumberOfVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
     mVariableTypeArray[mLogNumberOfVariables] = variableType;
     mVariableSizeArray[mLogNumberOfVariables] = varSize;
     mVariableAddressArray[mLogNumberOfVariables] = (uint8_t*) variableAddress;
@@ -335,7 +335,7 @@ uint8_t PmmPackageLog::getPackageLogSizeInBytes()
     return mPackageLogSizeInBytes;
 }
 
-const char** PmmPackageLog::getVariableNameArray()  { return mVariableNameArray;}
+const char** PmmPackageLog::getVariableNameArray()  { return (const char**) mVariableNameArray;}
 uint8_t* PmmPackageLog::getVariableTypeArray()      { return mVariableTypeArray;}
 uint8_t* PmmPackageLog::getVariableSizeArray()      { return mVariableSizeArray;}
 uint8_t** PmmPackageLog::getVariableAddressArray()     { return mVariableAddressArray;}

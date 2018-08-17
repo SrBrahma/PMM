@@ -9,8 +9,9 @@
 #include <Arduino.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmPackages.h>
 #include <pmmErrorsCentral.h>
+
+#include "packages/pmmPackages.h"
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8
 

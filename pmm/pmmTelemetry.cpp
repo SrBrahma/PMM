@@ -158,7 +158,7 @@ pmmPackageType PmmTelemetry::updateReception()
         #endif
 
 
-        if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MRQT. It is "if" instead of "else if", because if it was an "else if" and
+        if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_REQUEST, 4)) // MRQT. It is "if" instead of "else if", because if it was an "else if" and
                                                                                   // PMM_IS_PDA is 0, there wouldn't be an "if" before the "else if" \o/
             return PMM_PACKAGE_REQUEST;
 

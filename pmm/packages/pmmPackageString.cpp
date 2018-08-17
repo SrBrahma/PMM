@@ -1,8 +1,11 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include <pmmPackageString.h>
+#include "pmmPackageString.h"
 #include <crc16.h>
+
+
+const PROGMEM char* PMM_THIS_NAME = {"Aurora"};
 
 int PmmPackageString::init(uint32_t *packageLogIdPtr)
 {

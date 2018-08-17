@@ -3,17 +3,15 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#ifndef PMM_PACKAGE_h
-#define PMM_PACKAGE_h
+#ifndef PMM_PACKAGE_LOG_h
+#define PMM_PACKAGE_LOG_h
 
 #include <pmmConsts.h>
 #include <pmmGps.h> // for GPS struct
 #include <pmmImu.h> // for IMU struct
 #include <pmmTelemetry.h>
 
-const char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] =    {"altitude(m)"};
-const char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] =     {"gpsLongitude"};
-const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
+
 
 // 000X 0-1 (1 byte)
 #define PMM_TELEMETRY_TYPE_UINT8    0

@@ -8,9 +8,10 @@
 #include <pmm.h>
 #include <pmmConsts.h>
 #include <pmmImu.h>
-#include <pmmPackageLog.h>
 #include <pmmErrorsCentral.h>
 #include <pmmHealthSignals.h>
+
+
 
 #if PMM_USE_TELEMETRY
     #include <pmmTelemetry.h>
@@ -23,6 +24,10 @@
 #if PMM_USE_SD
     #include <pmmSd.h>
 #endif
+
+//Packages
+#include "packages/pmmPackageLog.h"
+#include "packages/pmmPackageString.h"
 
 class Pmm
 {

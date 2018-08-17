@@ -3,15 +3,19 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+#include "pmmPackageLog.h"
+#include <crc16.h>
+#include <pmmConsts.h>
+#include <pmmTelemetry.h>
+
 #define PMM_PACKAGE_LOG_DATA_INDEX 2
 // 0 is MLOG
 // 1 is MLIN String CRC
 // 2 is data (PMM_PACKAGE_LOG_DATA_INDEX)
-#include <crc16.h>
-#include <pmmPackageLog.h>
-#include <pmmConsts.h>
-#include <pmmTelemetry.h>
 
+const char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] =    {"altitude(m)"};
+const char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] =     {"gpsLongitude"};
+const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 
 PmmPackageLog::PmmPackageLog()
 {

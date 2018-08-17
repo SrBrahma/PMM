@@ -79,10 +79,6 @@ const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
 // =======================================================================
 #define PMM_USE_TELEMETRY       1
 
-const char PMM_TELEMETRY_HEADER_TYPE_LOG[5]      = {"MLOG"}; // These are strings, just for faster changing.
-const char PMM_TELEMETRY_HEADER_TYPE_LOG_INFO[5] = {"MLIN"};
-const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
-
 #define PMM_TELEMETRY_HEADER_TYPE_LENGTH           4         // The length of chars of the header type.
 
 #define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32

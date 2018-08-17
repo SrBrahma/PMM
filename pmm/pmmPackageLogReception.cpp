@@ -102,8 +102,8 @@ void PmmPackageLog::unitePackageInfoPackets()
     logInfoRawArrayIndex++;
     for (variableCounter = 0; logInfoRawArrayIndex < mPackageLogInfoRawArrayLength - 1; variableCounter++)
     {
-        stringSizeWithNullChar = strlen((char*) mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
-        memcpy(mVariableNameArray[variableCounter], mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);
+        stringSizeWithNullChar = strlen((char*)&mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
+        memcpy(mVariableNameArray[variableCounter], &mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);
         logInfoRawArrayIndex += stringSizeWithNullChar;
     }
 

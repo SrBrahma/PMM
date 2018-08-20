@@ -5,7 +5,6 @@
 #ifndef PMM_SD_h
 #define PMM_SD_h
 
-#include <Arduino.h>
 
 #include <pmmErrorsCentral.h>
 #include <pmmConsts.h>

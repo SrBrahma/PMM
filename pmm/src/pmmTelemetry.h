@@ -5,13 +5,11 @@
 #ifndef PMM_TELEMETRY_h
 #define PMM_TELEMETRY_h
 
-
-#include <Arduino.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
 #include <pmmErrorsCentral.h>
 
-#include "packages/pmmPackages.h"
+#include "pmmPackages/pmmPackages.h"
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8
 
@@ -65,7 +63,7 @@ private:
 public:
     PmmTelemetry();
     int init(PmmErrorsCentral *pmmErrorsCentral);
-    pmmPackageType updateReception();
+    int updateReception();
     int updateTransmission();
 
     int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);

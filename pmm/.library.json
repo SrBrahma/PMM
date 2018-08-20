@@ -1,0 +1,39 @@
+{
+    "description": "PMM - Plataforma Multi-Missao",
+    "repository": {
+        "url": "https://github.com/minervarockets/pmm",
+        "type": "git"
+    },
+    "platforms": [
+        "teensy",
+    ],
+    "export": {
+        "exclude": [
+            "extras",
+            "docs",
+            "tests",
+            "test",
+            "*.doxyfile",
+            "*.pdf"
+        ],
+        "include": null
+    },
+    "authors": [
+        {
+            "maintainer": true,
+            "name": "Henrique Bruno",
+            "url": null,
+            "email": "henrique271197@gmail.com"
+        }
+    ],
+    "keywords": [
+        "pmm"
+    ],
+    "id": 9999,
+    "name": "pmm",
+    "frameworks": [
+        "arduino"
+    ],
+    "version": "2.0",
+    "homepage": "https://github.com/minervarockets/pmm"
+}

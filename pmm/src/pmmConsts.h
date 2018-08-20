@@ -40,6 +40,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  General
 // =======================================================================
+#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in pmmPackageString.cpp.
 #define PMM_USE_BUZZER              0
 #define PMM_USE_LED_RECOVERY        0
 #define PMM_USE_LED_ERRORS          0
@@ -59,14 +60,14 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  IMU
 // =======================================================================
-#define PMM_USE_IMU              1
+#define PMM_USE_IMU                 1
 
 
 
 // =======================================================================
 //  SD
 // =======================================================================
-#define PMM_USE_SD                  0
+#define PMM_USE_SD                  1
 
 #define PMM_SD_FILENAME_MAX_LENGTH  64
 const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};

@@ -4,8 +4,6 @@
 #ifndef PMM_h
 #define PMM_h
 
-#include <Arduino.h>
-#include <pmm.h>
 #include <pmmConsts.h>
 #include <pmmImu.h>
 #include <pmmErrorsCentral.h>
@@ -26,8 +24,11 @@
 #endif
 
 //Packages
-#include "packages/pmmPackageLog.h"
-#include "packages/pmmPackageString.h"
+#include "pmmPackages/pmmPackageLog.h"
+#include "pmmPackages/pmmPackageString.h"
+#include "pmmPackages/pmmPackagesReception.h"
+
+
 
 class Pmm
 {
@@ -36,7 +37,10 @@ private:
 
     PmmImu mPmmImu;
 
+    // Packages
     PmmPackageLog mPmmPackageLog;
+    PmmPackageString mPmmPackageString;
+    PmmPackagesReception mPmmPackagesReception;
 
     PmmErrorsCentral mPmmErrorsCentral;         /* Errors */
 
@@ -48,9 +52,9 @@ private:
     PmmGps mPmmGps;
     #endif
 
-    #if PMM_USE_SD                              /* SD */
+    //#if PMM_USE_SD       // is commented so it can be an argument for the packages objects init                       /* SD */
     PmmSd mPmmSd;
-    #endif
+    //#endif
 
 public:
     void init();

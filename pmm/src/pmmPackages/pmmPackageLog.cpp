@@ -3,10 +3,11 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include "pmmPackageLog.h"
+#include "pmmPackages/pmmPackageLog.h"
 #include <crc16.h>
 #include <pmmConsts.h>
 #include <pmmTelemetry.h>
+
 
 #define PMM_PACKAGE_LOG_DATA_INDEX 2
 // 0 is MLOG

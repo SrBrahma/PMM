@@ -1,7 +1,7 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include "pmmPackageString.h"
+#include <pmmPackages/pmmPackageString.h>
 #include <crc16.h>
 
 void PmmPackageString::receivedPackageString(uint8_t* packetArray, uint8_t packetSize)

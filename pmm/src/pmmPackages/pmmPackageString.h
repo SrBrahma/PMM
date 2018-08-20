@@ -27,11 +27,14 @@ class PmmPackageString
 {
 private:
     uint32_t* mPackageLogIdPtr;
+    uint32_t* mPackageLogMillisPtr; // To share the same millis as the Package Log
+    PmmTelemetry* mPmmTelemetry;
+    PmmSd* mPmmSd;
     char mStrings[PMM_PACKAGE_STRING_MAX_STRINGS][PMM_PACKAGE_STRING_MAX_STRING_LENGTH]; // As teensy 3.6 have 256kB RAM, I don't care too much about big arrays.
     uint8_t mActualNumberOfStrings;
 
 public:
-    int init(uint32_t *packageLogIdPtr);
+    int init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd);
     int addString(char *string);
     int addRawString(char *string);
 

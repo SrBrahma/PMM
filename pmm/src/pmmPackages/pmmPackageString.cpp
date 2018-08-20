@@ -1,15 +1,18 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include "pmmPackageString.h"
+#include <pmmPackages/pmmPackageString.h>
 #include <crc16.h>
 
 
-const PROGMEM char* PMM_THIS_NAME = {"Aurora"};
+const PROGMEM char* PMM_THIS_NAME = {PMM_THIS_NAME_DEFINE};
 
-int PmmPackageString::init(uint32_t *packageLogIdPtr)
+int PmmPackageString::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
 {
+    mPmmTelemetry = pmmTelemetry;
+    mPmmSd = pmmSd;
     mPackageLogIdPtr = packageLogIdPtr;
+    mPackageLogMillisPtr = packageLogMillisPtr;
     mActualNumberOfStrings = 0;
     return 0;
 }

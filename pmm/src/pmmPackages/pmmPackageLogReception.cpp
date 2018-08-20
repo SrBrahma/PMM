@@ -6,7 +6,7 @@
 
 
 
-#include "pmmPackageLog.h"
+#include <pmmPackages/pmmPackageLog.h>
 #include <pmmConsts.h>
 #include <crc16.h>
 
@@ -108,4 +108,10 @@ void PmmPackageLog::unitePackageInfoPackets()
     }
 
     // Finished!
+}
+
+
+// Received Package Log Info Package
+void PmmPackageLog::receivedPackageLog(uint8_t* packetArray, uint16_t packetSize)
+{
 }

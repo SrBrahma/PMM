@@ -11,7 +11,6 @@
 #define DELAY_MS_BAROMETER 100 //random value
 
 #include <pmmConsts.h>
-#include <pmmImu.h>
 #include <pmmErrorsCentral.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
@@ -45,7 +44,7 @@ private:
     float mAccelerometerScale;
     float mGyroscopeScale;
     float mMagnetometerScale;
-    
+
     float mMagnetometerDeclinationRad;
 
     unsigned long mNextMillisBarometer;

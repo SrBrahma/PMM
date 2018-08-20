@@ -136,40 +136,13 @@ int PmmTelemetry::updateTransmission()
 } // end of updateTransmission()
 
 
-
-// For now, it is a
-pmmPackageType PmmTelemetry::updateReception()
+// Returns 1 if received anything, else, 0.
+int PmmTelemetry::updateReception()
 {
     // 1.a) Did we get a packet on the RF module?
     if ((mReceivedPacketLength = mRf95.recv2(mReceivedPacketArray)))
-    {
-        // 2) Which kind of packet is it?
-
-        // The PMM will only deal with these packages types if it is a PDA. (may be changed in the future)
-        #if PMM_IS_PDA
-            if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG, 4)) // MLOG
-                return PMM_PACKAGE_LOG;
-
-            else if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_LOG_INFO, 4)) // MLIN
-                return PMM_PACKAGE_LOG_INFO;
-
-            else if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_STRING , 4)) // MSTR
-                return PMM_PACKAGE_STRING;
-        #endif
-
-
-        if (!memcmp(mReceivedPacketArray, PMM_TELEMETRY_HEADER_TYPE_REQUEST, 4)) // MRQT. It is "if" instead of "else if", because if it was an "else if" and
-                                                                                  // PMM_IS_PDA is 0, there wouldn't be an "if" before the "else if" \o/
-            return PMM_PACKAGE_REQUEST;
-
-        // 2.b) If the packet type is unknown / invalid
-        else
-            return PMM_PACKAGE_NONE;
-    }
-
-    // 1.b) If nothing is received, or if the packet doesn't have a payload after all, return NONE!
-    else
-        return PMM_PACKAGE_NONE;
+        return 1;
+    return 0;
 }
 
 

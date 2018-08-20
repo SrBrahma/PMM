@@ -2,8 +2,9 @@
 
 // https://forum.pjrc.com/threads/39158-Using-SdFat-to-acces-Teensy-3-6-SD-internal-card-(-amp-with-audio-board)
 
-
 #include <pmm.h>
+
+
 #include <pmmConsts.h>
 #include <pmmImu.h>
 #include <pmmErrorsCentral.h>
@@ -23,9 +24,12 @@
     #include <pmmSd.h>
 #endif
 
+
 // Packages
-#include <packages/pmmPackageLog.h>
-#include "packages/pmmPackageString.h"
+#include "pmmPackages/pmmPackageLog.h"
+#include "pmmPackages/pmmPackageString.h"
+#include "pmmPackages/pmmPackagesReception.h"
+
 
 
 void Pmm::init()
@@ -50,31 +54,37 @@ void Pmm::init()
 
     mPmmErrorsCentral.init(&mPackageLogId);
 
-    // Telemetry
+    // Telemetry ====================================================================================
     #if PMM_USE_TELEMETRY
         mPmmTelemetry.init(&mPmmErrorsCentral);
     #endif
 
-
+    // Packages =====================================================================================
     // PmmPackageLog
     mPmmPackageLog.init(&mPmmTelemetry);
     mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
 
+    // PmmPackageString
+    mPmmPackageString.init(&mPackageLogId, &mPackageTimeMs, &mPmmTelemetry, &mPmmSd);
 
-    // GPS
+    // PmmPackagesReception
+    mPmmPackagesReception.init(&mPmmPackageLog, &mPmmPackageString);
+
+
+    // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init(&mPmmErrorsCentral);
         mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
-    // SD
+    // SD ===========================================================================================
     #if PMM_USE_SD
         mPmmSd.init(&mPmmErrorsCentral);
     #endif
 
 
-    // IMU
+    // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init(&mPmmErrorsCentral);
         mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
@@ -99,15 +109,14 @@ void Pmm::update()
     //PMM_DEBUG_PRINT(i++);
 
 
-
     mPackageTimeMs = millis();                  // Packet time, in miliseconds. (unsigned long)
+
 
 
     #if PMM_USE_IMU
         mPmmImu.update();
         //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Imu!");
     #endif
-
 
 
 
@@ -130,44 +139,16 @@ void Pmm::update()
 
 
 
-
-    //mPmmErrorsCentral.updateLedsAndBuzzer();
-
-
-
-
-
-
     #if PMM_USE_TELEMETRY
         // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the pmmPackagesXYZ includes the pmmTelemetry, and if pmmTelemetry included the
         // pmmPackagezXYZ, that would causa a circular dependency, and the code wouldn't compile. I had the idea to use the address of the functions, but that
-        // would make the code a little messy. Give me better alternatives! (but this current alternative isn't bad at all)
+        // would make the code a little messy. Give me better alternatives! (but this current alternative isn't THAT bad at all)
 
-        // They may automatically use the pmmSd and the pmmTelemetry objects.
-        switch(mPmmTelemetry.updateReception())
-        {
-            case PMM_PACKAGE_NONE: // This could be with the default case. But will leave it here for A E S T H E T I C S (or bug reporting if default - invalid type)
-                break;
-            case PMM_PACKAGE_LOG:
-                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-                break;
-            case PMM_PACKAGE_LOG_INFO:
-                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-                break;
-            case PMM_PACKAGE_STRING:
-                mPmmPackageLog.receivedPackageLogInfo(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
-                break;
-            case PMM_PACKAGE_REQUEST:
-                break;
-            default:
-                break; // This link is not used here, but a good information about default in switchs: https://softwareengineering.stackexchange.com/a/201786
-        }
-
-        mPmmTelemetry.updateTransmission();
+        // The Packages objects may/will automatically use the pmmSd and the pmmTelemetry objects.
+        if(mPmmTelemetry.updateTransmission());
+            mPmmPackagesReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
         //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
     #endif
-
-
 
 
 
@@ -177,8 +158,6 @@ void Pmm::update()
         timePrint = millis();
     }*/
 
-
-
-
+        //mPmmErrorsCentral.updateLedsAndBuzzer();
     mPackageLogId ++;
 }

@@ -131,7 +131,7 @@ void RH_RF95::validateRxBuf(uint8_t buffer[], uint8_t bufferLength)
     {
         case PMM_NEO_PROTOCOL:
             // 1) First check the Destination of this packet we received
-            if ((_rxHeaderTo != mThisAddress) && !mPromiscuousMode) // If the Destination not equal to this Address and not in promiscuous mode
+            if ((mPacketBuffer[1] != mThisAddress) && !mPromiscuousMode) // If the Destination not equal to this Address and not in promiscuous mode
     // Extract the 4 headers
     //_rxHeaderFrom  = mPacketBuffer[0];
     //_rxHeaderTo    = mPacketBuffer[1];

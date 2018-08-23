@@ -183,19 +183,6 @@ application. Purchase commercial licenses at http://airspayce.binpress.com
  #define memcpy_P memcpy
  #define RH_HAVE_SERIAL
 
-#elif (RH_PLATFORM == RH_PLATFORM_STM32) // Maple, Flymaple etc
- #include <STM32ArduinoCompat/wirish.h>
- #include <stdint.h>
- #include <string.h>
- #include <STM32ArduinoCompat/HardwareSPI.h>
- #define RH_HAVE_HARDWARE_SPI
- // Defines which timer to use on Maple
- #define MAPLE_TIMER 1
- #define PROGMEM
- #define memcpy_P memcpy
- #define Serial SerialUSB
- #define RH_HAVE_SERIAL
-
 #elif (RH_PLATFORM == RH_PLATFORM_STM32F2) // Particle Photon with firmware-develop
  #include <stm32f2xx.h>
  #include <application.h>
@@ -244,12 +231,6 @@ application. Purchase commercial licenses at http://airspayce.binpress.com
  #define RH_HAVE_SERIAL
  #define PROGMEM
   #include <Arduino.h>
-
-#elif (RH_PLATFORM == RH_PLATFORM_UNIX)
- // Simulate the sketch on Linux and OSX
- #include <RHutil/simulator.h>
- #define RH_HAVE_SERIAL
-#include <netinet/in.h> // For htons and friends
 
 #else
  #error Platform unknown!

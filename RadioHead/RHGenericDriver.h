@@ -198,14 +198,6 @@ public:
     /// \return The FROM header
     virtual uint8_t        headerFrom();
 
-    /// Returns the ID header of the last received message
-    /// \return The ID header
-    virtual uint8_t        headerId();
-
-    /// Returns the FLAGS header of the last received message
-    /// \return The FLAGS header
-    virtual uint8_t        headerFlags();
-
     /// Returns the most recent RSSI (Receiver Signal Strength Indicator).
     /// Usually it is the RSSI of the last received message, which is measured when the preamble is received.
     /// If you called readRssi() more recently, it will return that more recent value.
@@ -262,12 +254,6 @@ protected:
     /// Whether the transport is in promiscuous mode
     bool                _promiscuous;
 
-    /// TO header in the last received mesasge
-    volatile uint8_t    _rxHeaderTo;
-
-    /// FROM header in the last received mesasge
-    volatile uint8_t    _rxHeaderFrom;
-
     /// ID header in the last received mesasge
     volatile uint8_t    _rxHeaderId;
 
@@ -280,11 +266,6 @@ protected:
     /// FROM header to send in all messages
     uint8_t             _txHeaderFrom;
 
-    /// ID header to send in all messages
-    uint8_t             _txHeaderId;
-
-    /// FLAGS header to send in all messages
-    uint8_t             _txHeaderFlags;
 
     /// The value of the last received RSSI value, in some transport specific units
     volatile int16_t     _lastRssi;

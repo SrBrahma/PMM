@@ -209,10 +209,9 @@ void RH_RF95::validateRxBuf()
         return; // Too short to be a real message
 
     // Extract the 4 headers
-    _rxHeaderTo    = _buf[0];
-    _rxHeaderFrom  = _buf[1];
-    _rxHeaderId    = _buf[2];
-    _rxHeaderFlags = _buf[3];
+    _rxHeaderFrom  = _buf[0];
+    _rxHeaderTo    = _buf[1];
+
     if (_promiscuous || _rxHeaderTo == _thisAddress || _rxHeaderTo == RH_BROADCAST_ADDRESS)
     {
         _rxGood++;
@@ -276,7 +275,9 @@ bool RH_RF95::isAnyPacketBeingSentRH_RF95()
     return isAnyPacketBeingSentRHGenericDriver();
 }
 
-bool RH_RF95::send(const uint8_t* data, uint8_t len)
+
+// Won't automatically add any header on the packet!
+bool RH_RF95::sendRaw(const uint8_t* data, uint8_t len)
 {
     if (len > RH_RF95_MAX_MESSAGE_LEN || !len)
         return false;
@@ -303,6 +304,33 @@ bool RH_RF95::send(const uint8_t* data, uint8_t len)
     return true;
 }
 
+bool RH_RF95::send(const uint8_t* data, uint8_t len, PmmTelemetryProtocolsType protocol)
+{
+    if (len > RH_RF95_MAX_MESSAGE_LEN || !len)
+        return false;
+
+    waitPacketSent(); // Make sure we dont interrupt an outgoing message
+    setModeIdle();
+
+    if (!waitCAD())
+        return false;  // Check channel activity
+
+    // Position at the beginning of the FIFO
+    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
+
+    // The headers
+    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderTo);
+    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFrom);
+    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderId);
+    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFlags);
+    // The message data
+    spiBurstWrite(RH_RF95_REG_00_FIFO, data, len);
+    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, len + RH_RF95_HEADER_LEN);
+
+    setModeTx(); // Start the transmitter
+    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
+    return true;
+}
 
 /* By Henrique Bruno, UFRJ Minerva Rockets.
 */
@@ -336,60 +364,6 @@ bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray
 }
 
 
-
-/* By Henrique Bruno, UFRJ Minerva Rockets. Send an array of pointers to 4 bytes variables. Do typecast on the variables before, to uint8_t.
-    float floatVar;
-    uint32_t uint32Var;
-    uint8_t *array[SIZE] =
-    {
-        (uint8_t*) & floatVar,
-        (uint8_t*) & uint32Var
-    }
-    sendArrayOfPointersOf4Bytes(array, SIZE)
-    NOT USED ANYMORE!! WILL LEAVE IT HERE IF SOMEDAY I NEED IT (I DONT THINK SOOO!)
-*/
-bool RH_RF95::sendArrayOfPointersOf4Bytes(uint8_t** data, uint8_t number4BytesVariables)
-{
-    //unsigned long timeTo = millis();
-    waitPacketSent(); // Make sure we dont interrupt an outgoing message
-    setModeIdle();
-
-    if (!waitCAD())
-	return false;  // Check channel activity
-    //Serial.print(millis() - timeTo); Serial.println("ms idle");
-    // Position at the beginning of the FIFO
-    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-    // The headers
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderTo);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFrom);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderId);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFlags);
-    // The message data
-    spiBurstWriteArrayOfPointersOf4Bytes(RH_RF95_REG_00_FIFO, data, number4BytesVariables);
-    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, (number4BytesVariables * 4) + RH_RF95_HEADER_LEN);
-
-    setModeTx(); // Start the transmitter
-    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
-    return true;
-}
-
-
-
-bool RH_RF95::printRegisters()
-{
-    #ifdef RH_HAVE_SERIAL
-        uint8_t registers[] = { 0x01, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x014, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27};
-
-        uint8_t i;
-        for (i = 0; i < sizeof(registers); i++)
-        {
-            Serial.print(registers[i], HEX);
-            Serial.print(": ");
-            Serial.println(spiRead(registers[i]), HEX);
-        }
-    #endif
-    return true;
-}
 
 uint8_t RH_RF95::maxMessageLength()
 {

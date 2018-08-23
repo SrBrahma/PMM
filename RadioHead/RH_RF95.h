@@ -9,6 +9,11 @@
 // $Id: RH_RF95.h,v 1.21 2017/11/06 00:04:08 mikem Exp $
 //
 
+// Some changes by Henrique Bruno Fantauzzi de Almeida, Minerva Rockets - UFRJ; Brazil
+// I removed a lot of commentaries in this file to make it clearer. Scrolling across hundreds of lines
+// was very bad to find the code itself. Left only the most important ones. If you want to read the original file,
+// download the clean RadioHead library. I will mess with licenses later, must work!
+
 #ifndef RH_RF95_h
 #define RH_RF95_h
 
@@ -237,51 +242,6 @@
 #define RH_RF95_PA_DAC_DISABLE                        0x04
 #define RH_RF95_PA_DAC_ENABLE                         0x07
 
-/////////////////////////////////////////////////////////////////////
-/// \class RH_RF95 RH_RF95.h <RH_RF95.h>
-/// \brief Driver to send and receive unaddressed, unreliable datagrams via a LoRa
-/// capable radio transceiver.
-///
-/// For Semtech SX1276/77/78/79 and HopeRF RF95/96/97/98 and other similar LoRa capable radios.
-/// Based on http://www.hoperf.com/upload/rf/RFM95_96_97_98W.pdf
-/// and http://www.hoperf.cn/upload/rfchip/RF96_97_98.pdf
-/// and http://www.semtech.com/images/datasheet/LoraDesignGuide_STD.pdf
-/// and http://www.semtech.com/images/datasheet/sx1276.pdf
-/// and http://www.semtech.com/images/datasheet/sx1276_77_78_79.pdf
-/// FSK/GFSK/OOK modes are not (yet) supported.
-///
-/// Works with
-/// - the excellent MiniWirelessLoRa from Anarduino http://www.anarduino.com/miniwireless
-/// - The excellent Modtronix inAir4 http://modtronix.com/inair4.html
-/// and inAir9 modules http://modtronix.com/inair9.html.
-/// - the excellent Rocket Scream Mini Ultra Pro with the RFM95W
-///   http://www.rocketscream.com/blog/product/mini-ultra-pro-with-radio/
-/// - Lora1276 module from NiceRF http://www.nicerf.com/product_view.aspx?id=99
-/// - Adafruit Feather M0 with RFM95
-/// - The very fine Talk2 Whisper Node LoRa boards https://wisen.com.au/store/products/whisper-node-lora
-///   an Arduino compatible board, which include an on-board RFM95/96 LoRa Radio (Semtech SX1276), external antenna,
-///   run on 2xAAA batteries and support low power operations. RF95 examples work without modification.
-///   Use Arduino Board Manager to install the Talk2 code support. Upload the code with an FTDI adapter set to 5V.
-/// - heltec / TTGO ESP32 LoRa OLED https://www.aliexpress.com/item/Internet-Development-Board-SX1278-ESP32-WIFI-chip-0-96-inch-OLED-Bluetooth-WIFI-Lora-Kit-32/32824535649.html
-///
-/// \par Overview
-///
-/// This class provides basic functions for sending and receiving unaddressed,
-/// unreliable datagrams of arbitrary length to 251 octets per packet.
-///
-/// Manager classes may use this class to implement reliable, addressed datagrams and streams,
-/// mesh routers, repeaters, translators etc.
-///
-/// Naturally, for any 2 radios to communicate that must be configured to use the same frequency and
-/// modulation scheme.
-///
-/// This Driver provides an object-oriented interface for sending and receiving data messages with Hope-RF
-/// RFM95/96/97/98(W), Semtech SX1276/77/78/79 and compatible radio modules in LoRa mode.
-///
-/// The Hope-RF (http://www.hoperf.com) RFM95/96/97/98(W) and Semtech SX1276/77/78/79 is a low-cost ISM transceiver
-/// chip. It supports FSK, GFSK, OOK over a wide range of frequencies and
-/// programmable data rates, and it also supports the proprietary LoRA (Long Range) mode, which
-/// is the only mode supported in this RadioHead driver.
 ///
 /// This Driver provides functions for sending and receiving messages of up
 /// to 251 octets on any frequency supported by the radio, in a range of
@@ -289,16 +249,7 @@
 /// 61Hz precision to any frequency from 240.0MHz to 960.0MHz. Caution: most modules only support a more limited
 /// range of frequencies due to antenna tuning.
 ///
-/// Up to 2 modules can be connected to an Arduino (3 on a Mega),
-/// permitting the construction of translators and frequency changers, etc.
-///
-/// Support for other features such as transmitter power control etc is
-/// also provided.
-///
-/// Tested on MinWirelessLoRa with arduino-1.0.5
-/// on OpenSuSE 13.1.
-/// Also tested with Teensy3.1, Modtronix inAir4 and Arduino 1.6.5 on OpenSuSE 13.1
-///
+
 /// \par Packet Format
 ///
 /// All messages sent and received by this RH_RF95 Driver conform to this packet format:
@@ -312,123 +263,9 @@
 ///
 /// \par Connecting RFM95/96/97/98 and Semtech SX1276/77/78/79 to Arduino
 ///
-/// We tested with Anarduino MiniWirelessLoRA, which is an Arduino Duemilanove compatible with a RFM96W
-/// module on-board. Therefore it needs no connections other than the USB
-/// programming connection and an antenna to make it work.
 ///
-/// If you have a bare RFM95/96/97/98 that you want to connect to an Arduino, you
-/// might use these connections (untested): CAUTION: you must use a 3.3V type
-/// Arduino, otherwise you will also need voltage level shifters between the
-/// Arduino and the RFM95.  CAUTION, you must also ensure you connect an
-/// antenna.
+/// CAUTION, you must also ensure you connect an antenna.
 ///
-/// \code
-///                 Arduino      RFM95/96/97/98
-///                 GND----------GND   (ground in)
-///                 3V3----------3.3V  (3.3V in)
-/// interrupt 0 pin D2-----------DIO0  (interrupt request out)
-///          SS pin D10----------NSS   (CS chip select in)
-///         SCK pin D13----------SCK   (SPI clock in)
-///        MOSI pin D11----------MOSI  (SPI Data in)
-///        MISO pin D12----------MISO  (SPI Data out)
-/// \endcode
-/// With these connections, you can then use the default constructor RH_RF95().
-/// You can override the default settings for the SS pin and the interrupt in
-/// the RH_RF95 constructor if you wish to connect the slave select SS to other
-/// than the normal one for your Arduino (D10 for Diecimila, Uno etc and D53
-/// for Mega) or the interrupt request to other than pin D2 (Caution,
-/// different processors have different constraints as to the pins available
-/// for interrupts).
-///
-/// You can connect a Modtronix inAir4 or inAir9 directly to a 3.3V part such as a Teensy 3.1 like
-/// this (tested).
-/// \code
-///                 Teensy      inAir4 inAir9
-///                 GND----------0V   (ground in)
-///                 3V3----------3.3V  (3.3V in)
-/// interrupt 0 pin D2-----------D0   (interrupt request out)
-///          SS pin D10----------CS    (CS chip select in)
-///         SCK pin D13----------CK    (SPI clock in)
-///        MOSI pin D11----------SI    (SPI Data in)
-///        MISO pin D12----------SO    (SPI Data out)
-/// \endcode
-/// With these connections, you can then use the default constructor RH_RF95().
-/// you must also set the transmitter power with useRFO:
-/// driver.setTxPower(13, true);
-///
-/// Note that if you are using Modtronix inAir4 or inAir9,or any other module which uses the
-/// transmitter RFO pins and not the PA_BOOST pins
-/// that you must configure the power transmitter power for -1 to 14 dBm and with useRFO true.
-/// Failure to do that will result in extremely low transmit powers.
-///
-/// If you have an Arduino M0 Pro from arduino.org,
-/// you should note that you cannot use Pin 2 for the interrupt line
-/// (Pin 2 is for the NMI only). The same comments apply to Pin 4 on Arduino Zero from arduino.cc.
-/// Instead you can use any other pin (we use Pin 3) and initialise RH_RF69 like this:
-/// \code
-/// // Slave Select is pin 10, interrupt is Pin 3
-/// RH_RF95 driver(10, 3);
-/// \endcode
-///
-/// If you have a Rocket Scream Mini Ultra Pro with the RFM95W:
-/// - Ensure you have Arduino SAMD board support 1.6.5 or later in Arduino IDE 1.6.8 or later.
-/// - The radio SS is hardwired to pin D5 and the DIO0 interrupt to pin D2,
-/// so you need to initialise the radio like this:
-/// \code
-/// RH_RF95 driver(5, 2);
-/// \endcode
-/// - The name of the serial port on that board is 'SerialUSB', not 'Serial', so this may be helpful at the top of our
-///   sample sketches:
-/// \code
-/// #define Serial SerialUSB
-/// \endcode
-/// - You also need this in setup before radio initialisation
-/// \code
-/// // Ensure serial flash is not interfering with radio communication on SPI bus
-///  pinMode(4, OUTPUT);
-///  digitalWrite(4, HIGH);
-/// \endcode
-/// - and if you have a 915MHz part, you need this after driver/manager intitalisation:
-/// \code
-/// rf95.setFrequency(915.0);
-/// \endcode
-/// which adds up to modifying sample sketches something like:
-/// \code
-/// #include <SPI.h>
-/// #include <RH_RF95.h>
-/// RH_RF95 rf95(5, 2); // Rocket Scream Mini Ultra Pro with the RFM95W
-/// #define Serial SerialUSB
-///
-/// void setup()
-/// {
-///   // Ensure serial flash is not interfering with radio communication on SPI bus
-///   pinMode(4, OUTPUT);
-///   digitalWrite(4, HIGH);
-///
-///   Serial.begin(9600);
-///   while (!Serial) ; // Wait for serial port to be available
-///   if (!rf95.init())
-///     Serial.println("init failed");
-///   rf95.setFrequency(915.0);
-/// }
-/// ...
-/// \endcode
-///
-/// For Adafruit Feather M0 with RFM95, construct the driver like this:
-/// \code
-/// RH_RF95 rf95(8, 3);
-/// \endcode
-///
-/// If you have a talk2 Whisper Node LoRa board with on-board RF95 radio,
-/// the example rf95_* sketches work without modification. Initialise the radio like
-/// with the default constructor:
-/// \code
-///  RH_RF95 driver;
-/// \endcode
-///
-/// It is possible to have 2 or more radios connected to one Arduino, provided
-/// each radio has its own SS and interrupt line (SCK, SDI and SDO are common
-/// to all radios)
 ///
 /// Caution: on some Arduinos such as the Mega 2560, if you set the slave
 /// select pin to be other than the usual SS pin (D53 on Mega 2560), you may
@@ -456,21 +293,6 @@
 /// and from that other device.  Use cli() to disable interrupts and sei() to
 /// reenable them.
 ///
-/// \par Memory
-///
-/// The RH_RF95 driver requires non-trivial amounts of memory. The sample
-/// programs all compile to about 8kbytes each, which will fit in the
-/// flash proram memory of most Arduinos. However, the RAM requirements are
-/// more critical. Therefore, you should be vary sparing with RAM use in
-/// programs that use the RH_RF95 driver.
-///
-/// It is often hard to accurately identify when you are hitting RAM limits on Arduino.
-/// The symptoms can include:
-/// - Mysterious crashes and restarts
-/// - Changes in behaviour when seemingly unrelated changes are made (such as adding print() statements)
-/// - Hanging
-/// - Output from Serial.print() not appearing
-///
 /// \par Range
 ///
 /// We have made some simple range tests under the following conditions:
@@ -488,14 +310,7 @@
 /// (Default medium range) in the conditions described above.
 /// - Range over flat ground through heavy trees and vegetation approx 2km.
 ///
-/// Caution: the performance of this radio, especially with narrow bandwidths is strongly dependent on the
-/// accuracy and stability of the chip clock. HopeRF and Semtech do not appear to
-/// recommend bandwidths of less than 62.5 kHz
-/// unless you have the optional Temperature Compensated Crystal Oscillator (TCXO) installed and
-/// enabled on your radio module. See the refernece manual for more data.
-/// Also https://lowpowerlab.com/forum/rf-range-antennas-rfm69-library/lora-library-experiences-range/15/
-/// and http://www.semtech.com/images/datasheet/an120014-xo-guidance-lora-modulation.pdf
-///
+
 /// \par Transmitter Power
 ///
 /// You can control the transmitter power on the RF transceiver
@@ -559,6 +374,12 @@
 class RH_RF95 : public RHSPIDriver
 {
 public:
+    typedef enum
+    {
+        PMM_NEO_NEO_PROTOCOL = 0    // The new, new, protocol! (I may change this name later, it's a joke I won't tell you)
+    } PmmTelemetryProtocolsType;
+
+
     /// \brief Defines register values for a set of modem configuration registers
     ///
     /// Defines register values for a set of modem configuration registers
@@ -568,9 +389,9 @@ public:
     /// to set the desired spreading factor, coding rate and bandwidth
     typedef struct
     {
-	uint8_t    reg_1d;   ///< Value for register RH_RF95_REG_1D_MODEM_CONFIG1
-	uint8_t    reg_1e;   ///< Value for register RH_RF95_REG_1E_MODEM_CONFIG2
-	uint8_t    reg_26;   ///< Value for register RH_RF95_REG_26_MODEM_CONFIG3
+        uint8_t    reg_1d;   ///< Value for register RH_RF95_REG_1D_MODEM_CONFIG1
+        uint8_t    reg_1e;   ///< Value for register RH_RF95_REG_1E_MODEM_CONFIG2
+        uint8_t    reg_26;   ///< Value for register RH_RF95_REG_26_MODEM_CONFIG3
     } ModemConfig;
 
     /// Choices for setModemConfig() for a selected subset of common
@@ -588,43 +409,22 @@ public:
     /// deal with the long transmission times.
     typedef enum
     {
-	Bw125Cr45Sf128 = 0,	   ///< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
-	Bw500Cr45Sf128,	           ///< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range
-	Bw31_25Cr48Sf512,	   ///< Bw = 31.25 kHz, Cr = 4/8, Sf = 512chips/symbol, CRC on. Slow+long range
-	Bw125Cr48Sf4096,           ///< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. Slow+long range
+        Bw125Cr45Sf128 = 0, ///< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
+        Bw500Cr45Sf128,     ///< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range
+        Bw31_25Cr48Sf512,   ///< Bw = 31.25 kHz, Cr = 4/8, Sf = 512chips/symbol, CRC on. Slow+long range
+        Bw125Cr48Sf4096,    ///< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, CRC on. Slow+long range
     } ModemConfigChoice;
 
     /// Constructor. You can have multiple instances, but each instance must have its own
     /// interrupt and slave select pin. After constructing, you must call init() to initialise the interface
     /// and the radio module. A maximum of 3 instances can co-exist on one processor, provided there are sufficient
     /// distinct interrupt lines, one for each instance.
-    /// \param[in] slaveSelectPin the Arduino pin number of the output to use to select the RH_RF22 before
-    /// accessing it. Defaults to the normal SS pin for your Arduino (D10 for Diecimila, Uno etc, D53 for Mega, D10 for Maple)
-    /// \param[in] interruptPin The interrupt Pin number that is connected to the RFM DIO0 interrupt line.
-    /// Defaults to pin 2, as required by Anarduino MinWirelessLoRa module.
-    /// Caution: You must specify an interrupt capable pin.
-    /// On many Arduino boards, there are limitations as to which pins may be used as interrupts.
-    /// On Leonardo pins 0, 1, 2 or 3. On Mega2560 pins 2, 3, 18, 19, 20, 21. On Due and Teensy, any digital pin.
-    /// On Arduino Zero from arduino.cc, any digital pin other than 4.
-    /// On Arduino M0 Pro from arduino.org, any digital pin other than 2.
-    /// On other Arduinos pins 2 or 3.
-    /// See http://arduino.cc/en/Reference/attachInterrupt for more details.
-    /// On Chipkit Uno32, pins 38, 2, 7, 8, 35.
-    /// On other boards, any digital pin may be used.
-    /// \param[in] spi Pointer to the SPI interface object to use.
-    ///                Defaults to the standard Arduino hardware SPI interface
     RH_RF95(uint8_t slaveSelectPin = SS, uint8_t interruptPin = 2, RHGenericSPI& spi = hardware_spi);
 
     /// Initialise the Driver transport hardware and software.
     /// Make sure the Driver is properly configured before calling init().
     /// \return true if initialisation succeeded.
     virtual bool    init();
-
-    /// Prints the value of all chip registers
-    /// to the Serial device if RH_HAVE_SERIAL is defined for the current platform
-    /// For debugging purposes only.
-    /// \return true on success
-    bool printRegisters();
 
     /// Sets all the registered required to configure the data modem in the RF95/96/97/98, including the bandwidth,
     /// spreading factor etc. You can use this to configure the modem with custom configurations if none of the
@@ -666,7 +466,10 @@ public:
 
     // By Henrique Bruno, Minerva Rockets - UFRJ. This suffix is to find it easier across the files lol
     virtual bool isAnyPacketBeingSentRH_RF95();
-    
+
+    // Doesn't add any header (To, from, flags etc)!
+    virtual bool sendRaw(const uint8_t* data, uint8_t len);
+
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then optionally waits for Channel Activity Detection (CAD)
     /// to show the channnel is clear (if the radio supports CAD) by calling waitCAD().
@@ -677,20 +480,11 @@ public:
     /// specify the maximum time in ms to wait. If 0 (the default) do not wait for CAD before transmitting.
     /// \return true if the message length was valid and it was correctly queued for transmit. Return false
     /// if CAD was requested and the CAD timeout timed out before clear channel was detected.
-    virtual bool    send(const uint8_t* data, uint8_t len);
+    virtual bool    send(const uint8_t* data, uint8_t len, PmmTelemetryProtocolsType protocol);
 
-    /* By Henrique Bruno, UFRJ Minerva Rockets. Send an array of pointers to 4 bytes variables. Do typecast on the variables before, to uint8_t.
-        float floatVar;
-        uint32_t uint32Var;
-        uint8_t *array[SIZE] =
-        {
-            (uint8_t*) & floatVar,
-            (uint8_t*) & uint32Var
-        }
-        sendArrayOfPointersOf4Bytes(array, SIZE)
-    */
-    virtual bool    sendArrayOfPointersOf4Bytes(uint8_t** data, uint8_t number4BytesVariables);
+
     virtual bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
+
     /// Sets the length of the preamble
     /// in bytes.
     /// Caution: this should be set to the same

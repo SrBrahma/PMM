@@ -11,8 +11,6 @@ RHGenericDriver::RHGenericDriver()
     _thisAddress(RH_BROADCAST_ADDRESS),
     _txHeaderTo(RH_BROADCAST_ADDRESS),
     _txHeaderFrom(RH_BROADCAST_ADDRESS),
-    _txHeaderId(0),
-    _txHeaderFlags(0),
     _rxBad(0),
     _rxGood(0),
     _txGood(0),
@@ -149,16 +147,6 @@ uint8_t RHGenericDriver::headerTo()
 uint8_t RHGenericDriver::headerFrom()
 {
     return _rxHeaderFrom;
-}
-
-uint8_t RHGenericDriver::headerId()
-{
-    return _rxHeaderId;
-}
-
-uint8_t RHGenericDriver::headerFlags()
-{
-    return _rxHeaderFlags;
 }
 
 int16_t RHGenericDriver::lastRssi()

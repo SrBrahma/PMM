@@ -233,15 +233,6 @@ application. Purchase commercial licenses at http://airspayce.binpress.com
  #include <math.h>
  #define RH_HAVE_HARDWARE_SPI // using HAL (Hardware Abstraction Libraries from ST along with CMSIS, not arduino libs or pins concept.
 
-#elif (RH_PLATFORM == RH_PLATFORM_RASPI)
- #define RH_HAVE_HARDWARE_SPI
- #define RH_HAVE_SERIAL
- #define PROGMEM
- #include <RHutil/RasPi.h>
- #include <string.h>
- //Define SS for CS0 or pin 24
- #define SS 8
-
 #elif (RH_PLATFORM == RH_PLATFORM_NRF51)
  #define RH_HAVE_SERIAL
  #define PROGMEM

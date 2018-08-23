@@ -52,14 +52,14 @@ public:
     /// Reads a single register from the SPI device
     /// \param[in] reg Register number
     /// \return The value of the register
-    uint8_t        spiRead(uint8_t reg);
+    uint8_t spiRead(uint8_t reg);
 
     /// Writes a single byte to the SPI device
     /// \param[in] reg Register number
     /// \param[in] val The value to write
     /// \return Some devices return a status byte during the first data transfer. This byte is returned.
     ///  it may or may not be meaningfule depending on the the type of device being accessed.
-    uint8_t           spiWrite(uint8_t reg, uint8_t val);
+    uint8_t spiWrite(uint8_t reg, uint8_t val);
 
     /// Reads a number of consecutive registers from the SPI device using burst read mode
     /// \param[in] reg Register number of the first register
@@ -67,7 +67,7 @@ public:
     /// \param[in] len Number of bytes to read
     /// \return Some devices return a status byte during the first data transfer. This byte is returned.
     ///  it may or may not be meaningfule depending on the the type of device being accessed.
-    uint8_t           spiBurstRead(uint8_t reg, uint8_t* dest, uint8_t len);
+    uint8_t spiBurstRead(uint8_t reg, uint8_t* dest, uint8_t len);
 
     /// Write a number of consecutive registers using burst write mode
     /// \param[in] reg Register number of the first register
@@ -75,11 +75,11 @@ public:
     /// \param[in] len Number of bytes to write
     /// \return Some devices return a status byte during the first data transfer. This byte is returned.
     ///  it may or may not be meaningfule depending on the the type of device being accessed.
-    uint8_t           spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len);
+    uint8_t spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len);
 
     /* By Henrique Bruno - UFRJ Minerva Rockets*/
-    void              spiBurstWriteArrayOfPointersOf4Bytes(uint8_t reg, uint8_t** src, uint8_t number4BytesVariables);
-    void              spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables);
+    void spiBurstWriteArrayOfPointersOf4Bytes(uint8_t reg, uint8_t** src, uint8_t number4BytesVariables);
+    void spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables);
     /// Set or change the pin to be used for SPI slave select.
     /// This can be called at any time to change the
     /// pin that will be used for slave select in subsquent SPI operations.
@@ -94,11 +94,11 @@ public:
 
     protected:
     /// Reference to the RHGenericSPI instance to use to transfer data with the SPI device
-    RHGenericSPI&       _spi;
+    RHGenericSPI& _spi;
 
     /// The pin number of the Slave Select pin that is used to select the desired device.
-    uint8_t             _slaveSelectPin;
-    uint8_t             _interuptPin; // If interrupts are used else NOT_AN_INTERRUPT
+    uint8_t _slaveSelectPin;
+    uint8_t _interuptPin; // If interrupts are used else NOT_AN_INTERRUPT
 };
 
 #endif

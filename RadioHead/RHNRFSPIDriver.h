@@ -20,15 +20,15 @@ class RHGenericSPI;
 /// It can be configured to use either the RHHardwareSPI class (if there is one available on the platform)
 /// of the bitbanged RHSoftwareSPI class. The dfault behaviour is to use a pre-instantiated built-in RHHardwareSPI
 /// interface.
-/// 
-/// SPI bus access is protected by ATOMIC_BLOCK_START and ATOMIC_BLOCK_END, which will ensure interrupts 
+///
+/// SPI bus access is protected by ATOMIC_BLOCK_START and ATOMIC_BLOCK_END, which will ensure interrupts
 /// are disabled during access.
-/// 
-/// The read and write routines use SPI conventions as used by Nordic NRF radios and otehr devices, 
-/// but these can be overriden 
+///
+/// The read and write routines use SPI conventions as used by Nordic NRF radios and otehr devices,
+/// but these can be overriden
 /// in subclasses if necessary.
 ///
-/// Application developers are not expected to instantiate this class directly: 
+/// Application developers are not expected to instantiate this class directly:
 /// it is for the use of Driver developers.
 class RHNRFSPIDriver : public RHGenericDriver
 {

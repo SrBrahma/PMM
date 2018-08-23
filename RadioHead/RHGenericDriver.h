@@ -43,16 +43,16 @@ class RHGenericDriver
 public:
     /// \brief Defines different operating modes for the transport hardware
     ///
-    /// These are the different values that can be adopted by the _mode variable and
-    /// returned by the mode() member function,
+    /// These are the different values that can be adopted by the mMode variable and
+    /// returned by the getMode() member function,
     typedef enum
     {
-	RHModeInitialising = 0, ///< Transport is initialising. Initial default value until init() is called..
-	RHModeSleep,            ///< Transport hardware is in low power sleep mode (if supported)
-	RHModeIdle,             ///< Transport is idle.
-	RHModeTx,               ///< Transport is in the process of transmitting a message.
-	RHModeRx,               ///< Transport is in the process of receiving a message.
-	RHModeCad               ///< Transport is in the process of detecting channel activity (if supported)
+        RH_MODE_IS_INITIALIZING = 0, ///< Transport is initialising. Initial default value until init() is called..
+        RH_MODE_IS_SLEEPING,            ///< Transport hardware is in low power sleep mode (if supported)
+        RH_MODE_IS_IDLE,             ///< Transport is idle.
+        RH_MODE_IS_TRANSMITTING,               ///< Transport is in the process of transmitting a message.
+        RH_MODE_IS_RECEIVING,               ///< Transport is in the process of receiving a message.
+        RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD               ///< Transport is in the process of detecting channel activity (if supported)
     } RHMode;
 
     /// Constructor
@@ -66,8 +66,8 @@ public:
     /// Tests whether a new message is available
     /// from the Driver.
     /// On most drivers, if there is an uncollected received message, and there is no message
-    /// currently bing transmitted, this will also put the Driver into RHModeRx mode until
-    /// a message is actually received by the transport, when it will be returned to RHModeIdle.
+    /// currently bing transmitted, this will also put the Driver into RH_MODE_IS_RECEIVING mode until
+    /// a message is actually received by the transport, when it will be returned to RH_MODE_IS_IDLE.
     /// This can be called multiple times in a timeout loop.
     /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv().
     virtual bool available() = 0;
@@ -142,7 +142,7 @@ public:
     /// Sets the Channel Activity Detection timeout in milliseconds to be used by waitCAD().
     /// The default is 0, which means do not wait for CAD detection.
     /// CAD detection depends on support for isChannelActive() by your particular radio.
-    void setCADTimeout(unsigned long cad_timeout);
+    void                    setCADTimeout(unsigned long cad_timeout);
 
     /// Determine if the currently selected radio channel is active.
     /// This is expected to be subclassed by specific radios to implement their Channel Activity Detection
@@ -162,19 +162,15 @@ public:
     /// You would normally set the header FROM address to be the same as thisAddress (though you dont have to,
     /// allowing the possibilty of address spoofing).
     /// \param[in] thisAddress The address of this node.
-    virtual void setThisAddress(uint8_t thisAddress);
+    virtual void            setThisAddress(uint8_t thisAddress);
 
     /// Sets the TO header to be sent in all subsequent messages
     /// \param[in] to The new TO header value
-    virtual void           setHeaderTo(uint8_t to);
+    virtual void            setHeaderTo(uint8_t to);
 
     /// Sets the FROM header to be sent in all subsequent messages
     /// \param[in] from The new FROM header value
-    virtual void           setHeaderFrom(uint8_t from);
-
-    /// Sets the ID header to be sent in all subsequent messages
-    /// \param[in] id The new ID header value
-    virtual void           setHeaderId(uint8_t id);
+    virtual void            setHeaderFrom(uint8_t from);
 
     /// Sets and clears bits in the FLAGS header to be sent in all subsequent messages
     /// First it clears he FLAGS according to the clear argument, then sets the flags according to the
@@ -183,33 +179,33 @@ public:
     /// \param[in] clear bitmask of flags to clear. Defaults to RH_FLAGS_APPLICATION_SPECIFIC
     ///            which clears the application specific flags, resulting in new application specific flags
     ///            identical to the set.
-    virtual void           setHeaderFlags(uint8_t set, uint8_t clear = RH_FLAGS_APPLICATION_SPECIFIC);
+    virtual void            setHeaderFlags(uint8_t set, uint8_t clear = RH_FLAGS_APPLICATION_SPECIFIC);
 
     /// Tells the receiver to accept messages with any TO address, not just messages
     /// addressed to thisAddress or the broadcast address
     /// \param[in] promiscuous true if you wish to receive messages with any TO address
-    virtual void           setPromiscuous(bool promiscuous);
+    virtual void            setPromiscuous(bool promiscuous);
 
     /// Returns the TO header of the last received message
     /// \return The TO header
-    virtual uint8_t        headerTo();
+    virtual uint8_t         headerTo();
 
     /// Returns the FROM header of the last received message
     /// \return The FROM header
-    virtual uint8_t        headerFrom();
+    virtual uint8_t         headerFrom();
 
     /// Returns the most recent RSSI (Receiver Signal Strength Indicator).
     /// Usually it is the RSSI of the last received message, which is measured when the preamble is received.
     /// If you called readRssi() more recently, it will return that more recent value.
     /// \return The most recent RSSI measurement in dBm.
-    int16_t        lastRssi();
+    int16_t                 getLastRssi();
 
     /// Returns the operating mode of the library.
     /// \return the current mode, one of RF69_MODE_*
-    RHMode          mode();
+    RHMode                  getMode();
 
     /// Sets the operating mode of the transport.
-    void            setMode(RHMode mode);
+    void                    setMode(RHMode mode);
 
     /// Sets the transport hardware into low-power sleep mode
     /// (if supported). May be overridden by specific drivers to initialte sleep mode.
@@ -217,14 +213,14 @@ public:
     /// changing mode it idle, transmit or receive (eg by calling send(), recv(), available() etc)
     /// \return true if sleep mode is supported by transport hardware and the RadioHead driver, and if sleep mode
     ///         was successfully entered. If sleep mode is not suported, return false.
-    virtual bool    sleep();
+    virtual bool            sleep();
 
     /// Prints a data buffer in HEX.
     /// For diagnostic use
     /// \param[in] prompt string to preface the print
     /// \param[in] buf Location of the buffer to print
     /// \param[in] len Length of the buffer in octets.
-    static void    printBuffer(const char* prompt, const uint8_t* buf, uint8_t len);
+    static void             printBuffer(const char* prompt, const uint8_t* buf, uint8_t len);
 
     /// Returns the count of the number of bad received packets (ie packets with bad lengths, checksum etc)
     /// which were rejected and not delivered to the application.
@@ -243,22 +239,19 @@ public:
     /// \return The number of packets successfully transmitted
     virtual uint16_t       txGood();
 
+
+
+
 protected:
 
     /// The current transport operating mode
-    volatile RHMode     _mode;
+    volatile RHMode     mMode;
 
     /// This node id
-    uint8_t             _thisAddress;
+    uint8_t             mThisAddress;
 
     /// Whether the transport is in promiscuous mode
-    bool                _promiscuous;
-
-    /// ID header in the last received mesasge
-    volatile uint8_t    _rxHeaderId;
-
-    /// FLAGS header in the last received mesasge
-    volatile uint8_t    _rxHeaderFlags;
+    bool                mPromiscuousMode;
 
     /// TO header to send in all messages
     uint8_t             _txHeaderTo;
@@ -268,13 +261,13 @@ protected:
 
 
     /// The value of the last received RSSI value, in some transport specific units
-    volatile int16_t     _lastRssi;
+    volatile int16_t     mLastRssi;
 
     /// Count of the number of bad messages (eg bad checksum etc) received
-    volatile uint16_t   _rxBad;
+    volatile uint16_t   mInvalidReceivedPacketsCounter;
 
     /// Count of the number of successfully transmitted messaged
-    volatile uint16_t   _rxGood;
+    volatile uint16_t   mSuccessfulReceivedPacketsCounter;
 
     /// Count of the number of bad messages (correct checksum etc) received
     volatile uint16_t   _txGood;

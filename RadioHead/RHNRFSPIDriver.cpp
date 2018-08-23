@@ -6,7 +6,7 @@
 #include <RHNRFSPIDriver.h>
 
 RHNRFSPIDriver::RHNRFSPIDriver(uint8_t slaveSelectPin, RHGenericSPI& spi)
-    : 
+    :
     _spi(spi),
     _slaveSelectPin(slaveSelectPin)
 {
@@ -114,4 +114,3 @@ void RHNRFSPIDriver::spiUsingInterrupt(uint8_t interruptNumber)
 {
     _spi.usingInterrupt(interruptNumber);
 }
-

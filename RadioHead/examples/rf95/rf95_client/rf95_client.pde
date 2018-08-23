@@ -63,7 +63,7 @@ void loop()
       Serial.print("got reply: ");
       Serial.println((char*)buf);
 //      Serial.print("RSSI: ");
-//      Serial.println(rf95.lastRssi(), DEC);    
+//      Serial.println(rf95.getLastRssi(), DEC);    
     }
     else
     {

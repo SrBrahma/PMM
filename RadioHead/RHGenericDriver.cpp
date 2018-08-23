@@ -6,20 +6,19 @@
 #include <RHGenericDriver.h>
 
 RHGenericDriver::RHGenericDriver()
-    :
-    _mode(RHModeInitialising),
-    _thisAddress(RH_BROADCAST_ADDRESS),
-    _txHeaderTo(RH_BROADCAST_ADDRESS),
-    _txHeaderFrom(RH_BROADCAST_ADDRESS),
-    _rxBad(0),
-    _rxGood(0),
-    _txGood(0),
-    _cad_timeout(0)
 {
 }
 
 bool RHGenericDriver::init()
 {
+    mThisAddress = RH_THIS_SYSTEM_ADDRESS;
+    _txHeaderTo = RH_BROADCAST_ADDRESS;
+    _txHeaderFrom = RH_BROADCAST_ADDRESS;
+    mInvalidReceivedPacketsCounter = 0,
+    mMode = RH_MODE_IS_INITIALIZING;
+    mSuccessfulReceivedPacketsCounter = 0;
+    _txGood = 0;
+    _cad_timeout = 0;
     return true;
 }
 
@@ -27,7 +26,7 @@ bool RHGenericDriver::init()
 void RHGenericDriver::waitAvailable()
 {
     while (!available())
-	YIELD;
+        YIELD;
 }
 
 // Blocks until a valid message is received or timeout expires
@@ -39,10 +38,10 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
     while ((millis() - starttime) < timeout)
     {
         if (available())
-	{
-           return true;
-	}
-	YIELD;
+        {
+            return true;
+        }
+        YIELD;
     }
     return false;
 }
@@ -50,7 +49,7 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
 // By Henrique Bruno, Minerva Rockets - UFRJ
 bool RHGenericDriver::isAnyPacketBeingSentRHGenericDriver()
 {
-    if (_mode == RHModeTx)
+    if (mMode == RH_MODE_IS_TRANSMITTING)
         return true; // Yes! There is a packet being sent!
 
     return false;    // No! No packet being sent!
@@ -58,7 +57,7 @@ bool RHGenericDriver::isAnyPacketBeingSentRHGenericDriver()
 
 bool RHGenericDriver::waitPacketSent()
 {
-    while (_mode == RHModeTx)
+    while (mMode == RH_MODE_IS_TRANSMITTING)
         YIELD; // Wait for any previous transmit to finish
     return true;
 }
@@ -68,9 +67,9 @@ bool RHGenericDriver::waitPacketSent(uint16_t timeout)
     unsigned long starttime = millis();
     while ((millis() - starttime) < timeout)
     {
-        if (_mode != RHModeTx) // Any previous transmit finished?
+        if (mMode != RH_MODE_IS_TRANSMITTING) // Any previous transmit finished?
            return true;
-	YIELD;
+        YIELD;
     }
     return false;
 }
@@ -79,7 +78,7 @@ bool RHGenericDriver::waitPacketSent(uint16_t timeout)
 bool RHGenericDriver::waitCAD()
 {
     if (!_cad_timeout)
-	return true;
+        return true;
 
     // Wait for any channel activity to finish or timeout
     // Sophisticated DCF function...
@@ -110,12 +109,12 @@ bool RHGenericDriver::isChannelActive()
 
 void RHGenericDriver::setPromiscuous(bool promiscuous)
 {
-    _promiscuous = promiscuous;
+    mPromiscuousMode = promiscuous;
 }
 
 void RHGenericDriver::setThisAddress(uint8_t address)
 {
-    _thisAddress = address;
+    mThisAddress = address;
 }
 
 void RHGenericDriver::setHeaderTo(uint8_t to)
@@ -128,40 +127,19 @@ void RHGenericDriver::setHeaderFrom(uint8_t from)
     _txHeaderFrom = from;
 }
 
-void RHGenericDriver::setHeaderId(uint8_t id)
+int16_t RHGenericDriver::getLastRssi()
 {
-    _txHeaderId = id;
+    return mLastRssi;
 }
 
-void RHGenericDriver::setHeaderFlags(uint8_t set, uint8_t clear)
+RHGenericDriver::RHMode  RHGenericDriver::getMode()
 {
-    _txHeaderFlags &= ~clear;
-    _txHeaderFlags |= set;
-}
-
-uint8_t RHGenericDriver::headerTo()
-{
-    return _rxHeaderTo;
-}
-
-uint8_t RHGenericDriver::headerFrom()
-{
-    return _rxHeaderFrom;
-}
-
-int16_t RHGenericDriver::lastRssi()
-{
-    return _lastRssi;
-}
-
-RHGenericDriver::RHMode  RHGenericDriver::mode()
-{
-    return _mode;
+    return mMode;
 }
 
 void  RHGenericDriver::setMode(RHMode mode)
 {
-    _mode = mode;
+    mMode = mode;
 }
 
 bool  RHGenericDriver::sleep()
@@ -191,12 +169,12 @@ void RHGenericDriver::printBuffer(const char* prompt, const uint8_t* buf, uint8_
 
 uint16_t RHGenericDriver::rxBad()
 {
-    return _rxBad;
+    return mInvalidReceivedPacketsCounter;
 }
 
 uint16_t RHGenericDriver::rxGood()
 {
-    return _rxGood;
+    return mSuccessfulReceivedPacketsCounter;
 }
 
 uint16_t RHGenericDriver::txGood()

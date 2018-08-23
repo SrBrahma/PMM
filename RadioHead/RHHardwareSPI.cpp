@@ -119,7 +119,7 @@ void RHHardwareSPI::begin()
     else
 	dataMode = SPI_MODE0;
 #if (RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined(__arm__) && defined(CORE_TEENSY)
-    // Temporary work-around due to problem where avr_emulation.h does not work properly for the setDataMode() cal
+    // Temporary work-around due to problem where avr_emulation.h does not work properly for the setDatagetMode() cal
     SPCR &= ~SPI_MODE_MASK;
 #else
  #if ((RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined (__arm__) && defined(ARDUINO_ARCH_SAMD)) || defined(ARDUINO_ARCH_NRF52)

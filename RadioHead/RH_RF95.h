@@ -442,8 +442,8 @@ public:
 
     /// Tests whether a new message is available
     /// from the Driver.
-    /// On most drivers, this will also put the Driver into RHModeRx mode until
-    /// a message is actually received by the transport, when it wil be returned to RHModeIdle.
+    /// On most drivers, this will also put the Driver into RH_MODE_IS_RECEIVING mode until
+    /// a message is actually received by the transport, when it wil be returned to RH_MODE_IS_IDLE.
     /// This can be called multiple times in a timeout loop
     /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv()
     virtual bool    available();
@@ -617,10 +617,10 @@ private:
     uint8_t             _myInterruptIndex;
 
     /// Number of octets in the buffer
-    volatile uint8_t    _bufLen;
+    volatile uint8_t    mReceivedPacketBufferLength;
 
     /// The receiver/transmitter buffer
-    uint8_t             _buf[RH_RF95_MAX_PAYLOAD_LEN];
+    uint8_t             mPacketBuffer[RH_RF95_MAX_PAYLOAD_LEN];
 
     /// True when there is a valid message in the buffer
     volatile bool       _rxBufValid;
@@ -629,7 +629,7 @@ private:
     bool                _usingHFport;
 
     // Last measured SNR, dB
-    int8_t              _lastSNR;
+    int8_t              mLastSNR;
 };
 
 /// @example rf95_client.pde

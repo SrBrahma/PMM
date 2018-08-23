@@ -60,7 +60,7 @@ void loop()
       Serial.print("got request: ");
       Serial.println((char*)buf);
 //      Serial.print("RSSI: ");
-//      Serial.println(rf95.lastRssi(), DEC);
+//      Serial.println(rf95.getLastRssi(), DEC);
 
       // Send a reply
       uint8_t data[] = "And hello back to you";

@@ -12,13 +12,16 @@ RHGenericDriver::RHGenericDriver()
 bool RHGenericDriver::init()
 {
     mThisAddress = RH_THIS_SYSTEM_ADDRESS;
-    _txHeaderTo = RH_BROADCAST_ADDRESS;
-    _txHeaderFrom = RH_BROADCAST_ADDRESS;
+    mTransmissionDestinationAddress = RH_BROADCAST_ADDRESS;
+    mTransmissionSourceAddress = RH_BROADCAST_ADDRESS;
+
     mInvalidReceivedPacketsCounter = 0,
-    mMode = RH_MODE_IS_INITIALIZING;
     mSuccessfulReceivedPacketsCounter = 0;
     _txGood = 0;
+
     _cad_timeout = 0;
+
+    mMode = RH_MODE_IS_INITIALIZING;
     return true;
 }
 
@@ -47,7 +50,7 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
 }
 
 // By Henrique Bruno, Minerva Rockets - UFRJ
-bool RHGenericDriver::isAnyPacketBeingSentRHGenericDriver()
+bool RHGenericDriver::isAnyPacketBeingSent()
 {
     if (mMode == RH_MODE_IS_TRANSMITTING)
         return true; // Yes! There is a packet being sent!
@@ -119,12 +122,12 @@ void RHGenericDriver::setThisAddress(uint8_t address)
 
 void RHGenericDriver::setHeaderTo(uint8_t to)
 {
-    _txHeaderTo = to;
+    mTransmissionDestinationAddress = to;
 }
 
 void RHGenericDriver::setHeaderFrom(uint8_t from)
 {
-    _txHeaderFrom = from;
+    mTransmissionSourceAddress = from;
 }
 
 int16_t RHGenericDriver::getLastRssi()

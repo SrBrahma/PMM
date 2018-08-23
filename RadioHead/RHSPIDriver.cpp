@@ -84,27 +84,6 @@ uint8_t RHSPIDriver::spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len)
 }
 
 /* By Henrique Bruno - UFRJ Minerva Rockets*/
-void RHSPIDriver::spiBurstWriteArrayOfPointersOf4Bytes(uint8_t reg, uint8_t** src, uint8_t number4BytesVariables)
-{
-    // uint8_t status = 0;
-    ATOMIC_BLOCK_START;
-    _spi.beginTransaction();
-    digitalWrite(_slaveSelectPin, LOW);
-    //status = below line was here
-    _spi.transfer(reg | RH_SPI_WRITE_MASK); // Send the start address with the write mask on
-    while (number4BytesVariables--)
-    {
-       _spi.transfer(**src);
-       _spi.transfer(*(*src)+1);
-       _spi.transfer(*(*src)+2);
-       _spi.transfer(*(*src++)+3);
-    }
-    digitalWrite(_slaveSelectPin, HIGH);
-    _spi.endTransaction();
-    ATOMIC_BLOCK_END;
-}
-
-/* By Henrique Bruno - UFRJ Minerva Rockets*/
 void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables)
 {
     // uint8_t status = 0;

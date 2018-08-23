@@ -74,7 +74,7 @@ application. Purchase commercial licenses at http://airspayce.binpress.com
 #define RadioHead_h
 
 // This is the address that indicates a broadcast
-#define RH_BROADCAST_ADDRESS    0x00  // Changed by Henrique Bruno. All your systems must have this same value.
+#define RH_BROADCAST_ADDRESS    0xFF
 #define RH_THIS_SYSTEM_ADDRESS  0x01  // You may change it!
 
 // Official version numbers are maintained automatically by Makefile:

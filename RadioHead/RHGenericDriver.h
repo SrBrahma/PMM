@@ -70,43 +70,19 @@ public:
     /// a message is actually received by the transport, when it will be returned to RH_MODE_IS_IDLE.
     /// This can be called multiple times in a timeout loop.
     /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv().
-    virtual bool available() = 0;
-
-    /// Turns the receiver on if it not already on.
-    /// If there is a valid message available, copy it to buf and return true
-    /// else return false.
-    /// If a message is copied, *len is set to the length (Caution, 0 length messages are permitted).
-    /// You should be sure to call this function frequently enough to not miss any messages
-    /// It is recommended that you call it in your main loop.
-    /// \param[in] buf Location to copy the received message
-    /// \param[in,out] len Pointer to available space in buf. Set to the actual number of octets copied.
-    /// \return true if a valid message was copied to buf
-    virtual bool recv(uint8_t* buf, uint8_t* len) = 0;
-
-    /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
-    /// Then optionally waits for Channel Activity Detection (CAD)
-    /// to show the channnel is clear (if the radio supports CAD) by calling waitCAD().
-    /// Then loads a message into the transmitter and starts the transmitter. Note that a message length
-    /// of 0 is NOT permitted. If the message is too long for the underlying radio technology, send() will
-    /// return false and will not send the message.
-    /// \param[in] data Array of data to be sent
-    /// \param[in] len Number of bytes of data to send (> 0)
-    /// specify the maximum time in ms to wait. If 0 (the default) do not wait for CAD before transmitting.
-    /// \return true if the message length was valid and it was correctly queued for transmit. Return false
-    /// if CAD was requested and the CAD timeout timed out before clear channel was detected.
-    virtual bool send(const uint8_t* data, uint8_t len) = 0;
+    virtual bool            available() = 0;
 
     /// Returns the maximum message length
     /// available in this Driver.
     /// \return The maximum legal message length
-    virtual uint8_t maxMessageLength() = 0;
+    virtual uint8_t         maxMessageLength() = 0;
 
     /// Starts the receiver and blocks until a valid received
     /// message is available.
     virtual void            waitAvailable();
 
-    // By Henrique Bruno, Minerva Rockets - UFRJ. This suffix is to find it easier across the files lol
-    virtual bool            isAnyPacketBeingSentRHGenericDriver();
+    // By Henrique Bruno, Minerva Rockets - UFRJ.
+    virtual bool            isAnyPacketBeingSent();
 
 
     /// Blocks until the transmitter
@@ -171,15 +147,6 @@ public:
     /// Sets the FROM header to be sent in all subsequent messages
     /// \param[in] from The new FROM header value
     virtual void            setHeaderFrom(uint8_t from);
-
-    /// Sets and clears bits in the FLAGS header to be sent in all subsequent messages
-    /// First it clears he FLAGS according to the clear argument, then sets the flags according to the
-    /// set argument. The default for clear always clears the application specific flags.
-    /// \param[in] set bitmask of bits to be set. Flags are cleared with the clear mask before being set.
-    /// \param[in] clear bitmask of flags to clear. Defaults to RH_FLAGS_APPLICATION_SPECIFIC
-    ///            which clears the application specific flags, resulting in new application specific flags
-    ///            identical to the set.
-    virtual void            setHeaderFlags(uint8_t set, uint8_t clear = RH_FLAGS_APPLICATION_SPECIFIC);
 
     /// Tells the receiver to accept messages with any TO address, not just messages
     /// addressed to thisAddress or the broadcast address
@@ -254,10 +221,10 @@ protected:
     bool                mPromiscuousMode;
 
     /// TO header to send in all messages
-    uint8_t             _txHeaderTo;
+    uint8_t             mTransmissionDestinationAddress;
 
     /// FROM header to send in all messages
-    uint8_t             _txHeaderFrom;
+    uint8_t             mTransmissionSourceAddress;
 
 
     /// The value of the last received RSSI value, in some transport specific units
@@ -273,7 +240,7 @@ protected:
     volatile uint16_t   _txGood;
 
     /// Channel activity detected
-    volatile bool       _cad;
+    volatile bool       mCad;
 
     /// Channel activity timeout in ms
     unsigned int        _cad_timeout;

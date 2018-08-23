@@ -19,6 +19,7 @@
 
 #include <RHSPIDriver.h>
 
+
 // This is the maximum number of interrupts the driver can support
 // Most Arduinos can handle 2, Megas can handle more
 #define RH_RF95_NUM_INTERRUPTS 3
@@ -376,10 +377,8 @@ class RH_RF95 : public RHSPIDriver
 public:
     typedef enum
     {
-        PMM_NEO_NEO_PROTOCOL = 0    // The new, new, protocol! (I may change this name later, it's a joke I won't tell you)
-    } PmmTelemetryProtocolsType;
-
-
+        PMM_NEO_PROTOCOL = 0
+    } pmmTelemetryProtocolsType;
     /// \brief Defines register values for a set of modem configuration registers
     ///
     /// Defines register values for a set of modem configuration registers
@@ -464,9 +463,6 @@ public:
     /* the return value is 32 bits just for speeding up in 32bits systems, like teensy. */
     uint32_t recv2(uint8_t* buf);
 
-    // By Henrique Bruno, Minerva Rockets - UFRJ. This suffix is to find it easier across the files lol
-    virtual bool isAnyPacketBeingSentRH_RF95();
-
     // Doesn't add any header (To, from, flags etc)!
     virtual bool sendRaw(const uint8_t* data, uint8_t len);
 
@@ -480,7 +476,7 @@ public:
     /// specify the maximum time in ms to wait. If 0 (the default) do not wait for CAD before transmitting.
     /// \return true if the message length was valid and it was correctly queued for transmit. Return false
     /// if CAD was requested and the CAD timeout timed out before clear channel was detected.
-    virtual bool    send(const uint8_t* data, uint8_t len, PmmTelemetryProtocolsType protocol);
+    bool    send(const uint8_t* data, uint8_t len, pmmTelemetryProtocolsType protocol = PMM_NEO_PROTOCOL);
 
 
     virtual bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);

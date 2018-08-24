@@ -122,24 +122,32 @@ bool RH_RF95::init()
 
 
 // Check whether the latest received message is complete and uncorrupted
-void RH_RF95::validateRxBuf(uint8_t buffer[], uint8_t bufferLength)
+uint8_t* RH_RF95::validateRxBuf(uint8_t buffer[], uint8_t bufferLength)
 {
-    if (mReceivedPacketBufferLength < 4)
-        return; // Too short to be a real message
 
-    switch(buffer[0])
+
+    switch(buffer[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
     {
+        // 1 is Source
+        // 2 is Destinaton
+        // 3-4 is CRC16
+        // 5 is Port (Packet Type)
+        // Else is the payload.
         case PMM_NEO_PROTOCOL:
+            if (mReceivedPacketBufferLength < 4)
+                return NULL; // Too short to be a real message
             // 1) First check the Destination of this packet we received
             if ((mPacketBuffer[1] != mThisAddress) && !mPromiscuousMode) // If the Destination not equal to this Address and not in promiscuous mode
+            mSuccessfulReceivedPacketsCounter++;
+
     // Extract the 4 headers
     //_rxHeaderFrom  = mPacketBuffer[0];
     //_rxHeaderTo    = mPacketBuffer[1];
 
     if (mPromiscuousMode)// || _rxHeaderTo == mThisAddress || _rxHeaderTo == RH_BROADCAST_ADDRESS)
     {
-        mSuccessfulReceivedPacketsCounter++;
-        _rxBufValid = true;
+
+
     }
 }
 

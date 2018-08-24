@@ -18,7 +18,7 @@
 #define RH_RF95_h
 
 #include <RHSPIDriver.h>
-
+#include <pmmTelemetryProtocols.h>
 
 // This is the maximum number of interrupts the driver can support
 // Most Arduinos can handle 2, Megas can handle more
@@ -375,10 +375,6 @@
 class RH_RF95 : public RHSPIDriver
 {
 public:
-    typedef enum
-    {
-        PMM_NEO_PROTOCOL = 0
-    } pmmTelemetryProtocolsType;
     /// \brief Defines register values for a set of modem configuration registers
     ///
     /// Defines register values for a set of modem configuration registers
@@ -584,7 +580,7 @@ protected:
     void           handleInterrupt();
 
     /// Examine the revceive buffer to determine whether the message is for this node
-    void validateRxBuf();
+    uint8_t* validateRxBuf(uint8_t buffer[], uint8_t bufferLength);
 
     /// Clear our local receive buffer
     void clearRxBuf();

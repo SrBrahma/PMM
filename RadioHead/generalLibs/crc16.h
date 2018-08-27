@@ -10,5 +10,6 @@
 #include <stdint.h>
 
 uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = CRC16_DEFAULT_VALUE);
+uint16_t crc16SingleByte(uint8_t value, uint16_t crc = CRC16_DEFAULT_VALUE);
 
 #endif

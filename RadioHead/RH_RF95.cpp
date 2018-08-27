@@ -4,6 +4,9 @@
 // $Id: RH_RF95.cpp,v 1.18 2018/01/06 23:50:45 mikem Exp $
 
 #include <RH_RF95.h>
+#include <pmmTelemetryProtocols.h>
+#include "generalLibs/crc16.h"
+#include "generalLibs/byteSelection.h"
 
 // Interrupt vectors for the 3 Arduino interrupt pins
 // Each interrupt can be handled by a different instance of RH_RF95, allowing you to have
@@ -117,81 +120,100 @@ bool RH_RF95::init()
     return true;
 }
 
-
-
-
-
-// Check whether the latest received message is complete and uncorrupted
-uint8_t* RH_RF95::validateRxBuf(uint8_t buffer[], uint8_t bufferLength)
+// if the given protocol is invalid, will by default use the Neo Protocol.
+uint8_t RH_RF95::getProtocolHeaderLength(pmmTelemetryProtocolsType protocol)
 {
-
-
-    switch(buffer[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    switch (protocol)
     {
-        // 1 is Source
-        // 2 is Destinaton
-        // 3-4 is CRC16
-        // 5 is Port (Packet Type)
-        // Else is the payload.
-        case PMM_NEO_PROTOCOL:
-            if (mReceivedPacketBufferLength < 4)
-                return NULL; // Too short to be a real message
-            // 1) First check the Destination of this packet we received
-            if ((mPacketBuffer[1] != mThisAddress) && !mPromiscuousMode) // If the Destination not equal to this Address and not in promiscuous mode
-            mSuccessfulReceivedPacketsCounter++;
-
-    // Extract the 4 headers
-    //_rxHeaderFrom  = mPacketBuffer[0];
-    //_rxHeaderTo    = mPacketBuffer[1];
-
-    if (mPromiscuousMode)// || _rxHeaderTo == mThisAddress || _rxHeaderTo == RH_BROADCAST_ADDRESS)
-    {
-
-
+        default:
+        case PMM_NEO_PROTOCOL_ID:
+            return PMM_NEO_PROTOCOL_HEADER_LENGTH;
     }
 }
 
 
+// Adds the corresponding header depending on the protocol. May add some informations, like CRC, depending on protocol.
+// It assumes you already checked the total length of the packet to be sent.
+void RH_RF95::addProtocolHeader(uint8_t payload[], uint8_t payloadLength, pmmTelemetryProtocolsType protocol)
+{
+    // 1) Which protocol are we using?
+    switch (protocol)
+    {
+        // 1.1) Will by default (if the given protocol is invalid) use the Neo Protocol (is the only available at the current time!)
+        default:
+        case PMM_NEO_PROTOCOL_ID:
+            // 1.1.1) Write the Protocol ID
+            spiWrite(RH_RF95_REG_00_FIFO, PMM_NEO_PROTOCOL_ID);
+            // 1.1.2) Write the Source Address
+            spiWrite(RH_RF95_REG_00_FIFO, mTransmissionSourceAddress);
+            // 1.1.3) Write the Destination Address
+            spiWrite(RH_RF95_REG_00_FIFO, mTransmissionDestinationAddress);
 
-bool RH_RF95::recv(uint8_t* buffer, uint8_t* packetLength)
+            // 1.1.4) Calculates the packet CRC
+            uint16_t tempCrc16;
+            tempCrc16 = crc16SingleByte(PMM_NEO_PROTOCOL_ID);
+            tempCrc16 = crc16SingleByte(mTransmissionSourceAddress, tempCrc16);
+            tempCrc16 = crc16SingleByte(mTransmissionDestinationAddress, tempCrc16);
+            tempCrc16 = crc16(payload, payloadLength, tempCrc16);
+
+            // 1.1.5) Write the CRC16, in Little Endian.
+            spiWrite(RH_RF95_REG_00_FIFO, LSB0(tempCrc16));
+            spiWrite(RH_RF95_REG_00_FIFO, LSB1(tempCrc16));
+
+            break;
+    }
+}
+
+// Check the packet protocol header and return its (header) length. If 0 is returned, the packet is invalid.
+uint8_t RH_RF95::validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buffer[], uint8_t bufferLength)
+{
+    // 1) Which protocol is this packet using?
+    switch(buffer[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    {
+        #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
+            case PMM_NEO_PROTOCOL_ID:
+                if (mReceivedPacketBufferLength < PMM_NEO_PROTOCOL_HEADER_LENGTH)
+                    return 0; // Too short to be a real message
+
+                // 1) First check the Destination of this packet we received
+                // If the Destination not equal to this Address and not in promiscuous mode
+                if ((mPacketBuffer[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != mThisAddress) && !mPromiscuousMode)
+                    return 0;
+
+                return PMM_NEO_PROTOCOL_HEADER_LENGTH;
+        #endif
+
+        default:
+            return 0;
+    }
+
+}
+
+
+// Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
+bool RH_RF95::receivePayload(uint8_t* buffer, uint8_t* packetLength)
 {
     if (!available())
         return false;
     if (buffer && packetLength) // Avoid NULL addresses
     {
-        ATOMIC_BLOCK_START;
-        // Skip the 4 headers that are at the beginning of the rxBuf
-        if (*packetLength > mReceivedPacketBufferLength - RH_RF95_HEADER_LEN)
-            *packetLength = mReceivedPacketBufferLength - RH_RF95_HEADER_LEN;
-        memcpy(buffer, mPacketBuffer + RH_RF95_HEADER_LEN, *packetLength);
+        ATOMIC_BLOCK_START; // I don't know why there is an interrupt block here! RadioHead default.
+        *packetLength = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
+        memcpy(buffer, mPacketBuffer + mReceivedPacketProtocolHeaderLength, *packetLength);
         ATOMIC_BLOCK_END;
     }
     clearRxBuf(); // This message accepted and cleared
     return true;
 }
 
-/* Changed by Henrique Bruno. Now it returns the length of the payload */
-/* Make sure your buffer have a length of 251 (255 - 4 the default headers (maybe will remove them on future)) */
-
-uint32_t RH_RF95::recv2(uint8_t* buffer)
-{
-    if (!available())
-        return 0;
-    ATOMIC_BLOCK_START;
-
-    // Skip the 4 headers that are at the beginning of the rxBuf
-    memcpy(buffer, mPacketBuffer + RH_RF95_HEADER_LEN, mReceivedPacketBufferLength - RH_RF95_HEADER_LEN);
-    ATOMIC_BLOCK_END;
-
-    clearRxBuf(); // This message accepted and cleared
-    return mReceivedPacketBufferLength - RH_RF95_HEADER_LEN; // aka payload length
-}
-
 
 // Won't automatically add any header on the packet! Know what you are doing!
 bool RH_RF95::sendRaw(const uint8_t* data, uint8_t packetLength)
 {
-    if (packetLength > RH_RF95_MAX_MESSAGE_LEN || !packetLength)
+    if (packetLength > RH_RF95_MAX_PACKET_LENGTH || !packetLength) // If invalid length
+        return false;
+
+    if (!data)          // If data is NULL
         return false;
 
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
@@ -202,23 +224,21 @@ bool RH_RF95::sendRaw(const uint8_t* data, uint8_t packetLength)
 
     // Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-    // The headers
-    spiWrite(RH_RF95_REG_00_FIFO, mTransmissionDestinationAddress);
-    spiWrite(RH_RF95_REG_00_FIFO, mTransmissionSourceAddress);
 
     // The message data
     spiBurstWrite(RH_RF95_REG_00_FIFO, data, packetLength);
-    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength + RH_RF95_HEADER_LEN);
+    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength);
 
-    setModeTx(); // Start the transmitter
+    setModeTransmission(); // Start the transmitter
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return true;
 }
 
-// protocol default is PMM_NEO_PROTOCOL
+// protocol default is PMM_NEO_PROTOCOL_ID
 bool RH_RF95::send(const uint8_t* data, uint8_t packetLength, pmmTelemetryProtocolsType protocol)
 {
-    if (packetLength > RH_RF95_MAX_MESSAGE_LEN || !packetLength)
+    // 1) Check if the length is invalid
+    if ((packetLength + getProtocolHeaderLength(protocol) > RH_RF95_MAX_PACKET_LENGTH) | !packetLength)
         return false;
 
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
@@ -231,23 +251,23 @@ bool RH_RF95::send(const uint8_t* data, uint8_t packetLength, pmmTelemetryProtoc
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
 
     // The headers
-    spiWrite(RH_RF95_REG_00_FIFO, mTransmissionDestinationAddress);
-    spiWrite(RH_RF95_REG_00_FIFO, mTransmissionSourceAddress);
+
 
     // The message data
     spiBurstWrite(RH_RF95_REG_00_FIFO, data, packetLength);
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength + RH_RF95_HEADER_LEN);
 
-    setModeTx(); // Start the transmitter
+    setModeTransmission(); // Start the transmitter
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return true;
 }
 
 /* By Henrique Bruno, UFRJ Minerva Rockets.
 */
-bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize)
+bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryProtocolsType protocol, uint8_t )
 {
-    if (!totalByteSize)
+    // 1) Check if the length is invalid
+    if ((totalByteSize + getProtocolHeaderLength(protocol) > RH_RF95_MAX_PACKET_LENGTH) | !totalByteSize)
         return false;
 
     //unsigned long timeTo = millis();
@@ -260,22 +280,16 @@ bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray
     // Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
 
+    addProtocolHeader(uint8_t payload[], uint8_t payloadLength, pmmTelemetryProtocolsType protocol)
 
     // The message data
     spiBurstWriteArrayOfPointersOfSmartSizes(RH_RF95_REG_00_FIFO, data, sizesArray, numberVariables);
 
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, totalByteSize + RH_RF95_HEADER_LEN);
 
-    setModeTx(); // Start the transmitter
+    setModeTransmission(); // Start the transmitter
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return true;
-}
-
-
-
-uint8_t RH_RF95::maxMessageLength()
-{
-    return RH_RF95_MAX_MESSAGE_LEN;
 }
 
 bool RH_RF95::setFrequency(float centre)
@@ -309,7 +323,7 @@ bool RH_RF95::sleep()
     return true;
 }
 
-void RH_RF95::setModeRx()
+void RH_RF95::setModeReception()
 {
     if (mMode != RH_MODE_IS_RECEIVING)
     {
@@ -319,7 +333,7 @@ void RH_RF95::setModeRx()
     }
 }
 
-void RH_RF95::setModeTx()
+void RH_RF95::setModeTransmission()
 {
     if (mMode != RH_MODE_IS_TRANSMITTING)
     {
@@ -415,54 +429,11 @@ bool RH_RF95::isChannelActive()
     return mCad;
 }
 
-void RH_RF95::enableTCXO()
-{
-    while ((spiRead(RH_RF95_REG_4B_TCXO) & RH_RF95_TCXO_TCXO_INPUT_ON) != RH_RF95_TCXO_TCXO_INPUT_ON)
-    {
-        sleep();
-        spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) | RH_RF95_TCXO_TCXO_INPUT_ON));
-    }
-}
-
-// From section 4.1.5 of SX1276/77/78/79
-// Ferror = FreqError * 2**24 * BW / Fxtal / 500
-int RH_RF95::frequencyError()
-{
-    int32_t freqerror = 0;
-
-    // Convert 2.5 bytes (5 nibbles, 20 bits) to 32 bit signed int
-    // Caution: some C compilers make errors with eg:
-    // freqerror = spiRead(RH_RF95_REG_28_FEI_MSB) << 16
-    // so we go more carefully.
-    freqerror = spiRead(RH_RF95_REG_28_FEI_MSB);
-    freqerror <<= 8;
-    freqerror |= spiRead(RH_RF95_REG_29_FEI_MID);
-    freqerror <<= 8;
-    freqerror |= spiRead(RH_RF95_REG_2A_FEI_LSB);
-    // Sign extension into top 3 nibbles
-    if (freqerror & 0x80000)
-    freqerror |= 0xfff00000;
-
-    int error = 0; // In hertz
-    float bw_tab[] = {7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500};
-    uint8_t bwindex = spiRead(RH_RF95_REG_1D_MODEM_CONFIG1) >> 4;
-    if (bwindex < (sizeof(bw_tab) / sizeof(float)))
-    error = (float)freqerror * bw_tab[bwindex] * ((float)(1L << 24) / (float)RH_RF95_FXOSC / 500.0);
-    // else not defined
-
-    return error;
-}
-
-int RH_RF95::lastSNR()
-{
-    return mLastSNR;
-}
-
 bool RH_RF95::available()
 {
     if (mMode == RH_MODE_IS_TRANSMITTING)
         return false;
-    setModeRx();
+    setModeReception();
     return _rxBufValid; // Will be set by the interrupt handler when a good message is received
 }
 
@@ -517,9 +488,12 @@ void RH_RF95::handleInterrupt()
             mLastRssi -= 164;
 
         // We have received a message.
-        validateRxBuf();
-        if (_rxBufValid)
-            setModeIdle(); // Got one
+        if(validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength));
+        {
+            _rxBufValid = true;
+            setModeIdle();
+        }
+
     }
     else if (mMode == RH_MODE_IS_TRANSMITTING && irq_flags & RH_RF95_TX_DONE)
     {
@@ -537,6 +511,11 @@ void RH_RF95::handleInterrupt()
     spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
 }
 
+// Getters!
+int RH_RF95::getLastSNR()
+{
+    return mLastSNR;
+}
 
 // These are low level functions that call the interrupt handler for the correct
 // instance of RH_RF95.
@@ -555,4 +534,42 @@ void RH_RF95::isr2()
 {
     if (_deviceForInterrupt[2])
     _deviceForInterrupt[2]->handleInterrupt();
+}
+
+void RH_RF95::enableTCXO()
+{
+    while ((spiRead(RH_RF95_REG_4B_TCXO) & RH_RF95_TCXO_TCXO_INPUT_ON) != RH_RF95_TCXO_TCXO_INPUT_ON)
+    {
+        sleep();
+        spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) | RH_RF95_TCXO_TCXO_INPUT_ON));
+    }
+}
+
+// From section 4.1.5 of SX1276/77/78/79
+// Ferror = FreqError * 2**24 * BW / Fxtal / 500
+int RH_RF95::frequencyError()
+{
+    int32_t freqerror = 0;
+
+    // Convert 2.5 bytes (5 nibbles, 20 bits) to 32 bit signed int
+    // Caution: some C compilers make errors with eg:
+    // freqerror = spiRead(RH_RF95_REG_28_FEI_MSB) << 16
+    // so we go more carefully.
+    freqerror = spiRead(RH_RF95_REG_28_FEI_MSB);
+    freqerror <<= 8;
+    freqerror |= spiRead(RH_RF95_REG_29_FEI_MID);
+    freqerror <<= 8;
+    freqerror |= spiRead(RH_RF95_REG_2A_FEI_LSB);
+    // Sign extension into top 3 nibbles
+    if (freqerror & 0x80000)
+    freqerror |= 0xfff00000;
+
+    int error = 0; // In hertz
+    float bw_tab[] = {7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500};
+    uint8_t bwindex = spiRead(RH_RF95_REG_1D_MODEM_CONFIG1) >> 4;
+    if (bwindex < (sizeof(bw_tab) / sizeof(float)))
+    error = (float)freqerror * bw_tab[bwindex] * ((float)(1L << 24) / (float)RH_RF95_FXOSC / 500.0);
+    // else not defined
+
+    return error;
 }

@@ -10,10 +10,11 @@ typedef enum
     PMM_PACKAGE_REQUEST
 } pmmPackageType;
 
-const char PMM_TELEMETRY_HEADER_TYPE_LOG[5]      = {"MLOG"}; // These are strings, just for faster changing.
-const char PMM_TELEMETRY_HEADER_TYPE_LOG_INFO[5] = {"MLIN"};
-const char PMM_TELEMETRY_HEADER_TYPE_STRING[5]   = {"MSTR"};
-const char PMM_TELEMETRY_HEADER_TYPE_REQUEST[5]  = {"MRQT"};
+
+#define PMM_TELEMETRY_PORT_LOG          0x10    // These are for now, just random numbers.
+#define PMM_TELEMETRY_PORT_LOG_INFO     0x20
+#define PMM_TELEMETRY_PORT_STRING       0x40
+#define PMM_TELEMETRY_PORT_REQUEST      0x80
 
 
 

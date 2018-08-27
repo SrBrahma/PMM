@@ -29,18 +29,7 @@
 
 // This is the maximum number of bytes that can be carried by the LORA.
 // We use some for headers, keeping fewer for RadioHead messages
-#define RH_RF95_MAX_PAYLOAD_LEN RH_RF95_FIFO_SIZE
-
-// The length of the headers we add.
-// The headers are inside the LORA's payload
-#define RH_RF95_HEADER_LEN 4
-
-// This is the maximum message length that can be supported by this driver.
-// Can be pre-defined to a smaller size (to save SRAM) prior to including this header
-// Here we allow for 1 byte message length, 4 bytes headers, user data and 2 bytes of FCS
-#ifndef RH_RF95_MAX_MESSAGE_LEN
- #define RH_RF95_MAX_MESSAGE_LEN (RH_RF95_MAX_PAYLOAD_LEN - RH_RF95_HEADER_LEN)
-#endif
+#define RH_RF95_MAX_PACKET_LENGTH RH_RF95_FIFO_SIZE
 
 // The crystal oscillator frequency of the module
 #define RH_RF95_FXOSC 32000000.0
@@ -421,19 +410,7 @@ public:
     /// \return true if initialisation succeeded.
     virtual bool    init();
 
-    /// Sets all the registered required to configure the data modem in the RF95/96/97/98, including the bandwidth,
-    /// spreading factor etc. You can use this to configure the modem with custom configurations if none of the
-    /// canned configurations in ModemConfigChoice suit you.
-    /// \param[in] config A ModemConfig structure containing values for the modem configuration registers.
-    void           setModemRegisters(const ModemConfig* config);
 
-    /// Select one of the predefined modem configurations. If you need a modem configuration not provided
-    /// here, use setModemRegisters() with your own ModemConfig.
-    /// Caution: the slowest protocols may require a radio module with TCXO temperature controlled oscillator
-    /// for reliable operation.
-    /// \param[in] index The configuration choice.
-    /// \return true if index is a valid choice.
-    bool        setModemConfig(ModemConfigChoice index);
 
     /// Tests whether a new message is available
     /// from the Driver.
@@ -444,23 +421,24 @@ public:
     virtual bool    available();
 
     /// Turns the receiver on if it not already on.
-    /// If there is a valid message available, copy it to buf and return true
-    /// else return false.
+    /// If there is a valid message available, copy it to the buffer
     /// If a message is copied, *len is set to the length (Caution, 0 length messages are permitted).
     /// You should be sure to call this function frequently enough to not miss any messages
-    /// It is recommended that you call it in your main loop.
-    /// \param[in] buf Location to copy the received message
-    /// \param[in,out] len Pointer to available space in buf. Set to the actual number of octets copied.
     /// \return true if a valid message was copied to buf
-    virtual bool    recv(uint8_t* buf, uint8_t* len);
+    virtual bool    receivePayload(uint8_t* buffer, uint8_t* length);
 
     // Changed by Henrique Bruno. Now it returns the length of the payload.
     /* Make sure your buffer have a length of 255 */
     /* the return value is 32 bits just for speeding up in 32bits systems, like teensy. */
-    uint32_t recv2(uint8_t* buf);
+    uint32_t        recv2(uint8_t* buf);
 
     // Doesn't add any header (To, from, flags etc)!
-    virtual bool sendRaw(const uint8_t* data, uint8_t len);
+    bool    sendRaw(const uint8_t* data, uint8_t len);
+
+    // Returns the protocol header length.
+    uint8_t getProtocolHeaderLength(pmmTelemetryProtocolsType protocol);
+
+    void addProtocolHeader(uint8_t payload[], uint8_t payloadLength, pmmTelemetryProtocolsType protocol);
 
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then optionally waits for Channel Activity Detection (CAD)
@@ -472,10 +450,10 @@ public:
     /// specify the maximum time in ms to wait. If 0 (the default) do not wait for CAD before transmitting.
     /// \return true if the message length was valid and it was correctly queued for transmit. Return false
     /// if CAD was requested and the CAD timeout timed out before clear channel was detected.
-    bool    send(const uint8_t* data, uint8_t len, pmmTelemetryProtocolsType protocol = PMM_NEO_PROTOCOL);
+    bool            send(const uint8_t* data, uint8_t len, pmmTelemetryProtocolsType protocol = PMM_NEO_PROTOCOL_ID);
 
 
-    virtual bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
+    virtual bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryProtocolsType protocol);
 
     /// Sets the length of the preamble
     /// in bytes.
@@ -483,31 +461,26 @@ public:
     /// value on all nodes in your network. Default is 8.
     /// Sets the message preamble length in RH_RF95_REG_??_PREAMBLE_?SB
     /// \param[in] bytes Preamble length in bytes.
-    void           setPreambleLength(uint16_t bytes);
-
-    /// Returns the maximum message length
-    /// available in this Driver.
-    /// \return The maximum legal message length
-    virtual uint8_t maxMessageLength();
+    void            setPreambleLength(uint16_t bytes);
 
     /// Sets the transmitter and receiver
     /// centre frequency.
     /// \param[in] centre Frequency in MHz. 137.0 to 1020.0. Caution: RFM95/96/97/98 comes in several
     /// different frequency ranges, and setting a frequency outside that range of your radio will probably not work
     /// \return true if the selected frquency centre is within range
-    bool        setFrequency(float centre);
+    bool            setFrequency(float centre);
 
     /// If current mode is Rx or Tx changes it to Idle. If the transmitter or receiver is running,
     /// disables them.
-    void           setModeIdle();
+    void            setModeIdle();
 
     /// If current mode is Tx or Idle, changes it to Rx.
     /// Starts the receiver in the RF95/96/97/98.
-    void           setModeRx();
+    void            setModeReception();
 
     /// If current mode is Rx or Idle, changes it to Rx. F
     /// Starts the transmitter in the RF95/96/97/98.
-    void           setModeTx();
+    void            setModeTransmission();
 
     /// Sets the transmitter power output level, and configures the transmitter pin.
     /// Be a good neighbour and set the lowest power level you need.
@@ -528,7 +501,7 @@ public:
     /// valid values are from -1 to 14.
     /// \param[in] useRFO If true, enables the use of the RFO transmitter pins instead of
     /// the PA_BOOST pin (false). Choose the correct setting for your module.
-    void           setTxPower(int8_t power, bool useRFO = false);
+    void            setTransmissionPower(int8_t power, bool useRFO = false);
 
     /// Sets the radio into low-power sleep mode.
     /// If successful, the transport will stay in sleep mode until woken by
@@ -546,16 +519,7 @@ public:
     /// \return true if channel is in use.
     virtual bool    isChannelActive();
 
-    /// Enable TCXO mode
-    /// Call this immediately after init(), to force your radio to use an external
-    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO), if available.
-    /// See the comments in the main documentation about the sensitivity of this radio to
-    /// clock frequency especially when using narrow bandwidths.
-    /// Leaves the module in sleep mode.
-    /// Caution, this function has not been tested by us.
-    /// Caution, the TCXO model radios are not low power when in sleep (consuming
-    /// about ~600 uA, reported by Phang Moh Lim.<br>
-    void enableTCXO();
+
 
     /// Returns the last measured frequency error.
     /// The LoRa receiver estimates the frequency offset between the receiver centre frequency
@@ -566,26 +530,64 @@ public:
     /// \return The estimated centre frequency offset in Hz of the last received message.
     /// If the modem bandwidth selector in
     /// register RH_RF95_REG_1D_MODEM_CONFIG1 is invalid, returns 0.
-    int frequencyError();
+    int             frequencyError();
 
     /// Returns the Signal-to-noise ratio (SNR) of the last received message, as measured
     /// by the receiver.
     /// \return SNR of the last received message in dB
-    int lastSNR();
+    int             getLastSNR();
+
+    /// Sets all the registered required to configure the data modem in the RF95/96/97/98, including the bandwidth,
+    /// spreading factor etc. You can use this to configure the modem with custom configurations if none of the
+    /// canned configurations in ModemConfigChoice suit you.
+    /// \param[in] config A ModemConfig structure containing values for the modem configuration registers.
+    void            setModemRegisters(const ModemConfig* config);
+
+    /// Select one of the predefined modem configurations. If you need a modem configuration not provided
+    /// here, use setModemRegisters() with your own ModemConfig.
+    /// Caution: the slowest protocols may require a radio module with TCXO temperature controlled oscillator
+    /// for reliable operation.
+    /// \param[in] index The configuration choice.
+    /// \return true if index is a valid choice.
+    bool            setModemConfig(ModemConfigChoice index);
+
+    /// Enable TCXO mode
+    /// Call this immediately after init(), to force your radio to use an external
+    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO), if available.
+    /// See the comments in the main documentation about the sensitivity of this radio to
+    /// clock frequency especially when using narrow bandwidths.
+    /// Leaves the module in sleep mode.
+    /// Caution, this function has not been tested by us.
+    /// Caution, the TCXO model radios are not low power when in sleep (consuming
+    /// about ~600 uA, reported by Phang Moh Lim.<br>
+    void            enableTCXO();
 
 protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF95.
     /// Called automatically by isr*()
     /// Should not need to be called by user code.
-    void           handleInterrupt();
+    void            handleInterrupt();
 
     /// Examine the revceive buffer to determine whether the message is for this node
-    uint8_t* validateRxBuf(uint8_t buffer[], uint8_t bufferLength);
+    uint8_t         validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buffer[], uint8_t bufferLength);
 
     /// Clear our local receive buffer
-    void clearRxBuf();
+    void            clearRxBuf();
 
 private:
+    /// The receiver/transmitter buffer
+    uint8_t             mPacketBuffer[RH_RF95_MAX_PACKET_LENGTH];
+
+    /// Number of octets in the buffer
+    volatile uint8_t    mReceivedPacketBufferLength;
+
+    uint8_t             mReceivedPacketProtocolHeaderLength; // Doesn't counts the Port.
+    /// True when there is a valid message in the buffer
+    volatile bool       _rxBufValid;
+
+    // Last measured SNR, dB
+    int8_t              mLastSNR;
+
     /// Low level interrupt service routine for device connected to interrupt 0
     static void         isr0();
 
@@ -608,27 +610,8 @@ private:
     /// else 0xff
     uint8_t             _myInterruptIndex;
 
-    /// Number of octets in the buffer
-    volatile uint8_t    mReceivedPacketBufferLength;
-
-    /// The receiver/transmitter buffer
-    uint8_t             mPacketBuffer[RH_RF95_MAX_PAYLOAD_LEN];
-
-    /// True when there is a valid message in the buffer
-    volatile bool       _rxBufValid;
-
     // True if we are using the HF port (779.0 MHz and above)
     bool                _usingHFport;
-
-    // Last measured SNR, dB
-    int8_t              mLastSNR;
 };
-
-/// @example rf95_client.pde
-/// @example rf95_server.pde
-/// @example rf95_encrypted_client.pde
-/// @example rf95_encrypted_server.pde
-/// @example rf95_reliable_datagram_client.pde
-/// @example rf95_reliable_datagram_server.pde
 
 #endif

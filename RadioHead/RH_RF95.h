@@ -405,46 +405,51 @@ public:
     /// distinct interrupt lines, one for each instance.
     RH_RF95(uint8_t slaveSelectPin = SS, uint8_t interruptPin = 2, RHGenericSPI& spi = hardware_spi);
 
-    /// Initialise the Driver transport hardware and software.
-    /// Make sure the Driver is properly configured before calling init().
+    /// Initialise the Driver transport hardware and software. Make sure the Driver is properly configured before calling init().
     /// \return true if initialisation succeeded.
     virtual bool    init();
 
 
 
-    /// Tests whether a new message is available
-    /// from the Driver.
-    /// On most drivers, this will also put the Driver into RH_MODE_IS_RECEIVING mode until
-    /// a message is actually received by the transport, when it wil be returned to RH_MODE_IS_IDLE.
-    /// This can be called multiple times in a timeout loop
-    /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv()
-    virtual bool    available();
+
+
+
+
+    void getPacketInfoInStruct(uint8_t packet[], pmmTelemetryPacketStatusStructType* packetStatusStruct);
+
+
+
+    bool receivePayloadAndStatusStruct(uint8_t* payload, pmmTelemetryPacketStatusStructType* packetStatusStruct);
+
+
 
     /// Turns the receiver on if it not already on.
     /// If there is a valid message available, copy it to the buffer
     /// If a message is copied, *len is set to the length (Caution, 0 length messages are permitted).
     /// You should be sure to call this function frequently enough to not miss any messages
     /// \return true if a valid message was copied to buf
-    virtual bool    receivePayload(uint8_t* buffer, uint8_t* length);
+    bool    receivePayload(uint8_t* buffer, uint8_t* length);
 
-    // Changed by Henrique Bruno. Now it returns the length of the payload.
-    /* Make sure your buffer have a length of 255 */
-    /* the return value is 32 bits just for speeding up in 32bits systems, like teensy. */
-    uint32_t        recv2(uint8_t* buf);
 
-    // Doesn't add any header (To, from, flags etc)!
-    bool    sendRaw(const uint8_t* data, uint8_t len);
 
     // Returns the protocol header length.
-    uint8_t getProtocolHeaderLength(pmmTelemetryProtocolsType protocol);
+    uint8_t         getProtocolHeaderLength(pmmTelemetryProtocolsType protocol);
 
-    void addProtocolHeader(uint8_t payload[], uint8_t payloadLength, pmmTelemetryProtocolsType protocol);
+
+
+    void            addProtocolHeader(pmmTelemetryProtocolsType protocol, uint8_t port);
+
+
+
+    // Doesn't add any header to the packet like Protocol, To, From, CRC, etc! JUST SEND THE DAMN RAW PACKET
+    bool            sendRaw(const uint8_t* data, uint8_t len);
+
+
 
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then optionally waits for Channel Activity Detection (CAD)
     /// to show the channnel is clear (if the radio supports CAD) by calling waitCAD().
-    /// Then loads a message into the transmitter and starts the transmitter. Note that a message length
-    /// of 0 is permitted.
+    /// Then loads a message into the transmitter and starts the transmitter. Note that a message length of 0 is permitted.
     /// \param[in] data Array of data to be sent
     /// \param[in] len Number of bytes of data to send
     /// specify the maximum time in ms to wait. If 0 (the default) do not wait for CAD before transmitting.
@@ -453,7 +458,10 @@ public:
     bool            send(const uint8_t* data, uint8_t len, pmmTelemetryProtocolsType protocol = PMM_NEO_PROTOCOL_ID);
 
 
-    virtual bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryProtocolsType protocol);
+
+    bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryProtocolsType protocol, uint8_t port);
+
+
 
     /// Sets the length of the preamble
     /// in bytes.
@@ -463,6 +471,8 @@ public:
     /// \param[in] bytes Preamble length in bytes.
     void            setPreambleLength(uint16_t bytes);
 
+
+
     /// Sets the transmitter and receiver
     /// centre frequency.
     /// \param[in] centre Frequency in MHz. 137.0 to 1020.0. Caution: RFM95/96/97/98 comes in several
@@ -470,45 +480,38 @@ public:
     /// \return true if the selected frquency centre is within range
     bool            setFrequency(float centre);
 
+
+
     /// If current mode is Rx or Tx changes it to Idle. If the transmitter or receiver is running,
     /// disables them.
     void            setModeIdle();
+
+
 
     /// If current mode is Tx or Idle, changes it to Rx.
     /// Starts the receiver in the RF95/96/97/98.
     void            setModeReception();
 
+
+
     /// If current mode is Rx or Idle, changes it to Rx. F
     /// Starts the transmitter in the RF95/96/97/98.
     void            setModeTransmission();
 
-    /// Sets the transmitter power output level, and configures the transmitter pin.
-    /// Be a good neighbour and set the lowest power level you need.
-    /// Some SX1276/77/78/79 and compatible modules (such as RFM95/96/97/98)
-    /// use the PA_BOOST transmitter pin for high power output (and optionally the PA_DAC)
-    /// while some (such as the Modtronix inAir4 and inAir9)
-    /// use the RFO transmitter pin for lower power but higher efficiency.
-    /// You must set the appropriate power level and useRFO argument for your module.
-    /// Check with your module manufacturer which transmtter pin is used on your module
-    /// to ensure you are setting useRFO correctly.
-    /// Failure to do so will result in very low
-    /// transmitter power output.
-    /// Caution: legal power limits may apply in certain countries.
-    /// After init(), the power will be set to 13dBm, with useRFO false (ie PA_BOOST enabled).
-    /// \param[in] power Transmitter power level in dBm. For RFM95/96/97/98 LORA with useRFO false,
-    /// valid values are from +5 to +23.
-    /// For Modtronix inAir4 and inAir9 with useRFO true (ie RFO pins in use),
-    /// valid values are from -1 to 14.
-    /// \param[in] useRFO If true, enables the use of the RFO transmitter pins instead of
-    /// the PA_BOOST pin (false). Choose the correct setting for your module.
-    void            setTransmissionPower(int8_t power, bool useRFO = false);
+
+
+
+
+
 
     /// Sets the radio into low-power sleep mode.
     /// If successful, the transport will stay in sleep mode until woken by
-    /// changing mode it idle, transmit or receive (eg by calling send(), recv(), available() etc)
+    /// changing mode it idle, transmit or receive (eg by calling send(), recv(), getIsThereANewReceivedPacket() etc)
     /// Caution: there is a time penalty as the radio takes a finite time to wake from sleep mode.
     /// \return true if sleep mode was successfully entered.
     virtual bool    sleep();
+
+
 
     // Bent G Christensen (bentor@gmail.com), 08/15/2016
     /// Use the radio's Channel Activity Detect (CAD) function to detect channel activity.
@@ -532,10 +535,36 @@ public:
     /// register RH_RF95_REG_1D_MODEM_CONFIG1 is invalid, returns 0.
     int             frequencyError();
 
-    /// Returns the Signal-to-noise ratio (SNR) of the last received message, as measured
-    /// by the receiver.
+
+
+    /// Enable TCXO mode
+    /// Call this immediately after init(), to force your radio to use an external
+    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO), if available.
+    /// See the comments in the main documentation about the sensitivity of this radio to
+    /// clock frequency especially when using narrow bandwidths.
+    /// Leaves the module in sleep mode.
+    /// Caution, this function has not been tested by us.
+    /// Caution, the TCXO model radios are not low power when in sleep (consuming
+    /// about ~600 uA, reported by Phang Moh Lim.<br>
+    void            enableTCXO();
+
+
+// Getters!
+
+    /// Returns the Signal-to-noise ratio (SNR) of the last received message, as measured                                                                                                                                    by the receiver.
     /// \return SNR of the last received message in dB
     int             getLastSNR();
+
+    /// Tests whether a new message is available from the Driver.
+    /// On most drivers, this will also put the Driver into RH_MODE_IS_RECEIVING mode until
+    /// a message is actually received by the transport, when it wil be returned to RH_MODE_IS_IDLE.
+    /// This can be called multiple times in a timeout loop
+    /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv()
+    virtual bool    getIsThereANewReceivedPacket();
+
+
+
+// Setters!
 
     /// Sets all the registered required to configure the data modem in the RF95/96/97/98, including the bandwidth,
     /// spreading factor etc. You can use this to configure the modem with custom configurations if none of the
@@ -551,16 +580,28 @@ public:
     /// \return true if index is a valid choice.
     bool            setModemConfig(ModemConfigChoice index);
 
-    /// Enable TCXO mode
-    /// Call this immediately after init(), to force your radio to use an external
-    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO), if available.
-    /// See the comments in the main documentation about the sensitivity of this radio to
-    /// clock frequency especially when using narrow bandwidths.
-    /// Leaves the module in sleep mode.
-    /// Caution, this function has not been tested by us.
-    /// Caution, the TCXO model radios are not low power when in sleep (consuming
-    /// about ~600 uA, reported by Phang Moh Lim.<br>
-    void            enableTCXO();
+    /// Sets the transmitter power output level, and configures the transmitter pin.
+    /// Be a good neighbour and set the lowest power level you need.
+    /// Some SX1276/77/78/79 and compatible modules (such as RFM95/96/97/98)
+    /// use the PA_BOOST transmitter pin for high power output (and optionally the PA_DAC)
+    /// while some (such as the Modtronix inAir4 and inAir9)
+    /// use the RFO transmitter pin for lower power but higher efficiency.
+    /// You must set the appropriate power level and useRFO argument for your module.
+    /// Check with your module manufacturer which transmtter pin is used on your module
+    /// to ensure you are setting useRFO correctly.
+    /// Failure to do so will result in very low
+    /// transmitter power output.
+    /// Caution: legal power limits may apply in certain countries.
+    /// After init(), the power will be set to 13dBm, with useRFO false (ie PA_BOOST enabled).
+    /// \param[in] power Transmitter power level in dBm. For RFM95/96/97/98 LORA with useRFO false,
+    /// valid values are from +5 to +23.
+    /// For Modtronix inAir4 and inAir9 with useRFO true (ie RFO pins in use),
+    /// valid values are from -1 to 14.
+    /// \param[in] useRFO If true, enables the use of the RFO transmitter pins instead of
+    /// the PA_BOOST pin (false). Choose the correct setting for your module.
+    void            setTransmissionPower(int8_t power, bool useRFO = false);
+
+
 
 protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF95.
@@ -582,8 +623,9 @@ private:
     volatile uint8_t    mReceivedPacketBufferLength;
 
     uint8_t             mReceivedPacketProtocolHeaderLength; // Doesn't counts the Port.
+
     /// True when there is a valid message in the buffer
-    volatile bool       _rxBufValid;
+    volatile bool       mIsThereANewReceivedPacket;
 
     // Last measured SNR, dB
     int8_t              mLastSNR;

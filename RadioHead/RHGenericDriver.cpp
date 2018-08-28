@@ -28,7 +28,7 @@ bool RHGenericDriver::init()
 // Blocks until a valid message is received
 void RHGenericDriver::waitAvailable()
 {
-    while (!available())
+    while (!getIsThereANewReceivedPacket())
         YIELD;
 }
 
@@ -40,7 +40,7 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
     unsigned long starttime = millis();
     while ((millis() - starttime) < timeout)
     {
-        if (available())
+        if (getIsThereANewReceivedPacket())
         {
             return true;
         }

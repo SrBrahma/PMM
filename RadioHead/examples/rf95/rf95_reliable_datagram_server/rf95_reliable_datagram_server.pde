@@ -56,7 +56,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 
 void loop()
 {
-  if (manager.available())
+  if (manager.getIsThereANewReceivedPacket())
   {
     // Wait for a message addressed to us from the client
     uint8_t len = sizeof(buf);

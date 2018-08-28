@@ -32,7 +32,7 @@ void setup() {
 }
 
 void loop() {
-  if (myDriver.available()) {
+  if (myDriver.getIsThereANewReceivedPacket()) {
     // Should be a message for us now   
     uint8_t buf[myDriver.maxMessageLength()];
     uint8_t len = sizeof(buf);

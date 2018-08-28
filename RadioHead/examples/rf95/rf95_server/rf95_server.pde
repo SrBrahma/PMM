@@ -48,7 +48,7 @@ void setup()
 
 void loop()
 {
-  if (rf95.available())
+  if (rf95.getIsThereANewReceivedPacket())
   { 
     // Should be a message for us now
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];

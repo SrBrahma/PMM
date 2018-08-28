@@ -7,12 +7,13 @@
 
 #define PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL 0    // Where is the protocol identifier in the packet
 
-#define PMM_NEO_PROTOCOL_INDEX_SOURCE       1   // Who sent this packet?
-#define PMM_NEO_PROTOCOL_INDEX_DESTINATION  2   // Who this packet wants to reach?
-#define PMM_NEO_PROTOCOL_INDEX_CRC_LSB      3   // Least significant byte
-#define PMM_NEO_PROTOCOL_INDEX_CRC_MSB      4   // Most significant byte
+#define PMM_NEO_PROTOCOL_INDEX_SOURCE               1   // Who sent this packet?
+#define PMM_NEO_PROTOCOL_INDEX_DESTINATION          2   // Who this packet wants to reach?
+#define PMM_NEO_PROTOCOL_INDEX_PORT                 3   // Who this packet wants to reach?
+#define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB       4   // Least significant byte
+#define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB       5   // Most significant byte
 
-#define PMM_NEO_PROTOCOL_HEADER_LENGTH      5   // The minimum length, counting
+#define PMM_NEO_PROTOCOL_HEADER_LENGTH      6   // The minimum length, counting
 
 
 
@@ -26,8 +27,9 @@ typedef struct
     uint8_t sourceAddress;
     uint8_t destinationAddress;
     uint8_t port;
-    uint8_t* payload;
     uint8_t payloadLength;
+     int8_t snr;
+    int16_t rssi; //in dBm
 } pmmTelemetryPacketStatusStructType;
 
 #endif

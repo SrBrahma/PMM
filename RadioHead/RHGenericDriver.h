@@ -70,12 +70,7 @@ public:
     /// a message is actually received by the transport, when it will be returned to RH_MODE_IS_IDLE.
     /// This can be called multiple times in a timeout loop.
     /// \return true if a new, complete, error-free uncollected message is available to be retreived by recv().
-    virtual bool            available() = 0;
-
-    /// Returns the maximum message length
-    /// available in this Driver.
-    /// \return The maximum legal message length
-    virtual uint8_t         maxMessageLength() = 0;
+    virtual bool            getIsThereANewReceivedPacket() = 0;
 
     /// Starts the receiver and blocks until a valid received
     /// message is available.
@@ -177,7 +172,7 @@ public:
     /// Sets the transport hardware into low-power sleep mode
     /// (if supported). May be overridden by specific drivers to initialte sleep mode.
     /// If successful, the transport will stay in sleep mode until woken by
-    /// changing mode it idle, transmit or receive (eg by calling send(), recv(), available() etc)
+    /// changing mode it idle, transmit or receive (eg by calling send(), recv(), getIsThereANewReceivedPacket() etc)
     /// \return true if sleep mode is supported by transport hardware and the RadioHead driver, and if sleep mode
     ///         was successfully entered. If sleep mode is not suported, return false.
     virtual bool            sleep();

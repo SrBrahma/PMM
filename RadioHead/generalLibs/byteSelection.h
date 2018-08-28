@@ -1,9 +1,6 @@
 #ifndef BYTE_SELECTION_h
 #define BYTE_SELECTION_h
 
-// #define PMM_IS_BIG_ENDIAN
-#define PMM_IS_LITTLE_ENDIAN
-
 #include <stdint.h>
 
 uint8_t MSB0(uint16_t value);

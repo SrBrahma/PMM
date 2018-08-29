@@ -26,9 +26,9 @@
 
 
 // Packages
-#include "pmmPackages/pmmPackageLog.h"
-#include "pmmPackages/pmmPackageString.h"
-#include "pmmPackages/pmmPackagesReception.h"
+#include "pmmTelemetryPorts/pmmPortLog.h"
+#include "pmmTelemetryPorts/pmmPortString.h"
+#include "pmmTelemetryPorts/pmmPortsReception.h"
 
 
 
@@ -60,21 +60,21 @@ void Pmm::init()
     #endif
 
     // Packages =====================================================================================
-    // PmmPackageLog
-    mPmmPackageLog.init(&mPmmTelemetry);
-    mPmmPackageLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
+    // PmmPortLog
+    mPmmPortLog.init(&mPmmTelemetry);
+    mPmmPortLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
 
-    // PmmPackageString
-    mPmmPackageString.init(&mPackageLogId, &mPackageTimeMs, &mPmmTelemetry, &mPmmSd);
+    // PmmPortString
+    mPmmPortString.init(&mPackageLogId, &mPackageTimeMs, &mPmmTelemetry, &mPmmSd);
 
-    // PmmPackagesReception
-    mPmmPackagesReception.init(&mPmmPackageLog, &mPmmPackageString);
+    // PmmPortsReception
+    mPmmPortsReception.init(&mPmmPortLog, &mPmmPortString);
 
 
     // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init(&mPmmErrorsCentral);
-        mPmmPackageLog.addGps(mPmmGps.getGpsStructPtr());
+        mPmmPortLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
@@ -87,7 +87,7 @@ void Pmm::init()
     // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init(&mPmmErrorsCentral);
-        mPmmPackageLog.addImu(mPmmImu.getImuStructPtr());
+        mPmmPortLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
 
@@ -96,7 +96,7 @@ void Pmm::init()
 
 
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
-    mPmmPackageLog.debugPrintLogHeader();
+    mPmmPortLog.debugPrintLogHeader();
 }
 
 
@@ -133,20 +133,20 @@ void Pmm::update()
 
 
     #if PMM_DEBUG_SERIAL
-        mPmmPackageLog.debugPrintLogContent();
+        mPmmPortLog.debugPrintLogContent();
         Serial.println();
     #endif
 
 
 
     #if PMM_USE_TELEMETRY
-        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the pmmPackagesXYZ includes the pmmTelemetry, and if pmmTelemetry included the
-        // pmmPackagezXYZ, that would causa a circular dependency, and the code wouldn't compile. I had the idea to use the address of the functions, but that
+        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the PmmPortsXYZ includes the pmmTelemetry, and if pmmTelemetry included the
+        // PmmPortzXYZ, that would causa a circular dependency, and the code wouldn't compile. I had the idea to use the address of the functions, but that
         // would make the code a little messy. Give me better alternatives! (but this current alternative isn't THAT bad at all)
 
         // The Packages objects may/will automatically use the pmmSd and the pmmTelemetry objects.
         if(mPmmTelemetry.updateTransmission());
-            mPmmPackagesReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
+            mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketLength());
         //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
     #endif
 

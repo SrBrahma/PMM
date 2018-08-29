@@ -24,9 +24,9 @@
 #endif
 
 //Packages
-#include "pmmPackages/pmmPackageLog.h"
-#include "pmmPackages/pmmPackageString.h"
-#include "pmmPackages/pmmPackagesReception.h"
+#include "pmmTelemetryPorts/pmmPortLog.h"
+#include "pmmTelemetryPorts/pmmPortString.h"
+#include "pmmTelemetryPorts/pmmPortsReception.h"
 
 
 
@@ -38,9 +38,9 @@ private:
     PmmImu mPmmImu;
 
     // Packages
-    PmmPackageLog mPmmPackageLog;
-    PmmPackageString mPmmPackageString;
-    PmmPackagesReception mPmmPackagesReception;
+    PmmPortLog mPmmPortLog;
+    PmmPortString mPmmPortString;
+    PmmPortsReception mPmmPortsReception;
 
     PmmErrorsCentral mPmmErrorsCentral;         /* Errors */
 

@@ -1,4 +1,4 @@
-/* pmmPackageLog.cpp
+/* PmmPortLog.cpp
  * Defines the Package Log (MLOG) and the Package Log Information (MLIN).
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
@@ -6,19 +6,19 @@
 
 
 
-#include <pmmPackages/pmmPackageLog.h>
+#include <pmmTelemetryPorts/pmmPortLog.h>
 #include <pmmConsts.h>
 #include <crc16.h>
 
 
 // Received Package Log Info Package
-void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint16_t packetSize)
+void PmmPortLog::receivedPackageLogInfo(uint8_t* packetArray, uint16_t packetSize)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;
 
     // If the packet size is smaller than the packet header length, it's invalid
-    if (packetSize < PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH)
+    if (packetSize < PMM_PORT_LOG_INFO_HEADER_LENGTH)
         return;
 
     // First test the CRC, to see if the packet is valid.
@@ -30,7 +30,7 @@ void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint16_t packet
     // if changed the CRC16 of the entire package, or is the first packet ever received
     if (tempPackageCrc != mLogInfoPackageCrc || !mPackageLogInfoNumberOfPackets)
     {
-        memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_TELEMETRY_PACKAGE_LOG_INFO_MAX_PACKETS);
+        memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
         mLogInfoPackageCrc = tempPackageCrc;
         mPackageLogInfoNumberOfPackets = (packetArray[8] & 0xF) + 1;
         // If is the first packet or if changed the entirePackageCrc, reset some parameters
@@ -54,7 +54,7 @@ void PmmPackageLog::receivedPackageLogInfo(uint8_t* packetArray, uint16_t packet
 }
 
 
-void PmmPackageLog::unitePackageInfoPackets()
+void PmmPortLog::unitePackageInfoPackets()
 {
     unsigned packetCounter;
     unsigned payloadLength;
@@ -67,10 +67,10 @@ void PmmPackageLog::unitePackageInfoPackets()
     // 1) Copies all the packets into the big raw array
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter ++)
     {
-        payloadLength = mPackageLogInfoTelemetryArrayLengths[packetCounter] - PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH;
+        payloadLength = mPackageLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
         memcpy(mPackageLogInfoRawArray + mPackageLogInfoRawArrayLength,
-               mPackageLogInfoTelemetryArray[packetCounter] + PMM_TELEMETRY_PACKAGE_LOG_INFO_HEADER_LENGTH,
+               mPackageLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
                payloadLength);
 
         // Increases the raw array length by the copied telemetry array length.
@@ -108,10 +108,4 @@ void PmmPackageLog::unitePackageInfoPackets()
     }
 
     // Finished!
-}
-
-
-// Received Package Log Info Package
-void PmmPackageLog::receivedPackageLog(uint8_t* packetArray, uint16_t packetSize)
-{
 }

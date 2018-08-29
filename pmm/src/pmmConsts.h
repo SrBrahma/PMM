@@ -40,7 +40,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  General
 // =======================================================================
-#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in pmmPackageString.cpp.
+#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in PmmPortString.cpp.
 #define PMM_USE_BUZZER              0
 #define PMM_USE_LED_RECOVERY        0
 #define PMM_USE_LED_ERRORS          0
@@ -82,7 +82,7 @@ const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
 
 #define PMM_TELEMETRY_HEADER_TYPE_LENGTH           4         // The length of chars of the header type.
 
-#define PMM_TELEMETRY_LOG_NUMBER_VARIABLES  32
+#define PMM_PORT_LOG_NUMBER_VARIABLES  32
 #define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH    251 // Must be 251 (LoRa max is 255, 4 bytes are used as default headers by the RadioHead lib (maybe will remove/change it on future)). read recv2() in RH_RF95.cpp.
 
 

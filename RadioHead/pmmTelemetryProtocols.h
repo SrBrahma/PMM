@@ -28,7 +28,8 @@ typedef struct
     uint8_t destinationAddress;
     uint8_t port;
     uint8_t payloadLength;
-     int8_t snr;
+    int8_t  snr;
+    bool    loraValidCrc;
     int16_t rssi; //in dBm
 } pmmTelemetryPacketStatusStructType;
 

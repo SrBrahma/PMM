@@ -40,7 +40,10 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  General
 // =======================================================================
-#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in PmmPortString.cpp.
+#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in pmmPackageString.cpp.
+
+#define PMM_IS_PDA                  1
+
 #define PMM_USE_BUZZER              0
 #define PMM_USE_LED_RECOVERY        0
 #define PMM_USE_LED_ERRORS          0
@@ -53,7 +56,7 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 
 #define PMM_VARIABLE_STRING_LENGTH          22
 
-#define PMM_IS_PDA                       1
+
 
 
 

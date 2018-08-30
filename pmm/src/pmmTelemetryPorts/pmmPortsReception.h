@@ -3,6 +3,7 @@
 
 #include <pmmTelemetryPorts/pmmPortLog.h>
 #include <pmmTelemetryPorts/pmmPortString.h>
+#include <pmmTelemetryProtocols.h>
 
 class PmmPortsReception // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
 {
@@ -15,7 +16,7 @@ private:
 public:
     PmmPortsReception();
     int init(PmmPortLog* PmmPortLog, PmmPortString* PmmPortString);
-    void receivedPacket(uint8_t packetArray[], uint16_t packetLength);
+    void receivedPacket(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus);
 
 }; // End of the class
 

@@ -108,9 +108,8 @@ public:
 
 
     // Reception
-    void receivedPackageLog(uint8_t* packetArray, uint16_t packetSize);
-    void receivedPackageLogInfo(uint8_t* packetArray, uint16_t packetSize);
-    // ~
+    void receivedPackageLog(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus);
+    void receivedPackageLogInfo(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus);
 
 
 

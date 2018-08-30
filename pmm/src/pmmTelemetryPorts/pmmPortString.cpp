@@ -17,9 +17,10 @@ int PmmPortString::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr
     return 0;
 }
 
+// Adds a little message header, ex: [19402ms 92112id] Parachutes Deployed
 int PmmPortString::addString(char *string)
 {
-    snprintf(mStrings[mActualNumberOfStrings++], PMM_PORT_STRING_MAX_STRING_LENGTH, "%lums %luid %s: %s", millis(), *mPackageLogIdPtr, PMM_THIS_NAME, string);       // Adds the time and the Package Log Id.
+    snprintf(mStrings[mActualNumberOfStrings++], PMM_PORT_STRING_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string);       // Adds the time and the Package Log Id.
     return 0;
 }
 

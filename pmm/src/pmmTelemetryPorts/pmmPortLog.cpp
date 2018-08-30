@@ -10,9 +10,9 @@
 
 
 
-#define PMM_PORT_LOG_DATA_INDEX 1
+#define PMM_PORT_LOG_INDEX_DATA 1
 // 0  is MLIN String CRC
-// 1+ is data (PMM_PORT_LOG_DATA_INDEX)
+// 1+ is data (PMM_PORT_LOG_INDEX_DATA)
 
 
 
@@ -109,7 +109,7 @@ void PmmPortLog::includeVariableInPackage(const char *variableName, uint8_t vari
     mLogNumberOfVariables ++;
     mPackageLogSizeInBytes += varSize;
 
-    if (mLogNumberOfVariables > PMM_PORT_LOG_DATA_INDEX) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
+    if (mLogNumberOfVariables > PMM_PORT_LOG_INDEX_DATA) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
     {
         updatePackageLogInfoRaw();
         updatePackageLogInfoInTelemetryFormat();
@@ -379,10 +379,11 @@ void PmmPortLog::debugPrintLogHeader()
     unsigned variableIndex;
     char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
-    if (mLogNumberOfVariables > PMM_PORT_LOG_DATA_INDEX)
-        snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PORT_LOG_DATA_INDEX]);
+    // For adding the first variable header to the print
+    if (mLogNumberOfVariables > PMM_PORT_LOG_INDEX_DATA)
+        snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PORT_LOG_INDEX_DATA]);
 
-    for (variableIndex = PMM_PORT_LOG_DATA_INDEX + 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
+    for (variableIndex = PMM_PORT_LOG_INDEX_DATA + 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }
@@ -395,7 +396,7 @@ void PmmPortLog::debugPrintLogContent()
 {
     unsigned variableIndex;
     static char buffer[512]; // Static for optimization
-    buffer[0] = '\0';
+    buffer[0] = '\0'; // for the snprintf
     for (variableIndex = 0; variableIndex < mLogNumberOfVariables; variableIndex ++)
     {
         switch(mVariableTypeArray[variableIndex])

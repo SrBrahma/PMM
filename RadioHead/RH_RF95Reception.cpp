@@ -5,8 +5,8 @@
 
 #include <RH_RF95.h>
 #include <pmmTelemetryProtocols.h>
-#include "generalLibs/crc16.h"
-#include "generalLibs/byteSelection.h"
+#include "crc16.h"
+#include "byteSelection.h"
 
 
 // if the given protocol is invalid, will by default use the Neo Protocol.

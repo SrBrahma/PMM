@@ -7,6 +7,6 @@
 #include <pmmTelemetryPorts/pmmPortLog.h>
 
 // Received Package Log Info Package
-void PmmPortLog::receivedPackageLog(uint8_t* packetArray, uint16_t packetSize)
+void PmmPortLog::receivedPackageLog(uint8_t payload[], pmmTelemetryPacketStatusStructType packetStatus)
 {
 }

@@ -5,6 +5,7 @@
 #include <pmmTelemetry.h>
 #include <RH_RF95.h>
 #include <pmmConsts.h>
+#include <pmmTelemetryProtocols.h>
 
 PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
     mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)
@@ -59,10 +60,12 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     /* So it initialized! */
 
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
-    mRf95.setTxPower(PMM_LORA_TX_POWER, false);
+    mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
     PMM_DEBUG_PRINT_MORE("PmmTelemetry: LoRa initialized successfully!");
     return 0;
 }
+
+
 
 int PmmTelemetry::updateTransmission()
 {
@@ -70,7 +73,7 @@ int PmmTelemetry::updateTransmission()
     pmmTelemetryQueueStructType* queueStructPtr;
 
     // 1) Is there any packet being sent?
-    if (mRf95.isAnyPacketBeingSentRH_RF95())
+    if (mRf95.isAnyPacketBeingSent())
         return 1;
 
     /* tempMillis = millis();
@@ -136,12 +139,12 @@ int PmmTelemetry::updateTransmission()
 } // end of updateTransmission()
 
 
+
 // Returns 1 if received anything, else, 0.
 int PmmTelemetry::updateReception()
 {
-    // 1.a) Did we get a packet on the RF module?
-    if ((mReceivedPacketLength = mRf95.recv2(mReceivedPacketArray)))
-        return 1;
+    if (receivePayloadAndStatusStruct(mReceivedPayload, &mReceivedPacketStatusStruct))
+
     return 0;
 }
 
@@ -194,7 +197,6 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 
 
 
-
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
 int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
 {
@@ -216,7 +218,6 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmm
 
 
 
-
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
 int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
 {
@@ -234,23 +235,15 @@ int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8
     pmmTelemetryQueueStructPtr->lengthInBytesArray[newItemIndex] = totalByteSize;
     return 0;
 }
-/* for the future
-int
-PmmTelemetry::setTxPower(int value)
-{
-    value <= 5? value = 5;
-    value >= 23? value = 23;
 
-    mRf95.setTxPower(value, false);
-    return 0;
-} */
 
+// Getters
 uint8_t* PmmTelemetry::getReceivedPacketArray()
 {
-    return mReceivedPacketArray;
+    return mReceivedPayload;
 }
 
-uint16_t PmmTelemetry::getReceivedPacketLength()
+uint16_t PmmTelemetry::getReceivedPacketStatusStructPtr()
 {
-    return mReceivedPacketLength;
+    return &mReceivedPacketStatusStruct;
 }

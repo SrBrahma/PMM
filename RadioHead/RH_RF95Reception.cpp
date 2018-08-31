@@ -22,7 +22,8 @@ uint8_t RH_RF95::getProtocolHeaderLength(pmmTelemetryProtocolsType protocol)
 
 
 
-// Check the packet protocol header and return its (header) length. If 0 is returned, the packet is invalid.
+// Check the packet protocol and return the length of the header. If 0 is returned, the packet is invalid.
+// It also checks if the Destination Address of the received packet is the same as the address of this system.
 uint8_t RH_RF95::validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buffer[], uint8_t bufferLength)
 {
     // 1) Which protocol is this packet using?
@@ -30,10 +31,11 @@ uint8_t RH_RF95::validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buf
     {
         #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
             case PMM_NEO_PROTOCOL_ID:
+                //1.1) Test the packet length
                 if (mReceivedPacketBufferLength < PMM_NEO_PROTOCOL_HEADER_LENGTH)
                     return 0; // Too short to be a real message
 
-                // 1) First check the Destination of this packet we received
+                // 1.2) Check the Destination of this packet we received
                 // If the Destination not equal to this Address and not in promiscuous mode
                 if ((mPacketBuffer[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != mThisAddress) && !mPromiscuousMode)
                     return 0;
@@ -117,7 +119,12 @@ void RH_RF95::handleInterrupt()
 {
     // Read the interrupt register
     uint8_t irq_flags = spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-    if (mMode == RH_MODE_IS_RECEIVING && irq_flags & (RH_RF95_RX_TIMEOUT | RH_RF95_PAYLOAD_CRC_ERROR))
+    if (mMode == RH_MODE_IS_RECEIVING && irq_flags & RH_RF95_PAYLOAD_CRC_ERROR)
+    {
+        mInvalidAutoLoraPayloadCrc = true;
+        mInvalidReceivedPacketsCounter++;
+    }
+    if (mMode == RH_MODE_IS_RECEIVING && irq_flags & (RH_RF95_RX_TIMEOUT))
     {
         mInvalidReceivedPacketsCounter++;
     }
@@ -151,9 +158,13 @@ void RH_RF95::handleInterrupt()
             mLastRssi -= 164;
 
         // We have received a message.
-        if(validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength));
+        if((mReceivedPacketProtocolHeaderLength = validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength)));
         {
             mIsThereANewReceivedPacket = true;
+
+            if (mInvalidAutoLoraPayloadCrc)
+                mInvalidAutoLoraPayloadCrc = false;
+
             setModeIdle();
         }
 

@@ -616,19 +616,13 @@ protected:
     void            clearRxBuf();
 
 private:
-    /// The receiver/transmitter buffer
-    uint8_t             mPacketBuffer[RH_RF95_MAX_PACKET_LENGTH];
 
-    /// Number of octets in the buffer
-    volatile uint8_t    mReceivedPacketBufferLength;
-
-    uint8_t             mReceivedPacketProtocolHeaderLength; // Doesn't counts the Port.
-
-    /// True when there is a valid message in the buffer
-    volatile bool       mIsThereANewReceivedPacket;
-
-    // Last measured SNR, dB
-    int8_t              mLastSNR;
+    uint8_t             mPacketBuffer[RH_RF95_MAX_PACKET_LENGTH];   // The receiver/transmitter buffer
+    volatile uint8_t    mReceivedPacketBufferLength;                // Number of octets in the buffer
+    uint8_t             mReceivedPacketProtocolHeaderLength;        // The received packet header length. For Neo Protocol, is (Protocol+Source+Dest+Port+CRC16) = 6
+    volatile bool       mIsThereANewReceivedPacket;                 // True when there is a valid message in the buffer
+    int8_t              mLastSNR;                                   // Last measured SNR, dB
+    bool                mInvalidAutoLoraPayloadCrc;                 // Is the received automatic LoRa Payload invalid?
 
     /// Low level interrupt service routine for device connected to interrupt 0
     static void         isr0();

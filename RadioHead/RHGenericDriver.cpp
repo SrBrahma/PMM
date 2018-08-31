@@ -13,7 +13,7 @@ bool RHGenericDriver::init()
 {
     mThisAddress = RH_THIS_SYSTEM_ADDRESS;
     mTransmissionDestinationAddress = RH_BROADCAST_ADDRESS;
-    mTransmissionSourceAddress = RH_BROADCAST_ADDRESS;
+    mTransmissionSourceAddress = RH_THIS_SYSTEM_ADDRESS;
 
     mInvalidReceivedPacketsCounter = 0,
     mSuccessfulReceivedPacketsCounter = 0;

@@ -147,19 +147,21 @@ void RH_RF95::handleInterrupt()
         // this is according to the doc, but is it really correct?
         // weakest receiveable signals are reported RSSI at about -66
         mLastRssi = spiRead(RH_RF95_REG_1A_PKT_RSSI_VALUE);
-        // Adjust the RSSI, datasheet page 87
-        if (mLastSNR < 0)
-            mLastRssi = mLastRssi + mLastSNR;
-        else
-            mLastRssi = (int)mLastRssi * 16 / 15;
-        if (_usingHFport)
-            mLastRssi -= 157;
-        else
-            mLastRssi -= 164;
+
 
         // We have received a message.
         if((mReceivedPacketProtocolHeaderLength = validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength)));
         {
+            // Adjust the RSSI, datasheet page 87
+            if (mLastSNR < 0)
+                mLastRssi = mLastRssi + mLastSNR;
+            else
+                mLastRssi = (int)mLastRssi * 16 / 15;
+            if (_usingHFport)
+                mLastRssi -= 157;
+            else
+                mLastRssi -= 164;
+
             mIsThereANewReceivedPacket = true;
 
             if (mInvalidAutoLoraPayloadCrc)

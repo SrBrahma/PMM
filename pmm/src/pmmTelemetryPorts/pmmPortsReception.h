@@ -16,7 +16,7 @@ private:
 public:
     PmmPortsReception();
     int init(PmmPortLog* PmmPortLog, PmmPortString* PmmPortString);
-    void receivedPacket(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus);
+    void receivedPacket(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
 
 }; // End of the class
 

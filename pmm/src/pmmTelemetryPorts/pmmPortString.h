@@ -43,7 +43,7 @@ public:
     int addString(char *string);
     int addRawString(char *string);
 
-    void receivedPackageString(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus);
+    void receivedPackageString(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
 
     uint8_t getActualNumberOfStrings();
     uint8_t getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId);

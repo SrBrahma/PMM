@@ -12,7 +12,7 @@
 
 
 // Received Package Log Info Package
-void PmmPortLog::receivedPackageLogInfo(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus)
+void PmmPortLog::receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;

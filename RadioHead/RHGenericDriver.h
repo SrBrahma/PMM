@@ -7,11 +7,12 @@
 #define RHGenericDriver_h
 
 #include <RadioHead.h>
+#include <pmmTelemetryProtocols.h>
 
 // Defines bits of the FLAGS header reserved for use by the RadioHead library and
 // the flags available for use by applications
-#define RH_FLAGS_RESERVED                 0xf0
-#define RH_FLAGS_APPLICATION_SPECIFIC     0x0f
+#define RH_FLAGS_RESERVED                 0xF0
+#define RH_FLAGS_APPLICATION_SPECIFIC     0x0F
 #define RH_FLAGS_NONE                     0
 
 // Default timeout for waitCAD() in ms

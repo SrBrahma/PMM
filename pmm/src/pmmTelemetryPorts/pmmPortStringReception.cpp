@@ -5,7 +5,7 @@
 #include <crc16.h>
 #include <pmmTelemetryProtocols.h>
 
-void PmmPortString::receivedPackageString(uint8_t* payload, pmmTelemetryPacketStatusStructType* packetStatus)
+void PmmPortString::receivedPackageString(uint8_t* payload, telemetryPacketInfoStructType* packetStatus)
 {
     // 1) First check is the packet is valid
     // 1.a) If the packet size is smaller than the package header length, it's invalid

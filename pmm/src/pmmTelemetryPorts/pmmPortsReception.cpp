@@ -20,7 +20,7 @@ int PmmPortsReception::init(PmmPortLog* PmmPortLog, PmmPortString* PmmPortString
     return 0;
 }
 
-void PmmPortsReception::receivedPacket(uint8_t payload[], pmmTelemetryPacketStatusStructType* packetStatus)
+void PmmPortsReception::receivedPacket(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
 {
     // 1) Which kind of packet is it?
     switch(payload[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])

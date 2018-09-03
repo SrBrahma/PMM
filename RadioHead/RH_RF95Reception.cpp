@@ -53,7 +53,7 @@ uint8_t RH_RF95::validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buf
 
 // It assumes the packet was already validated by the validateReceivedPacketAndReturnProtocolHeaderLength() function,
 // which is called in handleInterrupt() function.
-void RH_RF95::getPacketInfoInStruct(uint8_t packet[], pmmTelemetryPacketStatusStructType* packetStatusStruct)
+void RH_RF95::getPacketInfoInStruct(uint8_t packet[], telemetryPacketInfoStructType* packetStatusStruct)
 {
     // 1) Which protocol is this packet using?
     switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
@@ -65,7 +65,7 @@ void RH_RF95::getPacketInfoInStruct(uint8_t packet[], pmmTelemetryPacketStatusSt
             packetStatusStruct->payloadLength = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
             packetStatusStruct->rssi = getLastRssi();
             packetStatusStruct->snr = getLastSNR();
-            packetStatusStruct->loraValidCrc =
+            packetStatusStruct->invalidAutoLoraValidCrc = mInvalidAutoLoraPayloadCrc;
     }
 
 }
@@ -73,7 +73,7 @@ void RH_RF95::getPacketInfoInStruct(uint8_t packet[], pmmTelemetryPacketStatusSt
 
 
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
-bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, pmmTelemetryPacketStatusStructType* packetStatusStruct)
+bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInfoStructType* packetStatusStruct)
 {
     if (!getIsThereANewReceivedPacket())
         return false;

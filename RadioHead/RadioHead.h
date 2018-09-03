@@ -73,10 +73,6 @@ application. Purchase commercial licenses at http://airspayce.binpress.com
 #ifndef RadioHead_h
 #define RadioHead_h
 
-// This is the address that indicates a broadcast
-#define RH_BROADCAST_ADDRESS    0xFF
-#define RH_THIS_SYSTEM_ADDRESS  0x01  // You may change it!
-
 // Official version numbers are maintained automatically by Makefile:
 #define RH_VERSION_MAJOR 1
 #define RH_VERSION_MINOR 83

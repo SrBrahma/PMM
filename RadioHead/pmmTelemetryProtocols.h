@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+// This is the address that indicates a broadcast
+#define RH_BROADCAST_ADDRESS    0xFF
+#define RH_TO_ALL_PDA_ADDRESS      0xFE
+
+#define RH_THIS_SYSTEM_ADDRESS  0x01  // You may change it!
+
 #define PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL    1       // So you can enable/deactivate certain protocols of being received!
 
 #define PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL 0    // Where is the protocol identifier in the packet
@@ -16,11 +22,8 @@
 #define PMM_NEO_PROTOCOL_HEADER_LENGTH      6   // The minimum length, counting
 
 
-
-typedef enum
-{
-    PMM_NEO_PROTOCOL_ID = 1
-} pmmTelemetryProtocolsType;
+// Define instead of typedef enum, because I didn't wanted to use 4 bytes in telemetryProtocolsContentStructType just to store the few protocols
+#define PMM_NEO_PROTOCOL_ID                 1
 
 typedef struct
 {
@@ -28,9 +31,17 @@ typedef struct
     uint8_t destinationAddress;
     uint8_t port;
     uint8_t payloadLength;
+    bool    invalidAutoLoraValidCrc;
     int8_t  snr;
-    bool    loraValidCrc;
     int16_t rssi; //in dBm
-} pmmTelemetryPacketStatusStructType;
+} telemetryPacketInfoStructType;
+
+typedef struct
+{
+    uint8_t protocol;
+    uint8_t sourceAddress;
+    uint8_t destinationAddress;
+    uint8_t port;
+} telemetryProtocolsContentStructType;
 
 #endif

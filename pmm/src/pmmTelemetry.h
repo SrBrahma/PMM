@@ -40,6 +40,8 @@ class PmmTelemetry
         uint8_t   numberVariablesArray[PMM_TELEMETRY_QUEUE_LENGTH]; // Used in sendArrayOfPointersOfSmartSizes()
         uint8_t   lengthInBytesArray[PMM_TELEMETRY_QUEUE_LENGTH];   // Used in send() and the sendArrayOfPointersOfSmartSizes()
 
+        telemetryProtocolsContentStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
+
         uint8_t   actualIndex;
         uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
 
@@ -47,7 +49,7 @@ class PmmTelemetry
 
 private:
     uint8_t mReceivedPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
-    pmmTelemetryPacketStatusStructType mReceivedPacketStatusStruct;
+    telemetryPacketInfoStructType mReceivedPacketStatusStruct;
 
     PmmErrorsCentral *mPmmErrorsCentral;
     RH_RF95 mRf95;
@@ -71,7 +73,7 @@ public:
     int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
 
     uint8_t* getReceivedPacketArray();
-    pmmTelemetryPacketStatusStructType* getReceivedPacketStatusStructPtr();
+    telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();
 
     //void setPackageLogInfoReceivedFunctionPtr
     //void setPackageStringReceivedFunctionPtr

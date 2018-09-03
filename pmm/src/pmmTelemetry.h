@@ -15,6 +15,7 @@
 
 
 
+
 class PmmTelemetry
 {
     //PmmTelemetry(); // https://stackoverflow.com/a/12927220
@@ -69,8 +70,10 @@ public:
     int updateReception();
     int updateTransmission();
 
-    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
-    int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority);
+    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+
+    int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
+                                 telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
     uint8_t* getReceivedPacketArray();
     telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();

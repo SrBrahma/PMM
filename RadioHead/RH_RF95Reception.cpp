@@ -10,7 +10,7 @@
 
 
 // if the given protocol is invalid, will by default use the Neo Protocol.
-uint8_t RH_RF95::getProtocolHeaderLength(pmmTelemetryProtocolsType protocol)
+uint8_t RH_RF95::getProtocolHeaderLength(uint8_t protocol)
 {
     switch (protocol)
     {

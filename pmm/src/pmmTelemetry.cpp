@@ -109,14 +109,16 @@ int PmmTelemetry::updateTransmission()
     {
         case PMM_TELEMETRY_SEND:
             mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
-                       queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]); // The length
+                       queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
+                       &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
             break;
         case PMM_TELEMETRY_SEND_SMART_SIZES:
             mRf95.sendArrayOfPointersOfSmartSizes(
                 queueStructPtr->uint8_tPtrToPtrArray[queueStructPtr->actualIndex], // The array of data array
                 queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],      // The sizes array
                 queueStructPtr->numberVariablesArray[queueStructPtr->actualIndex], // The number of variables
-                queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]);  // The total byte size
+                queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
+                &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]);  // The total byte size
             break;
         default:
             // Error here! Invalid type! Treat it on the future!
@@ -145,7 +147,7 @@ int PmmTelemetry::updateReception()
 {
     if (receivePayloadAndStatusStruct(mReceivedPayload, &mReceivedPacketStatusStruct))
 
-    return 0;
+        return 0;
 }
 
 
@@ -198,7 +200,7 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 
 
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
-int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
+int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]"
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
@@ -219,7 +221,7 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, pmm
 
 
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
-int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, pmmTelemetryQueuePrioritiesType priority)
+int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);

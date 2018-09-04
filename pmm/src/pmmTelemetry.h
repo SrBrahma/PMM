@@ -15,7 +15,6 @@
 
 
 
-
 class PmmTelemetry
 {
     //PmmTelemetry(); // https://stackoverflow.com/a/12927220
@@ -25,6 +24,8 @@ class PmmTelemetry
         PMM_TELEMETRY_SEND_SMART_SIZES
     } pmmTelemetrySendType;
 
+
+
     typedef enum
     {
         PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
@@ -32,6 +33,8 @@ class PmmTelemetry
         PMM_TELEMETRY_QUEUE_PRIORITY_LOW,
         PMM_TELEMETRY_QUEUE_PRIORITY_DEFAULT
     } pmmTelemetryQueuePrioritiesType;
+
+
 
     typedef struct
     {
@@ -47,6 +50,8 @@ class PmmTelemetry
         uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
 
     } pmmTelemetryQueueStructType;
+
+
 
 private:
     uint8_t mReceivedPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];

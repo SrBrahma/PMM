@@ -105,13 +105,9 @@ public:
 
     int init(PmmTelemetry* pmmTelemetry);
 
-
-
     // Reception
     void receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
     void receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
-
-
 
     // Add variables to the package log. The types are specified in PmmPortLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
@@ -129,9 +125,6 @@ public:
     // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
     // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
     void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
-    // ~
-
-
 
     // Getters
     uint8_t getNumberOfVariables();
@@ -141,16 +134,12 @@ public:
     uint8_t* getVariableTypeArray();
     uint8_t* getVariableSizeArray();
     uint8_t** getVariableAddressArray();
-    // ~
-
-
 
     // Debug!
     #if PMM_DEBUG_SERIAL
         void debugPrintLogHeader();
         void debugPrintLogContent();
     #endif
-    //  ~
 
 }; // End of the class
 

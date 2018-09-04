@@ -112,6 +112,7 @@ int PmmTelemetry::updateTransmission()
                        queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
                        &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
             break;
+
         case PMM_TELEMETRY_SEND_SMART_SIZES:
             mRf95.sendArrayOfPointersOfSmartSizes(
                 queueStructPtr->uint8_tPtrToPtrArray[queueStructPtr->actualIndex], // The array of data array
@@ -120,13 +121,12 @@ int PmmTelemetry::updateTransmission()
                 queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
                 &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]);  // The total byte size
             break;
+
         default:
             // Error here! Invalid type! Treat it on the future!
             break;
 
     } // End of switch
-
-    //
 
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
@@ -145,9 +145,10 @@ int PmmTelemetry::updateTransmission()
 // Returns 1 if received anything, else, 0.
 int PmmTelemetry::updateReception()
 {
-    if (receivePayloadAndStatusStruct(mReceivedPayload, &mReceivedPacketStatusStruct))
+    if (mRf95.receivePayloadAndStatusStruct(mReceivedPayload, &mReceivedPacketStatusStruct))
+        return 1;
 
-        return 0;
+    return 0;
 }
 
 
@@ -224,17 +225,19 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
 int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
+    
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
 
     if (newItemIndex == -1)
         return 1;   // If no available space on the queue, return 1.
 
-
-    pmmTelemetryQueueStructPtr->sendTypeArray[newItemIndex] = PMM_TELEMETRY_SEND_SMART_SIZES;
+    pmmTelemetryQueueStructPtr->sendTypeArray       [newItemIndex] = PMM_TELEMETRY_SEND_SMART_SIZES;
     pmmTelemetryQueueStructPtr->uint8_tPtrToPtrArray[newItemIndex] = dataArrayOfPointers;
-    pmmTelemetryQueueStructPtr->uint8_tPtrArray[newItemIndex] = sizesArray;
+    pmmTelemetryQueueStructPtr->uint8_tPtrArray     [newItemIndex] = sizesArray;
     pmmTelemetryQueueStructPtr->numberVariablesArray[newItemIndex] = numberVariables;
-    pmmTelemetryQueueStructPtr->lengthInBytesArray[newItemIndex] = totalByteSize;
+    pmmTelemetryQueueStructPtr->lengthInBytesArray  [newItemIndex] = totalByteSize;
+    pmmTelemetryQueueStructPtr-> protocolsContentStructArray[newItemIndex] = protocolsContentStruct;
+
     return 0;
 }
 
@@ -245,7 +248,7 @@ uint8_t* PmmTelemetry::getReceivedPacketArray()
     return mReceivedPayload;
 }
 
-uint16_t PmmTelemetry::getReceivedPacketStatusStructPtr()
+telemetryPacketInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
 {
     return &mReceivedPacketStatusStruct;
 }

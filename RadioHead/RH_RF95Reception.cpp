@@ -9,45 +9,6 @@
 #include "byteSelection.h"
 
 
-// if the given protocol is invalid, will by default use the Neo Protocol.
-uint8_t RH_RF95::getProtocolHeaderLength(uint8_t protocol)
-{
-    switch (protocol)
-    {
-        default:
-        case PMM_NEO_PROTOCOL_ID:
-            return PMM_NEO_PROTOCOL_HEADER_LENGTH;
-    }
-}
-
-
-
-// Check the packet protocol and return the length of the header. If 0 is returned, the packet is invalid.
-// It also checks if the Destination Address of the received packet is the same as the address of this system.
-uint8_t RH_RF95::validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buffer[], uint8_t bufferLength)
-{
-    // 1) Which protocol is this packet using?
-    switch(buffer[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
-    {
-        #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
-            case PMM_NEO_PROTOCOL_ID:
-                //1.1) Test the packet length
-                if (mReceivedPacketBufferLength < PMM_NEO_PROTOCOL_HEADER_LENGTH)
-                    return 0; // Too short to be a real message
-
-                // 1.2) Check the Destination of this packet we received
-                // If the Destination not equal to this Address and not in promiscuous mode
-                if ((mPacketBuffer[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != mThisAddress) && !mPromiscuousMode)
-                    return 0;
-
-                return PMM_NEO_PROTOCOL_HEADER_LENGTH;
-        #endif
-
-        default:
-            return 0;
-    }
-
-}
 
 
 
@@ -73,6 +34,7 @@ void RH_RF95::getPacketInfoInStruct(uint8_t packet[], telemetryPacketInfoStructT
 
 
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
+// This version retuns by reference a telemetryPacketInfoStructType
 bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInfoStructType* packetStatusStruct)
 {
     if (!getIsThereANewReceivedPacket())
@@ -82,8 +44,10 @@ bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInf
         return false;
 
     ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
-    memcpy(payload, mPacketBuffer + mReceivedPacketProtocolHeaderLength, packetStatusStruct->payloadLength);
+
     getPacketInfoInStruct(mPacketBuffer, packetStatusStruct);
+    memcpy(payload, mPacketBuffer + mReceivedPacketProtocolHeaderLength, packetStatusStruct->payloadLength);
+
     ATOMIC_BLOCK_END;
 
     clearRxBuf(); // This message accepted and cleared
@@ -93,6 +57,7 @@ bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInf
 
 
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
+// This version returns by reference the packetLength
 bool RH_RF95::receivePayload(uint8_t* buffer, uint8_t* packetLength)
 {
     if (!getIsThereANewReceivedPacket())
@@ -150,7 +115,7 @@ void RH_RF95::handleInterrupt()
 
 
         // We have received a message.
-        if((mReceivedPacketProtocolHeaderLength = validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength)));
+        if((mReceivedPacketProtocolHeaderLength = validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength, mThisAddress, mPromiscuousMode)));
         {
             // Adjust the RSSI, datasheet page 87
             if (mLastSNR < 0)

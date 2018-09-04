@@ -569,9 +569,6 @@ protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF95. Called automatically by isr*().
     void    handleInterrupt();
 
-    /// Examine the revceive buffer to determine whether the message is for this node
-    uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t buffer[], uint8_t bufferLength);
-
     /// Clear our local receive buffer
     void    clearRxBuf();
 

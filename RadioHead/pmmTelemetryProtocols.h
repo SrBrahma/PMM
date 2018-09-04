@@ -7,6 +7,8 @@
 #define RH_BROADCAST_ADDRESS    0xFF
 #define RH_TO_ALL_PDA_ADDRESS      0xFE
 
+// Address 0x00 is reserved! It means self! You may NOT set it as an source or destination!
+
 #define RH_THIS_SYSTEM_ADDRESS  0x01  // You may change it!
 
 #define PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL    1       // So you can enable/deactivate certain protocols of being received!
@@ -45,3 +47,21 @@ typedef struct
 } telemetryProtocolsContentStructType;
 
 #endif
+
+uint8_t getProtocolHeaderLength(uint8_t protocol);
+
+
+// Check the packet protocol and return the length of the header. If 0 is returned, the packet is invalid.
+// It also checks if the Destination Address of the received packet is the same as the address of this system.
+uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[], uint8_t bufferLength, uint8_t thisAddress, int promiscuousMode);
+
+
+
+
+
+
+
+
+
+
+//

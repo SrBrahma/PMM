@@ -80,7 +80,6 @@ public:
     // By Henrique Bruno, Minerva Rockets - UFRJ.
     virtual bool            isAnyPacketBeingSent();
 
-
     /// Blocks until the transmitter
     /// is no longer transmitting.
     virtual bool            waitPacketSent();
@@ -136,26 +135,10 @@ public:
     /// \param[in] thisAddress The address of this node.
     virtual void            setThisAddress(uint8_t thisAddress);
 
-    /// Sets the TO header to be sent in all subsequent messages
-    /// \param[in] to The new TO header value
-    virtual void            setHeaderTo(uint8_t to);
-
-    /// Sets the FROM header to be sent in all subsequent messages
-    /// \param[in] from The new FROM header value
-    virtual void            setHeaderFrom(uint8_t from);
-
     /// Tells the receiver to accept messages with any TO address, not just messages
     /// addressed to thisAddress or the broadcast address
     /// \param[in] promiscuous true if you wish to receive messages with any TO address
     virtual void            setPromiscuous(bool promiscuous);
-
-    /// Returns the TO header of the last received message
-    /// \return The TO header
-    virtual uint8_t         headerTo();
-
-    /// Returns the FROM header of the last received message
-    /// \return The FROM header
-    virtual uint8_t         headerFrom();
 
     /// Returns the most recent RSSI (Receiver Signal Strength Indicator).
     /// Usually it is the RSSI of the last received message, which is measured when the preamble is received.
@@ -178,31 +161,29 @@ public:
     ///         was successfully entered. If sleep mode is not suported, return false.
     virtual bool            sleep();
 
+    /// Returns the count of the number of bad received packets (ie packets with bad lengths, checksum etc)
+    /// which were rejected and not delivered to the application.
+    /// Caution: not all drivers can correctly report this count. Some underlying hardware only report
+    /// good packets.
+    /// \return The number of bad packets received.
+    virtual uint16_t        rxBad();
+
+    /// Returns the count of the number of
+    /// good received packets
+    /// \return The number of good packets received.
+    virtual uint16_t        rxGood();
+
+    /// Returns the count of the number of
+    /// packets successfully transmitted (though not necessarily received by the destination)
+    /// \return The number of packets successfully transmitted
+    virtual uint16_t        txGood();
+
     /// Prints a data buffer in HEX.
     /// For diagnostic use
     /// \param[in] prompt string to preface the print
     /// \param[in] buf Location of the buffer to print
     /// \param[in] len Length of the buffer in octets.
     static void             printBuffer(const char* prompt, const uint8_t* buf, uint8_t len);
-
-    /// Returns the count of the number of bad received packets (ie packets with bad lengths, checksum etc)
-    /// which were rejected and not delivered to the application.
-    /// Caution: not all drivers can correctly report this count. Some underlying hardware only report
-    /// good packets.
-    /// \return The number of bad packets received.
-    virtual uint16_t       rxBad();
-
-    /// Returns the count of the number of
-    /// good received packets
-    /// \return The number of good packets received.
-    virtual uint16_t       rxGood();
-
-    /// Returns the count of the number of
-    /// packets successfully transmitted (though not necessarily received by the destination)
-    /// \return The number of packets successfully transmitted
-    virtual uint16_t       txGood();
-
-
 
 
 protected:
@@ -214,17 +195,10 @@ protected:
     uint8_t             mThisAddress;
 
     /// Whether the transport is in promiscuous mode
-    bool                mPromiscuousMode;
-
-    /// TO header to send in all messages
-    uint8_t             mTransmissionDestinationAddress;
-
-    /// FROM header to send in all messages
-    uint8_t             mTransmissionSourceAddress;
-
+    int                 mPromiscuousMode;
 
     /// The value of the last received RSSI value, in some transport specific units
-    volatile int16_t     mLastRssi;
+    volatile int16_t    mLastRssi;
 
     /// Count of the number of bad messages (eg bad checksum etc) received
     volatile uint16_t   mInvalidReceivedPacketsCounter;

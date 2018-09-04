@@ -125,8 +125,6 @@ void PmmPortLog::includeArrayInPackage(const char **variableName, uint8_t arrayT
 
 
 
-
-
 void PmmPortLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
     const PROGMEM char* packageIdString = "packageId";
@@ -134,7 +132,6 @@ void PmmPortLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTi
     includeVariableInPackage(packageIdString, PMM_TELEMETRY_TYPE_UINT32, packageIdPtr);
     includeVariableInPackage(packageTimeString, PMM_TELEMETRY_TYPE_UINT32, packageTimeMsPtr);
 }
-
 
 void PmmPortLog::addMagnetometer(void* array)
 {
@@ -223,7 +220,6 @@ void PmmPortLog::addCustomVariable(const char* variableName, uint8_t variableTyp
 {
     includeVariableInPackage(variableName, variableType, variableAddress);
 }
-
 
 
 
@@ -359,14 +355,6 @@ uint8_t** PmmPortLog::getVariableAddressArray()     { return mVariableAddressArr
 
 
 
-
-
-
-
-
-
-
-
 /* Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
 #if PMM_DEBUG_SERIAL
@@ -389,8 +377,6 @@ void PmmPortLog::debugPrintLogHeader()
     }
     Serial.println(buffer);
 }
-
-
 
 void PmmPortLog::debugPrintLogContent()
 {
@@ -438,6 +424,7 @@ void PmmPortLog::debugPrintLogContent()
     } // for loop end
     Serial.println(buffer);
 } // end of function debugPrintLogContent()
+
 
 
 #endif

@@ -9,11 +9,11 @@ RHGenericDriver::RHGenericDriver()
 {
 }
 
+
+
 bool RHGenericDriver::init()
 {
     mThisAddress = RH_THIS_SYSTEM_ADDRESS;
-    mTransmissionDestinationAddress = RH_BROADCAST_ADDRESS;
-    mTransmissionSourceAddress = RH_THIS_SYSTEM_ADDRESS;
 
     mInvalidReceivedPacketsCounter = 0,
     mSuccessfulReceivedPacketsCounter = 0;
@@ -25,12 +25,16 @@ bool RHGenericDriver::init()
     return true;
 }
 
+
+
 // Blocks until a valid message is received
 void RHGenericDriver::waitAvailable()
 {
     while (!getIsThereANewReceivedPacket())
         YIELD;
 }
+
+
 
 // Blocks until a valid message is received or timeout expires
 // Return true if there is a message available
@@ -49,6 +53,8 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
     return false;
 }
 
+
+
 // By Henrique Bruno, Minerva Rockets - UFRJ
 bool RHGenericDriver::isAnyPacketBeingSent()
 {
@@ -58,12 +64,16 @@ bool RHGenericDriver::isAnyPacketBeingSent()
     return false;    // No! No packet being sent!
 }
 
+
+
 bool RHGenericDriver::waitPacketSent()
 {
     while (mMode == RH_MODE_IS_TRANSMITTING)
         YIELD; // Wait for any previous transmit to finish
     return true;
 }
+
+
 
 bool RHGenericDriver::waitPacketSent(uint16_t timeout)
 {
@@ -76,6 +86,8 @@ bool RHGenericDriver::waitPacketSent(uint16_t timeout)
     }
     return false;
 }
+
+
 
 // Wait until no channel activity detected or timeout
 bool RHGenericDriver::waitCAD()
@@ -104,51 +116,85 @@ bool RHGenericDriver::waitCAD()
     return true;
 }
 
+
+
 // subclasses are expected to override if CAD is available for that radio
 bool RHGenericDriver::isChannelActive()
 {
     return false;
 }
 
+
+
 void RHGenericDriver::setPromiscuous(bool promiscuous)
 {
     mPromiscuousMode = promiscuous;
 }
+
+
 
 void RHGenericDriver::setThisAddress(uint8_t address)
 {
     mThisAddress = address;
 }
 
-void RHGenericDriver::setHeaderTo(uint8_t to)
-{
-    mTransmissionDestinationAddress = to;
-}
 
-void RHGenericDriver::setHeaderFrom(uint8_t from)
-{
-    mTransmissionSourceAddress = from;
-}
 
 int16_t RHGenericDriver::getLastRssi()
 {
     return mLastRssi;
 }
 
+
+
 RHGenericDriver::RHMode  RHGenericDriver::getMode()
 {
     return mMode;
 }
+
+
 
 void  RHGenericDriver::setMode(RHMode mode)
 {
     mMode = mode;
 }
 
+
+
 bool  RHGenericDriver::sleep()
 {
     return false;
 }
+
+
+
+uint16_t RHGenericDriver::rxBad()
+{
+    return mInvalidReceivedPacketsCounter;
+}
+
+
+
+uint16_t RHGenericDriver::rxGood()
+{
+    return mSuccessfulReceivedPacketsCounter;
+}
+
+
+
+uint16_t RHGenericDriver::txGood()
+{
+    return _txGood;
+}
+
+
+
+void RHGenericDriver::setCADTimeout(unsigned long cad_timeout)
+{
+    _cad_timeout = cad_timeout;
+}
+
+
 
 // Diagnostic help
 void RHGenericDriver::printBuffer(const char* prompt, const uint8_t* buf, uint8_t len)
@@ -170,25 +216,7 @@ void RHGenericDriver::printBuffer(const char* prompt, const uint8_t* buf, uint8_
 #endif
 }
 
-uint16_t RHGenericDriver::rxBad()
-{
-    return mInvalidReceivedPacketsCounter;
-}
 
-uint16_t RHGenericDriver::rxGood()
-{
-    return mSuccessfulReceivedPacketsCounter;
-}
-
-uint16_t RHGenericDriver::txGood()
-{
-    return _txGood;
-}
-
-void RHGenericDriver::setCADTimeout(unsigned long cad_timeout)
-{
-    _cad_timeout = cad_timeout;
-}
 
 #if (RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined(RH_PLATFORM_ATTINY)
 // Tinycore does not have __cxa_pure_virtual, so without this we

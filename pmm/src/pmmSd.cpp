@@ -154,6 +154,9 @@ int PmmSd::writeStringToFilename(char *filename, char *arrayToWrite)
     mFile.close();
     return 0;
 }
+
+
+
 int PmmSd::writeToFile(char *arrayToWrite)
 {
     int32_t length;
@@ -174,6 +177,8 @@ int PmmSd::writeToFile(char *arrayToWrite)
     return 0;
 }
 
+
+
 bool PmmSd::sdBusy()
 {
     return mSdEx.card()->isBusy();
@@ -183,7 +188,6 @@ void PmmSd::getFilename(char *stringToReturn, uint32_t bufferLength)
 {
     snprintf(stringToReturn, bufferLength, "%s", mFilename);
 }
-
 
 unsigned PmmSd::getFileId()
 {

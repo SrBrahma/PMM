@@ -202,12 +202,10 @@ protected:
 
     /// Count of the number of bad messages (eg bad checksum etc) received
     volatile uint16_t   mInvalidReceivedPacketsCounter;
-
     /// Count of the number of successfully transmitted messaged
     volatile uint16_t   mSuccessfulReceivedPacketsCounter;
-
     /// Count of the number of bad messages (correct checksum etc) received
-    volatile uint16_t   _txGood;
+    volatile uint16_t   mSuccessfulTransmittedPacketsCounter;
 
     /// Channel activity detected
     volatile bool       mCad;

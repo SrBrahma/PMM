@@ -20,13 +20,13 @@ void RH_RF95::getPacketInfoInStruct(uint8_t packet[], telemetryPacketInfoStructT
     switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
     {
         case PMM_NEO_PROTOCOL_ID:
-            packetStatusStruct->sourceAddress = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
-            packetStatusStruct->destinationAddress = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
-            packetStatusStruct->port = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
-            packetStatusStruct->payloadLength = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
-            packetStatusStruct->rssi = getLastRssi();
-            packetStatusStruct->snr = getLastSNR();
-            packetStatusStruct->invalidAutoLoraValidCrc = mInvalidAutoLoraPayloadCrc;
+            packetStatusStruct->sourceAddress       = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
+            packetStatusStruct->destinationAddress  = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
+            packetStatusStruct->port                = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
+            packetStatusStruct->payloadLength       = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
+            packetStatusStruct->rssi                = getLastRssi();
+            packetStatusStruct->snr                 = getLastSNR();
+            packetStatusStruct->invalidAutoCrc      = mInvalidAutoLoraPayloadCrc;
     }
 
 }
@@ -138,7 +138,7 @@ void RH_RF95::handleInterrupt()
     }
     else if (mMode == RH_MODE_IS_TRANSMITTING && irq_flags & RH_RF95_TX_DONE)
     {
-        _txGood++;
+        mSuccessfulTransmittedPacketsCounter++;
         setModeIdle();
     }
     else if (mMode == RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD && irq_flags & RH_RF95_CAD_DONE)

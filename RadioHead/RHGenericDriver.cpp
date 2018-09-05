@@ -17,7 +17,7 @@ bool RHGenericDriver::init()
 
     mInvalidReceivedPacketsCounter = 0,
     mSuccessfulReceivedPacketsCounter = 0;
-    _txGood = 0;
+    mSuccessfulTransmittedPacketsCounter = 0;
 
     _cad_timeout = 0;
 
@@ -184,7 +184,7 @@ uint16_t RHGenericDriver::rxGood()
 
 uint16_t RHGenericDriver::txGood()
 {
-    return _txGood;
+    return mSuccessfulTransmittedPacketsCounter;
 }
 
 

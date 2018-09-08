@@ -21,13 +21,10 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     /* Reset the priority queues */
     mHighPriorityQueueStruct.actualIndex = 0;
     mHighPriorityQueueStruct.remainingItemsOnQueue = 0;
-
     mNormalPriorityQueueStruct.actualIndex = 0;
     mNormalPriorityQueueStruct.remainingItemsOnQueue = 0;
-
     mLowPriorityQueueStruct.actualIndex = 0;
     mLowPriorityQueueStruct.remainingItemsOnQueue = 0;
-
     mDefaultPriorityQueueStruct.actualIndex = 0;
     mDefaultPriorityQueueStruct.remainingItemsOnQueue = 0;
 
@@ -58,10 +55,10 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     }
 
     /* So it initialized! */
-
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
     mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
     PMM_DEBUG_PRINT_MORE("PmmTelemetry: LoRa initialized successfully!");
+
     return 0;
 }
 
@@ -110,7 +107,7 @@ int PmmTelemetry::updateTransmission()
         case PMM_TELEMETRY_SEND:
             mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
                        queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
-                       &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
+                      &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
             break;
 
         case PMM_TELEMETRY_SEND_SMART_SIZES:
@@ -119,7 +116,7 @@ int PmmTelemetry::updateTransmission()
                 queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],      // The sizes array
                 queueStructPtr->numberVariablesArray[queueStructPtr->actualIndex], // The number of variables
                 queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
-                &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]);  // The total byte size
+               &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]);  // The total byte size
             break;
 
         default:
@@ -211,10 +208,9 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
 
 
     pmmTelemetryQueueStructPtr->sendTypeArray[newItemIndex] = PMM_TELEMETRY_SEND;
-    // pmmTelemetryQueueStructPtr->uint8_tPtrToPtrArray[newItemIndex]; // Not used in this function!
     pmmTelemetryQueueStructPtr->uint8_tPtrArray[newItemIndex] = dataArray;
-    //pmmTelemetryQueueStructPtr->numberVariablesArray[newItemIndex]; // Not used in this function!
     pmmTelemetryQueueStructPtr->lengthInBytesArray[newItemIndex] = totalByteSize;
+    pmmTelemetryQueueStructPtr->protocolsContentStructArray[newItemIndex] = protocolsContentStruct;
 
     return 0;
 }
@@ -225,18 +221,18 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
 int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
-    
+
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
 
     if (newItemIndex == -1)
         return 1;   // If no available space on the queue, return 1.
 
-    pmmTelemetryQueueStructPtr->sendTypeArray       [newItemIndex] = PMM_TELEMETRY_SEND_SMART_SIZES;
-    pmmTelemetryQueueStructPtr->uint8_tPtrToPtrArray[newItemIndex] = dataArrayOfPointers;
-    pmmTelemetryQueueStructPtr->uint8_tPtrArray     [newItemIndex] = sizesArray;
-    pmmTelemetryQueueStructPtr->numberVariablesArray[newItemIndex] = numberVariables;
-    pmmTelemetryQueueStructPtr->lengthInBytesArray  [newItemIndex] = totalByteSize;
-    pmmTelemetryQueueStructPtr-> protocolsContentStructArray[newItemIndex] = protocolsContentStruct;
+    pmmTelemetryQueueStructPtr->sendTypeArray               [newItemIndex] = PMM_TELEMETRY_SEND_SMART_SIZES;
+    pmmTelemetryQueueStructPtr->uint8_tPtrToPtrArray        [newItemIndex] = dataArrayOfPointers;
+    pmmTelemetryQueueStructPtr->uint8_tPtrArray             [newItemIndex] = sizesArray;
+    pmmTelemetryQueueStructPtr->numberVariablesArray        [newItemIndex] = numberVariables;
+    pmmTelemetryQueueStructPtr->lengthInBytesArray          [newItemIndex] = totalByteSize;
+    pmmTelemetryQueueStructPtr->protocolsContentStructArray [newItemIndex] = protocolsContentStruct;
 
     return 0;
 }

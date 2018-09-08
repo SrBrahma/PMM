@@ -1,11 +1,11 @@
-#ifndef PMM_PACKAGES_RECEPTION_h
-#define PMM_PACKAGES_RECEPTION_h
+#ifndef PMM_PORTS_RECEPTION_h
+#define PMM_PORTS_RECEPTION_h
 
 #include <pmmTelemetryPorts/pmmPortLog.h>
 #include <pmmTelemetryPorts/pmmPortString.h>
 #include <pmmTelemetryProtocols.h>
 
-class PmmPortsReception // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
+class PmmPortsReception
 {
 
 private:

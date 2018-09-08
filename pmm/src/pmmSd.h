@@ -10,29 +10,29 @@
 #include <pmmConsts.h>
 #include <SdFat.h>
 
+#define PMM_SD_BASE_DIRECTORY "/Minerva Rockets/pmm"
+#define PMM_SD_MAX_SESSIONS_ID      999
+
 class PmmSd
 {
 private:
-    //void yield(); // Not really sure if it is needed.
+    PmmErrorsCentral *mPmmErrorsCentral;
+
     SdFatSdioEX mSdEx;
     File mFile;
-    char mFilename[PMM_SD_FILENAME_MAX_LENGTH];
-    uint16_t mFileId;
-    PmmErrorsCentral *mPmmErrorsCentral;
+
+    uint16_t mThisSessionId;
+    char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
 
 public:
     PmmSd();
     int init(PmmErrorsCentral* pmmErrorsCentral);
-    void setFilename(char *filename);
-    int setFilenameAutoId(const char* baseName, const char* suffix);
+
     int writeToFilename(char *filename, char *arrayToWrite, int32_t length);
     int writeStringToFilename(char *filename, char *arrayToWrite);
-    int writeToFile(char *arrayToWrite, int32_t length);
-    int writeToFile(char *arrayToWrite);
-    bool sdBusy();
-    void getFilename(char *stringToReturn, uint32_t bufferLength);
-    unsigned getFileId();
-    unsigned getSdIsWorking();
+
+    bool getSdIsBusy();
+    char* getThisSessionNamePtr();
 };
 
 #endif

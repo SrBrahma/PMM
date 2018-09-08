@@ -16,9 +16,9 @@
 
 
 
-const char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] =    {"altitude(m)"};
-const char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] =     {"gpsLongitude"};
-const char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
+const PROGMEM char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] =    {"altitude(m)"};
+const PROGMEM char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[] =     {"gpsLongitude"};
+const PROGMEM char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[] =     {"gpsLatitude"};
 
 
 

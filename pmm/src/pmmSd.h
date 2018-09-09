@@ -10,7 +10,7 @@
 #include <pmmConsts.h>
 #include <SdFat.h>
 
-#define PMM_SD_BASE_DIRECTORY "/Minerva Rockets/pmm"
+#define PMM_SD_BASE_DIRECTORY       "/Minerva Rockets/pmm"
 #define PMM_SD_MAX_SESSIONS_ID      999
 
 class PmmSd
@@ -33,6 +33,8 @@ public:
 
     bool getSdIsBusy();
     char* getThisSessionNamePtr();
+
+    void writeInPmmFormat(File file, uint8_t data[], uint16_t dataLength, uint8_t sourceAddress);
 };
 
 #endif

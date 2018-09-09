@@ -97,6 +97,7 @@ bool PmmSd::getSdIsBusy()
 }
 
 
+
 char* PmmSd::getThisSessionNamePtr()
 {
     return mThisSessionName;

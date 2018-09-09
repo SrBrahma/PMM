@@ -4,13 +4,36 @@
 #include <stdint.h>
 
 // Addresses
-    #define RH_THIS_SYSTEM_ADDRESS  0x01    // You may change it!
+#define RH_THIS_SYSTEM_ADDRESS  0x01    // You may change it!
 
-        // RESERVED ADDRESSES!!
-        #define RH_ALL_SELF_ADDRESS     0x00    // Address 0x00 is reserved! It means self! You may NOT set it as an source or destination!
+    // Reserved addresses
+    #define RH_INITIAL_RESERVED_ADDRESS 0xF0
 
-        #define RH_TO_ALL_PDA_ADDRESS   0xFE
-        #define RH_BROADCAST_ADDRESS    0xFF    // This is the address that indicates a broadcast
+        // Source only addresses
+            #define RH_INITIAL_FORBIDDEN_DESTINATION_ADDRESS 0xF0
+                // #define No source only reserved address for now!
+            #define RH_FINAL_FORBIDDEN_DESTINATION_ADDRESS   0xF8
+        // End of Soure only addresses
+
+
+        // Can't be source or destination addresses. Note that it is between the two limits of the forbidden addresses!
+            #define RH_SELF_ADDRESS         0xF8    // Have some specifics uses in the code.
+
+
+        // Destination only addresses
+            #define RH_INITIAL_FORBIDDEN_SOURCE_ADDRESS 0xF8
+
+            #define RH_TO_ALL_PDA_ADDRESS   0xFE    // Destination only.
+            #define RH_BROADCAST_ADDRESS    0xFF    // Destination only. This is the address that indicates a broadcast
+
+            #define RH_FINAL_FORBIDDEN_SOURCE_ADDRESS   0xFF
+        // End of Destination only addresses
+
+    #define RH_FINAL_RESERVED_ADDRESS   0xFF
+    // End of Reserved addresses
+    
+// End of addresses
+
 
 
 
@@ -28,7 +51,7 @@
     #define PMM_NEO_PROTOCOL_INDEX_PORT                 3   // Who this packet wants to reach?
     #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB       4   // Least significant byte
     #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB       5   // Most significant byte
-    // =
+    // Total length is
     #define PMM_NEO_PROTOCOL_HEADER_LENGTH              6   // The minimum length, counting
 
 

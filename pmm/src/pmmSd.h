@@ -13,6 +13,24 @@
 #define PMM_SD_BASE_DIRECTORY       "/Minerva Rockets/pmm"
 #define PMM_SD_MAX_SESSIONS_ID      999
 
+#define PMM_SD_FILENAME_MAX_LENGTH          64
+#define PMM_SD_FILENAME_SUFFIX_LENGTH       5   // The extension! For example, ".txt"
+
+#define PMM_SD_FILENAME_INTERNAL_MAX_LENGTH (PMM_SD_FILENAME_MAX_LENGTH + PMM_SD_FILENAME_SUFFIX_LENGTH + 5)
+
+
+
+typedef struct
+{
+    File        file;
+    char        baseFilename[PMM_SD_FILENAME_MAX_LENGTH];
+    char        filenameSuffix[PMM_SD_FILENAME_SUFFIX_LENGTH] = {'\0'};
+    uint16_t    baseBytesAllocation;
+    uint8_t     numberOfParts = 0;    // https://stackoverflow.com/a/16783513/10247962
+} sdFileStructType;
+
+
+
 class PmmSd
 {
 private:
@@ -24,6 +42,8 @@ private:
     uint16_t mThisSessionId;
     char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
 
+    char mTempFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
+
 public:
     PmmSd();
     int init(PmmErrorsCentral* pmmErrorsCentral);
@@ -34,7 +54,9 @@ public:
     bool getSdIsBusy();
     char* getThisSessionNamePtr();
 
-    void writeInPmmFormat(File file, uint8_t data[], uint16_t dataLength, uint8_t sourceAddress);
+    int allocateFilePart(sdFileStructType* sdFileStruct);
+    int writeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
+    int writeSmartSizeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
 };
 
 #endif

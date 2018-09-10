@@ -72,10 +72,6 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 #define PMM_USE_SD                  1
 
-#define PMM_SD_FILENAME_MAX_LENGTH  64
-const char PMM_SD_FILENAME_BASE_PREFIX[] = {"pmmLog"};
-const char PMM_SD_FILENAME_BASE_SUFFIX[] = {".csv"};
-
 
 
 // =======================================================================

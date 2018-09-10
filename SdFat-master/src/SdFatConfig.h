@@ -79,7 +79,7 @@
 #define ENABLE_SOFTWARE_SPI_CLASS 0
 //------------------------------------------------------------------------------
 /**
- * If CHECK_FLASH_PROGRAMMING is zero, overlap of single sector flash 
+ * If CHECK_FLASH_PROGRAMMING is zero, overlap of single sector flash
  * programming and other operations will be allowed for faster write
  * performance.
  *
@@ -104,7 +104,7 @@
  * Set USE_SD_CRC to 2 to used a larger table driven CRC-CCITT function.  This
  * function is faster for AVR but may be slower for ARM and other processors.
  */
-#define USE_SD_CRC 0
+#define USE_SD_CRC 2
 //------------------------------------------------------------------------------
 /**
  * Handle Watchdog Timer for WiFi modules.

@@ -91,6 +91,46 @@ int PmmSd::writeStringToFilename(char *filename, char *arrayToWrite)
 
 
 
+int PmmSd::allocateFilePart(sdFileStructType* sdFileStruct)
+{
+    snprintf(mTempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", sdFileStruct->baseFilename,
+             sdFileStruct->numberOfParts, sdFileStruct->filenameSuffix);
+
+    uint16_t    baseBytesAllocation;
+
+    if (!sdFileStruct->file.createContiguous(mTempFilename, 512 * FILE_BLOCK_COUNT))
+    {
+      error("createContiguous failed");
+    }
+    // Get the address of the file on the SD.
+    if (!binFile.contiguousRange(&bgnBlock, &endBlock)) {
+      error("contiguousRange failed");
+    }
+    // Flash erase all data in the file.
+    Serial.println(F("Erasing all data"));
+    uint32_t bgnErase = bgnBlock;
+    uint32_t endErase;
+    while (bgnErase < endBlock) {
+      endErase = bgnErase + ERASE_SIZE;
+      if (endErase > endBlock) {
+        endErase = endBlock;
+      }
+      if (!sd.card()->erase(bgnErase, endErase)) {
+        error("erase failed");
+      }
+      bgnErase = endErase + 1;
+
+    numberOfParts++;
+
+    return 0;
+}
+int PmmSd::writeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
+int PmmSd::writeSmartSizeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
+
+
+if (!file.open("dir2/DIR3/NAME3.txt", O_WRITE | O_APPEND | O_CREAT)) {
+  error("dir2/DIR3/NAME3.txt");
+
 bool PmmSd::getSdIsBusy()
 {
     return mSdEx.card()->isBusy();

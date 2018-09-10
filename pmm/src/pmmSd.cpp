@@ -110,15 +110,16 @@ int PmmSd::allocateFilePart(sdFileStructType* sdFileStruct)
     Serial.println(F("Erasing all data"));
     uint32_t bgnErase = bgnBlock;
     uint32_t endErase;
-    while (bgnErase < endBlock) {
-      endErase = bgnErase + ERASE_SIZE;
-      if (endErase > endBlock) {
-        endErase = endBlock;
-      }
-      if (!sd.card()->erase(bgnErase, endErase)) {
-        error("erase failed");
-      }
-      bgnErase = endErase + 1;
+    while (bgnErase < endBlock)
+    {
+        endErase = bgnErase + ERASE_SIZE;
+        if (endErase > endBlock)
+        {
+            endErase = endBlock;
+        }
+        if (!sd.card()->erase(bgnErase, endErase))
+            error("erase failed");
+        bgnErase = endErase + 1;
 
     numberOfParts++;
 

@@ -264,8 +264,8 @@ void PmmPortLog::updatePackageLogInfoRaw()
 
     // 3) Calculate the total number of packets.
     mPackageLogInfoNumberOfPackets = ceil(mPackageLogInfoRawArrayLength / (float) PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
-    // This is different to PMM_PORT_LOG_INFO_MAX_PACKETS, as the macro is the maximum number of packets, and this variable is the actual maximum
-    // number of packets. This one varies with the actual contents in MLIN Package.
+    // This is different to PMM_PORT_LOG_INFO_MAX_PACKETS, as the macro is the maximum number of packets, and this variable is the current maximum
+    // number of packets. This one varies with the current contents in MLIN Package.
 }
 
 
@@ -285,7 +285,7 @@ void PmmPortLog::updatePackageLogInfoInTelemetryFormat()
     {
         packetLength = PMM_PORT_LOG_INFO_HEADER_LENGTH; // The initial length is the default header length
 
-        // This packet size is the total raw size minus the (actual packet * packetPayloadLength).
+        // This packet size is the total raw size minus the (current packet * packetPayloadLength).
         // If it is > maximum payload length, it will be equal to the payload length.
         payloadBytesInThisPacket = mPackageLogInfoRawArrayLength - (packetCounter * PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
         if (payloadBytesInThisPacket > PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)

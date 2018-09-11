@@ -15,7 +15,7 @@
 #define PMM_PORT_STRING_INDEX_OF_Y_MINUS_1      3
 // =
 #define PMM_PORT_STRING_HEADER_LENGTH           4
-// Package String header is ["MSTR"][CRC of the actual packet: 2B][String X: 1B][of Y - 1: 1B]
+// Package String header is ["MSTR"][CRC of the current packet: 2B][String X: 1B][of Y - 1: 1B]
 // [0~1] CRC
 // [2] String X
 // [3] of a total of (Y - 1)

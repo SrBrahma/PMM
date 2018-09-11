@@ -10,24 +10,29 @@
 #include <pmmConsts.h>
 #include <SdFat.h>
 
-#define PMM_SD_BASE_DIRECTORY       "/Minerva Rockets/pmm"
-#define PMM_SD_MAX_SESSIONS_ID      999
+#define PMM_SD_BASE_DIRECTORY               "/Minerva Rockets/pmm"
+#define PMM_SD_BACKUP_SUFFIX                "_backup"
+
+#define PMM_SD_MAX_SESSIONS_ID              999
 
 #define PMM_SD_FILENAME_MAX_LENGTH          64
 #define PMM_SD_FILENAME_SUFFIX_LENGTH       5   // The extension! For example, ".txt"
 
 #define PMM_SD_FILENAME_INTERNAL_MAX_LENGTH (PMM_SD_FILENAME_MAX_LENGTH + PMM_SD_FILENAME_SUFFIX_LENGTH + 5)
 
+#define PMM_SD_BLOCK_SIZE                   512
+
 
 
 typedef struct
 {
     File        file;
-    char        baseFilename[PMM_SD_FILENAME_MAX_LENGTH];
-    char        filenameSuffix[PMM_SD_FILENAME_SUFFIX_LENGTH] = {'\0'};
-    uint16_t    baseBytesAllocation;
-    uint8_t     numberOfParts = 0;    // https://stackoverflow.com/a/16783513/10247962
-} sdFileStructType;
+    char        baseFilename[PMM_SD_FILENAME_MAX_LENGTH];   // The code will include the current part to its name, so "name" will be "name_00", for example.
+    char        filenameExtension[PMM_SD_FILENAME_SUFFIX_LENGTH] = "";  // Must include the '.' (dot)! If no extensions is given, the file won't have one!
+    uint16_t    kibibyteAllocationPerPart;                  // kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
+    uint8_t     currentNumberOfParts = 0;                   // https://stackoverflow.com/a/16783513/10247962
+    
+} pmmSdFilePartsStructType;
 
 
 
@@ -42,7 +47,7 @@ private:
     uint16_t mThisSessionId;
     char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
 
-    char mTempFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
+    int allocateFilePart(pmmSdFilePartsStructType* pmmSdFilePartsStruct);
 
 public:
     PmmSd();
@@ -54,9 +59,10 @@ public:
     bool getSdIsBusy();
     char* getThisSessionNamePtr();
 
-    int allocateFilePart(sdFileStructType* sdFileStruct);
-    int writeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
-    int writeSmartSizeInPmmFormat(sdFileStructType* sdFileStruct, uint8_t sourceAddress, uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
+    int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
+
+    int writeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
+    int writeSmartSizeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, uint8_t sourceAddress, uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
 };
 
 #endif

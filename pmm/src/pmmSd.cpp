@@ -106,7 +106,7 @@ int PmmSd::allocateFilePart(pmmSdFilePartsStructType* pmmSdFilePartsStruct)
         return 1;
         // error("createContiguous failed");
 
-    }
+    } 
 
     // 3) Get the address of the blocks of the new file on the SD.
     if (!pmmSdFilePartsStruct->file.contiguousRange(&bgnBlock, &endBlock))

@@ -32,6 +32,11 @@
 
 class Pmm
 {
+
+public:
+    void init();
+    void update();
+
 private:
     uint32_t mPackageTimeMs, mPackageLogId;
 
@@ -56,9 +61,6 @@ private:
     PmmSd mPmmSd;
     //#endif
 
-public:
-    void init();
-    void update();
 };
 
 #endif

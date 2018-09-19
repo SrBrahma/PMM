@@ -38,8 +38,19 @@ typedef struct
     #endif
 } pmmGpsStructType;
 
+
+
 class PmmGps
 {
+
+public:
+    PmmGps();
+    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int update();
+    pmmGpsStructType* getGpsStructPtr();
+    pmmGpsStructType getGpsStruct();
+    //void doSomeWork();
+
 private:
     NMEAGPS mGps; // This object parses received characters into the gps.fix() data structure
 
@@ -54,15 +65,6 @@ private:
     gps_fix mFix;
     pmmGpsStructType mPmmGpsStruct;
     PmmErrorsCentral *mPmmErrorsCentral;
-
-public:
-    PmmGps();
-    int init(PmmErrorsCentral *pmmErrorsCentral);
-    int update();
-    pmmGpsStructType* getGpsStructPtr();
-    pmmGpsStructType getGpsStruct();
-    //void doSomeWork();
-
 
 };
 

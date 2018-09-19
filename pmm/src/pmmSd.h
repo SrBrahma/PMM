@@ -32,20 +32,27 @@ class PmmSdFileLogPreAllocatedInParts
 {
 
 public:
-    PmmSdFileLogPreAllocatedInParts(char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint16_t bufferSizeInBlocks);
+
+    PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint16_t bufferSizeInBlocks);
+    int writeInPmmFormat(uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
+    int writeSmartSizeInPmmFormat(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
 
 private:
 
-    char        filenameExtension[] = ".plog";  // Must include the '.' (dot)! If no extensions is given, the file won't have one!
+    int allocateFilePart();
 
+    char        mFilenameExtension[6] = ".plog";    // Must include the '.' (dot)! If no extensions is given, the file won't have one!
     char        mBaseFilename[PMM_SD_FILENAME_MAX_LENGTH];               // The code will include the current part to its name, so "name" will be "name_00", for example.
     uint8_t     mSourceAddress;
-    uint16_t    mBlocksAllocationPerPart;        // How many blocks of 512 bytes the file will have? A 1MiB file have (512 * 2 * 1024) = 
-    uint16_t    mBufferSizeInBlocks;             // A buffer of this*512 bytes will be created. Bigger buffer may not necessarily means a faster write rate. Test it.
+    uint16_t    mBlocksAllocationPerPart;       // How many blocks of 512 bytes the file will have? A 1MiB file have (512 * 2 * 1024) = 
+    uint16_t    mBufferSizeInBlocks;            // A buffer of this*512 bytes will be created. Bigger buffer may not necessarily means a faster write rate. Test it.
     
     File        mFile;
     uint8_t*    mBufferPointer;
     uint8_t     mCurrentNumberOfParts;
+    SdFatSdioEX* mSdEx;                         // For erasing the blocks!
+
+    
 
 };
 
@@ -53,19 +60,9 @@ private:
 
 class PmmSd
 {
-private:
-    PmmErrorsCentral *mPmmErrorsCentral;
-
-    SdFatSdioEX mSdEx;
-    File mFile;
-
-    uint16_t mThisSessionId;
-    char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
-
-    int allocateFilePart(pmmSdFilePartsStructType* pmmSdFilePartsStruct);
-
 public:
     PmmSd();
+    
     int init(PmmErrorsCentral* pmmErrorsCentral);
 
     int writeToFilename(char *filename, char *arrayToWrite, int32_t length);
@@ -76,8 +73,15 @@ public:
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
-    int writeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength);
-    int writeSmartSizeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, , uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize);
+
+private:
+    PmmErrorsCentral *mPmmErrorsCentral;
+
+    SdFatSdioEX mSdEx;
+    File mFile;
+
+    uint16_t mThisSessionId;
+    char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
 };
 
 #endif

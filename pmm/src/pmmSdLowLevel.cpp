@@ -10,30 +10,30 @@
 
 
 
-PmmSdFileLogPreAllocatedInParts::PmmSdFileLogPreAllocatedInParts(char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint16_t bufferSizeInBlocks)
+PmmSdFileLogPreAllocatedInParts::PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint16_t bufferSizeInBlocks)
 {
-    strncpy(mBaseFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s", baseFilename);
+    snprintf(mBaseFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s", baseFilename);
     mSourceAddress           = sourceAddress;
     mBlocksAllocationPerPart = blocksAllocationPerPart;
     mBufferSizeInBlocks      = bufferSizeInBlocks;
     
-    mBufferPointer           = malloc(mBufferSizeInBlocks * 512);
+    mBufferPointer           = (uint8_t*) malloc(mBufferSizeInBlocks * 512);
     mCurrentNumberOfParts    = 0;
 }
 
 
 
-int PmmSd::allocateFilePart(pmmSdFilePartsStructType* pmmSdFilePartsStruct)
+int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
 {
     static char tempFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
     uint32_t bgnBlock, endBlock;
 
     // 1) How will be called the new part file?
-    snprintf(tempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", pmmSdFilePartsStruct->baseFilename,
-             pmmSdFilePartsStruct->currentNumberOfParts, pmmSdFilePartsStruct->filenameExtension);
+    snprintf(tempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", mBaseFilename,
+             mCurrentNumberOfParts, mFilenameExtension);
 
     // 2) Allocate the new file!
-    if (!pmmSdFilePartsStruct->file.createContiguous(tempFilename, PMM_SD_BLOCK_SIZE * 2 * pmmSdFilePartsStruct->kibibyteAllocationPerPart))
+    if (!mFile.createContiguous(tempFilename, PMM_SD_BLOCK_SIZE * mBlocksAllocationPerPart))
     {
         return 1;
         // error("createContiguous failed");
@@ -41,26 +41,26 @@ int PmmSd::allocateFilePart(pmmSdFilePartsStructType* pmmSdFilePartsStruct)
     }
 
     // 3) Get the address of the blocks of the new file on the SD.
-    if (!pmmSdFilePartsStruct->file.contiguousRange(&bgnBlock, &endBlock))
+    if (mFile.contiguousRange(&bgnBlock, &endBlock))
     {
         return 1;
         // error("contiguousRange failed");
     }
 
-    if (!mSdEx.card()->erase(bgnBlock, endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    if (!mSdEx->card()->erase(bgnBlock, endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
         return 1;
         // error("erase failed");
     }
 
-    pmmSdFilePartsStruct->currentNumberOfParts++;
+    mCurrentNumberOfParts++;
 
     return 0;
 }
 
 
 
-int PmmSd::writeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, uint8_t sourceAddress, uint8_t data[], uint16_t dataLength)
+int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t sourceAddress, uint8_t data[], uint16_t dataLength)
 {
     /*
     // Start a multiple block write.

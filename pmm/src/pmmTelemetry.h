@@ -17,7 +17,6 @@
 
 class PmmTelemetry
 {
-    //PmmTelemetry(); // https://stackoverflow.com/a/12927220
     typedef enum
     {
         PMM_TELEMETRY_SEND,
@@ -50,6 +49,24 @@ class PmmTelemetry
         uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
 
     } pmmTelemetryQueueStructType;
+    
+public:
+    PmmTelemetry();
+    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int updateReception();
+    int updateTransmission();
+
+    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+
+    int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
+                                 telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+
+    uint8_t* getReceivedPacketArray();
+    telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();
+
+    //void setPackageLogInfoReceivedFunctionPtr
+    //void setPackageStringReceivedFunctionPtr
+    //void setPackageRequestReceivedFunctionPtr;
 
 
 
@@ -69,23 +86,13 @@ private:
 
     int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
-public:
-    PmmTelemetry();
-    int init(PmmErrorsCentral *pmmErrorsCentral);
-    int updateReception();
-    int updateTransmission();
 
-    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
-    int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
-                                 telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+        //PmmTelemetry(); // https://stackoverflow.com/a/12927220
 
-    uint8_t* getReceivedPacketArray();
-    telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();
 
-    //void setPackageLogInfoReceivedFunctionPtr
-    //void setPackageStringReceivedFunctionPtr
-    //void setPackageRequestReceivedFunctionPtr;
+
+
 };
 
 

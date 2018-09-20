@@ -98,41 +98,59 @@ int PmmSdFileLogPreAllocatedInParts::pmmFlush()
         return 1;
 }
 
-int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t data[], uint16_t dataLength)
+int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t data[])
 {
-    /*
-    
-    */
-   return 0;
-}
+    unsigned availableBytesOnBuffer;
+    unsigned remainingBytesToWriteOnBuffer;
+    unsigned bytesToWriteNow;
 
+    // 1) Is the given array NULL?
+    if (!data)
+        return 1;
 
-
-int PmmSdFileLogPreAllocatedInParts::writeSmartSizeInPmmFormat(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables)
-{
-    uint8_t variableCounter;
-
-    mBufferPointer[mBufferActualIndex++] = PMM_SD_PLOG_MAGIC_NUMBER;
-
-    while (numberVariables--)
+    // 2) Write to the buffer the Magic Number Start
+    // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
+    if (mBufferActualIndex >= mBufferTotalLength - 1)
     {
-        // This take some time to understand. I don't actually expect no one else beyond me to get it. Kidding (I wasn't going to write this at first :) ).
-        // You must first understand how my SmartSize works. You have an array of pointers, and another array which tells the
-        // length of each variable that the pointer points to. So, we are copying each variable of X bytes to the buffer,
-        // and then we increse the arrays indexes. Looks like I ain't the big genius I tried to look like, saying you couldn't understand me.
-        // But it's indeed a good system, the SmartSizes. It's 00:30 now, sorry.
-
-        if (*sizesArray > 8)
-            *siz
-        memcpy(mBufferPointer + mBufferActualIndex, *dataArrayOfPointers, *sizesArray);
-        
-        mBufferActualIndex += *sizesArray;
-        dataArrayOfPointers++;
-        sizesArray++;
+        pmmFlush();
+        mBufferActualIndex = 0;
     }
 
+    // 2.2) Write to the buffer the Magic Number Start
+    mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_START;
+    mBufferActualIndex++;
+
+
+    // 3) Write to the buffer the data
+    // 3.1) Is there space on the buffer to write it?
+    remainingBytesToWriteOnBuffer = mDataLength;
+
+    while(remainingBytesToWriteOnBuffer)
+    {
+        availableBytesOnBuffer = mBufferTotalLength - 1 - mBufferActualIndex;
+        bytesToWriteNow = availableBytesOnBuffer - remainingBytesToWriteOnBuffer;
+
+        if (bytesToWriteNow)
+        {
+            memcpy(mBufferPointer + mBufferActualIndex, data, bytesToWriteNow);
+            remainingBytesToWriteOnBuffer -= bytesToWriteNow;
+        }
+
+        if (remainingBytesToWriteOnBuffer)
+        {
+            pmmFlush();
+            mBufferActualIndex = 0;
+        }
+        
+        mBufferActualIndex += mDataLength;
+    }
+
+    mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_END;
+    mBufferActualIndex++;
     return 0;
 }
+
+
 
 
 //if (!file.open("dir2/DIR3/NAME3.txt", O_WRITE | O_APPEND | O_CREAT)) {

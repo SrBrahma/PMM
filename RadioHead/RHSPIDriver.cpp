@@ -87,44 +87,24 @@ uint8_t RHSPIDriver::spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len)
 void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables)
 {
     // uint8_t status = 0;
+    unsigned lengthCounter;
+
     ATOMIC_BLOCK_START;
+
     _spi.beginTransaction();
     digitalWrite(_slaveSelectPin, LOW);
     //status = below line was here
     _spi.transfer(reg | RH_SPI_WRITE_MASK); // Send the start address with the write mask on
+    
     while (numberVariables--)
     {
-        switch (*sizesArray) // Faster than a loop!
-        {
-            case (1):
-                _spi.transfer(*(*src    ));
-                break;
-            case (2):
-                _spi.transfer(*(*src    ));
-                _spi.transfer(*(*src + 1));
-                break;
-            case (4):
-                _spi.transfer(*(*src    ));
-                _spi.transfer(*(*src + 1));
-                _spi.transfer(*(*src + 2));
-                _spi.transfer(*(*src + 3));
-                break;
-            case (8):
-                _spi.transfer(*(*src    ));
-                _spi.transfer(*(*src + 1));
-                _spi.transfer(*(*src + 2));
-                _spi.transfer(*(*src + 3));
-                _spi.transfer(*(*src + 4));
-                _spi.transfer(*(*src + 5));
-                _spi.transfer(*(*src + 6));
-                _spi.transfer(*(*src + 7));
-                break;
-            default: // Maybe will avoid random cosmic rays problems! (this isn't a proper error avoidance, time is always running out :P, but this is better than nothing)
-                break;
-        } // End of switch!
+        for (lengthCounter = 0; lengthCounter < *sizesArray; lengthCounter++) // Faster than a loop!
+            _spi.transfer(*(*src + lengthCounter));
+
         src++;
         sizesArray++;
     }
+
     digitalWrite(_slaveSelectPin, HIGH);
     _spi.endTransaction();
     ATOMIC_BLOCK_END;

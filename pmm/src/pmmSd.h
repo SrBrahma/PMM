@@ -18,14 +18,19 @@
 #define PMM_SD_FILENAME_MAX_LENGTH          64
 #define PMM_SD_FILENAME_SUFFIX_LENGTH       6   // The extension! For example, ".txt"
 
+
 #define PMM_SD_FILENAME_INTERNAL_MAX_LENGTH (PMM_SD_FILENAME_MAX_LENGTH + PMM_SD_FILENAME_SUFFIX_LENGTH + 5)
+
 
 #define PMM_SD_BLOCK_SIZE                   512
 #define PMM_SD_MAXIMUM_BUFFER_LENTH_KIB     16
 
-#define PMM_SD_PLOG_MAGIC_NUMBER            'M'
+
+#define PMM_SD_PLOG_MAGIC_NUMBER_START      'M' // Mine..
+#define PMM_SD_PLOG_MAGIC_NUMBER_END        'A' // rvA!!
 
 
+#define PMM_SD_MAXIMUM_VARIABLE_LENTGTH     8 // Used in pmmSdLowLevel.cpp
 
 uint16_t kibibytesToBlocksAmount(uint16_t kibibytes); // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
 uint16_t mebibytesToBlocksAmount(uint16_t mebibytes); // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
@@ -42,7 +47,7 @@ class PmmSdFileLogPreAllocatedInParts
 public:
 
     PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength);
-    int writeSmartSizeInPmmFormat(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables);
+    int writeInPmmFormat(uint8_t data[]);
 
 private:
 

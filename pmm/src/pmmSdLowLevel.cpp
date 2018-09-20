@@ -125,7 +125,8 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t data[])
     // 3.1) Is there space on the buffer to write it?
     remainingBytesToWriteOnBuffer = mDataLength;
 
-    while(remainingBytesToWriteOnBuffer)
+    while(remainingBytesToWriteOnBuffer) //
+
     {
         availableBytesOnBuffer = mBufferTotalLength - 1 - mBufferActualIndex;
         bytesToWriteNow = availableBytesOnBuffer - remainingBytesToWriteOnBuffer;

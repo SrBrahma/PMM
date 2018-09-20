@@ -97,27 +97,27 @@ void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t*
         switch (*sizesArray) // Faster than a loop!
         {
             case (1):
-                _spi.transfer(*(*src));
+                _spi.transfer(*(*src    ));
                 break;
             case (2):
-                _spi.transfer(*(*src));
-                _spi.transfer(*(*src)+1);
+                _spi.transfer(*(*src    ));
+                _spi.transfer(*(*src + 1));
                 break;
             case (4):
-                _spi.transfer(*(*src));
-                _spi.transfer(*(*src)+1);
-                _spi.transfer(*(*src)+2);
-                _spi.transfer(*(*src)+3);
+                _spi.transfer(*(*src    ));
+                _spi.transfer(*(*src + 1));
+                _spi.transfer(*(*src + 2));
+                _spi.transfer(*(*src + 3));
                 break;
             case (8):
-                _spi.transfer(*(*src));
-                _spi.transfer(*(*src)+1);
-                _spi.transfer(*(*src)+2);
-                _spi.transfer(*(*src)+3);
-                _spi.transfer(*(*src)+4);
-                _spi.transfer(*(*src)+5);
-                _spi.transfer(*(*src)+6);
-                _spi.transfer(*(*src)+7);
+                _spi.transfer(*(*src    ));
+                _spi.transfer(*(*src + 1));
+                _spi.transfer(*(*src + 2));
+                _spi.transfer(*(*src + 3));
+                _spi.transfer(*(*src + 4));
+                _spi.transfer(*(*src + 5));
+                _spi.transfer(*(*src + 6));
+                _spi.transfer(*(*src + 7));
                 break;
             default: // Maybe will avoid random cosmic rays problems! (this isn't a proper error avoidance, time is always running out :P, but this is better than nothing)
                 break;

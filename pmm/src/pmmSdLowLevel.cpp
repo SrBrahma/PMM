@@ -98,17 +98,18 @@ int PmmSdFileLogPreAllocatedInParts::pmmFlush()
         return 1;
 }
 
-int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t data[])
+int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
 {
     unsigned availableBytesOnBuffer;
-    unsigned remainingBytesToWriteOnBuffer;
+    unsigned remainingDataBytes;
     unsigned bytesToWriteNow;
+    unsigned alreadyWrittenDataBytes = 0;
 
     // 1) Is the given array NULL?
-    if (!data)
+    if (!dataArray)
         return 1;
 
-    // 2) Write to the buffer the Magic Number Start
+    // 2) Write the Magic Number Start to the buffer
     // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
     if (mBufferActualIndex >= mBufferTotalLength - 1)
     {
@@ -121,31 +122,47 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t data[])
     mBufferActualIndex++;
 
 
-    // 3) Write to the buffer the data
-    // 3.1) Is there space on the buffer to write it?
-    remainingBytesToWriteOnBuffer = mDataLength;
+    // 3) Write the data to the buffer
+ 
+    remainingDataBytes = mDataLength;
 
-    while(remainingBytesToWriteOnBuffer) //
-
+    // 3.1) Thinking on the future, if there there is a data > buffer size.
+    // If the buffer size is 512 bytes, isn't too hard to have a log greater than it.
+    while(remainingDataBytes)  
     {
+        // 3.2) How much can we write on the buffer without flushing?
         availableBytesOnBuffer = mBufferTotalLength - 1 - mBufferActualIndex;
-        bytesToWriteNow = availableBytesOnBuffer - remainingBytesToWriteOnBuffer;
 
+        // 3.3) How much can data we write, with our current available buffer?
+        bytesToWriteNow = availableBytesOnBuffer - remainingDataBytes;
+
+        // 3.4) Can we write something now?
         if (bytesToWriteNow)
         {
-            memcpy(mBufferPointer + mBufferActualIndex, data, bytesToWriteNow);
-            remainingBytesToWriteOnBuffer -= bytesToWriteNow;
+            // Yes, we can!
+            memcpy(mBufferPointer + mBufferActualIndex, dataArray + alreadyWrittenDataBytes, bytesToWriteNow);
+            alreadyWrittenDataBytes += bytesToWriteNow;
+            remainingDataBytes      -= bytesToWriteNow;
+            mBufferActualIndex      += bytesToWriteNow;
         }
 
-        if (remainingBytesToWriteOnBuffer)
+        // 3.5) If we still have data to be written to the buffer, it's because the buffer is full! FLUSH!
+        if (remainingDataBytes)
         {
             pmmFlush();
             mBufferActualIndex = 0;
         }
         
-        mBufferActualIndex += mDataLength;
+
     }
 
+    // 2) Write the Magic Number End to the buffer
+    // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
+    if (mBufferActualIndex >= mBufferTotalLength - 1)
+    {
+        pmmFlush();
+        mBufferActualIndex = 0;
+    }
     mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_END;
     mBufferActualIndex++;
     return 0;

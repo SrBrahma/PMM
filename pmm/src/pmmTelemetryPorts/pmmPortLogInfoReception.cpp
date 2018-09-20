@@ -21,11 +21,13 @@ void PmmPortLog::receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoSt
     if (packetStatus->payloadLength < PMM_PORT_LOG_INFO_HEADER_LENGTH)
         return;
 
+
     // 2) Test the CRC, to see if the packet is valid.
     if (((payload[PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET] << 8) | (payload[PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET])) != crc16(payload + PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET + 1, packetStatus->payloadLength - 2))
         return;
 
     tempPackageCrc = (payload[PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE] << 8) | payload[PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE];
+
 
     // 3) If changed the CRC16 of the entire package, or is the first packet ever received
     if (tempPackageCrc != mLogInfoPackageCrc || !mPackageLogInfoNumberOfPackets)
@@ -36,6 +38,7 @@ void PmmPortLog::receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoSt
         // If is the first packet or if changed the entirePackageCrc, reset some parameters
     }
 
+    // 4) Get the packetId from the received packet
     packetId = payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] >> 4;
 
     // Copies the received array

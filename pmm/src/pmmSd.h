@@ -59,11 +59,14 @@ private:
     char        mBaseFilename[PMM_SD_FILENAME_MAX_LENGTH];               // The code will include the current part to its name, so "name" will be "name_00", for example.
     uint8_t     mSourceAddress;
 
-    // Blocks and Parts!
+    // Blocks!
     uint16_t    mBlocksAllocationPerPart;       // How many blocks of 512 bytes the file will have? A 1MiB file have (512 * 2 * 1024) = 
-    uint8_t     mCurrentNumberOfParts;
-    uint32_t    mActualBlockToWrite;
+    uint16_t    mActualBlockInPart;
+    uint32_t    mActualBlockAddress;
 
+    // Parts!
+    uint8_t     mCurrentNumberOfParts;
+    
     // Buffer!
     uint8_t*    mBufferPointer; // The array is malloc()'ed at the object initializer. This pointer points to the malloc()'ed array!
     

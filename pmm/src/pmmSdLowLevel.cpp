@@ -30,12 +30,15 @@ PmmSdFileLogPreAllocatedInParts::PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sd
     mBufferTotalLength       = mBufferSizeInBlocks * PMM_SD_BLOCK_SIZE;
 
     if ((mBufferTotalLength / 1024) > PMM_SD_MAXIMUM_BUFFER_LENTH_KIB)
-        mBufferTotalLength   = PMM_SD_MAXIMUM_BUFFER_LENTH_KIB;
+        mBufferTotalLength = PMM_SD_MAXIMUM_BUFFER_LENTH_KIB;
 
 
     // 4) malloc() the buffer. An error should raise if the malloc fails. But, NO TIME!
     mBufferPointer           = (uint8_t*) malloc(mBufferTotalLength);
     // if (!mBufferPointer) ERROR OH NO
+
+    // 5) Allocate the first part of the file
+    allocateFilePart();
     
 }
 
@@ -56,7 +59,6 @@ int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
     {
         return 1;
         // error("createContiguous failed");
-
     }
 
     // 3) Get the address of the blocks of the new file on the SD.
@@ -72,31 +74,60 @@ int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
         // error("erase failed");
     }
 
-    mActualBlockToWrite = bgnBlock;
+    mActualBlockAddress = bgnBlock;
+
     mCurrentNumberOfParts++;
+
+    mActualBlockInPart = 0; // !
 
     return 0;
 }
 
+
+
 int PmmSdFileLogPreAllocatedInParts::pmmFlush()
 {
-    unsigned blockCounter;
+    unsigned alreadyWrittenBlocks;
+    unsigned availableBlocksOnThisPart;
+    unsigned blocksToWriteNow;
+    unsigned remainingBlocksToWrite = mBufferSizeInBlocks;
 
-    // 1) Start a multiple block write.
-    if (!mSdEx->card()->writeStart(mActualBlockToWrite))
-        return 1;
-    //error("writeStart failed");
- 
-    // 2) Write the blocks!
-    for (blockCounter = 0; blockCounter < mBufferSizeInBlocks; blockCounter++)
-        if (!mSdEx->card()->writeData(mBufferPointer + blockCounter * PMM_SD_BLOCK_SIZE))
-            return 1;
+    // To write in multiple parts
+    while(remainingBlocksToWrite)
+    {   
+        availableBlocksOnThisPart = mBlocksAllocationPerPart - mActualBlockInPart;
+        
+        if (remainingBlocksToWrite > availableBlocksOnThisPart)
+            blocksToWriteNow = availableBlocksOnThisPart;
 
-    // 3) Stop the writing!
-    mActualBlockToWrite += blockCounter; // Increases the actual block by the number of blocks written, so in the next flush, we will write continuosly!
-    if (!mSdEx->card()->writeStop())
-        return 1;
+        if (remainingBlocksToWrite <= availableBlocksOnThisPart)
+            blocksToWriteNow = remainingBlocksToWrite;
+
+        // 1) Can we flush something in this file part?
+        if (blocksToWriteNow > 0)
+        {
+            // 1.2) Write the blocks!
+            if (!mSdEx->card()->writeBlocks(mActualBlockAddress,
+                                            mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE,
+                                            blocksToWriteNow));
+                return 1;
+
+            alreadyWrittenBlocks += blocksToWriteNow;
+            mActualBlockAddress += alreadyWrittenBlocks; // Increases the actual block by the number of blocks written, so in the next flush, we will write continuosly!
+        }
+
+
+        // 2) If we still have data to write, it's because our file part is full! Allocate a new part!
+        if (remainingBlocksToWrite)
+            allocateFilePart();
+            // mActualBlockInPart = 0; Happens at allocateFilePart()!
+
+    } // End of while loop
+
+    mBufferActualIndex = 0; // !
 }
+
+
 
 int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
 {
@@ -112,12 +143,10 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
     // 2) Write the Magic Number Start to the buffer
     // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
     if (mBufferActualIndex >= mBufferTotalLength - 1)
-    {
         pmmFlush();
-        mBufferActualIndex = 0;
-    }
+        // mBufferActualIndex = 0; Happens at pmmFlush()!
 
-    // 2.2) Write to the buffer the Magic Number Start
+    // 2.2) Write it!
     mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_START;
     mBufferActualIndex++;
 
@@ -131,13 +160,19 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
     while(remainingDataBytes)  
     {
         // 3.2) How much can we write on the buffer without flushing?
-        availableBytesOnBuffer = mBufferTotalLength - 1 - mBufferActualIndex;
+        availableBytesOnBuffer = mBufferTotalLength - mBufferActualIndex;
 
-        // 3.3) How much can data we write, with our current available buffer?
-        bytesToWriteNow = availableBytesOnBuffer - remainingDataBytes;
+
+        // 3.3) How much data can we write, with our current available buffer?
+        if (remainingDataBytes > availableBytesOnBuffer)
+            bytesToWriteNow = availableBlocksOnThisPart;
+
+        if (remainingDataBytes <= availableBytesOnBuffer)
+            bytesToWriteNow = remainingBlocksToWrite;
+
 
         // 3.4) Can we write something now?
-        if (bytesToWriteNow)
+        if (bytesToWriteNow > 0)
         {
             // Yes, we can!
             memcpy(mBufferPointer + mBufferActualIndex, dataArray + alreadyWrittenDataBytes, bytesToWriteNow);
@@ -146,23 +181,22 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
             mBufferActualIndex      += bytesToWriteNow;
         }
 
+
         // 3.5) If we still have data to be written to the buffer, it's because the buffer is full! FLUSH!
         if (remainingDataBytes)
-        {
             pmmFlush();
-            mBufferActualIndex = 0;
-        }
-        
+            // mBufferActualIndex = 0; Happens at pmmFlush()!
 
     }
 
-    // 2) Write the Magic Number End to the buffer
-    // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
+    // 4) Write the Magic Number End to the buffer
+    // 4.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
     if (mBufferActualIndex >= mBufferTotalLength - 1)
-    {
         pmmFlush();
-        mBufferActualIndex = 0;
-    }
+        // mBufferActualIndex = 0; Happens at pmmFlush()!
+
+
+    // 4.2) Write it!
     mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_END;
     mBufferActualIndex++;
     return 0;

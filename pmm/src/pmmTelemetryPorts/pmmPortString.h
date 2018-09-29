@@ -7,8 +7,6 @@
 #include <pmmSd.h>
 #include <pmmTelemetryProtocols.h>
 
-#define PMM_PORT_STRING_MAX_STRINGS 10
-
 #define PMM_PORT_STRING_INDEX_LSB_CRC_PACKET    0
 #define PMM_PORT_STRING_INDEX_MSB_CRC_PACKET    1
 #define PMM_PORT_STRING_INDEX_STRING_X          2
@@ -35,7 +33,7 @@ private:
     uint32_t* mPackageLogMillisPtr; // To share the same millis as the Package Log
     PmmTelemetry* mPmmTelemetry;
     PmmSd* mPmmSd;
-    char mStrings[PMM_PORT_STRING_MAX_STRINGS][PMM_PORT_STRING_MAX_STRING_LENGTH]; // As teensy 3.6 have 256kB RAM, I don't care too much about big arrays.
+    char mStrings[PMM_PORT_STRING_MAX_STRING_LENGTH]; // As teensy 3.6 have 256kB RAM, I don't care too much about big arrays.
     uint8_t mActualNumberOfStrings;
 
 public:

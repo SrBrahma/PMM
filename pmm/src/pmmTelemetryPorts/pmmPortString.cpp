@@ -20,17 +20,16 @@ int PmmPortString::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr
 // Adds a little message header, ex: [19402ms 92112id] Parachutes Deployed
 int PmmPortString::addString(char *string)
 {
-    snprintf(mStrings[mActualNumberOfStrings++], PMM_PORT_STRING_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string);       // Adds the time and the Package Log Id.
+    snprintf(mStrings, PMM_PORT_STRING_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string);       // Adds the time and the Package Log Id.
     return 0;
 }
 
 int PmmPortString::addRawString(char *string)    // Won't add the time and the Package Log Id.
 {
-    snprintf(mStrings[mActualNumberOfStrings++], PMM_PORT_STRING_MAX_STRING_LENGTH, "%s", string);
+    snprintf(mStrings, PMM_PORT_STRING_MAX_STRING_LENGTH, "%s", string);
     return 0;
 }
 
-uint8_t PmmPortString::getActualNumberOfStrings() { return mActualNumberOfStrings;}
 
 // As the payload length for now is 255 (with RFM95w and other modules like APC220), there is no need for now to break the String Package into packets.
 uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
@@ -45,7 +44,7 @@ uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t
     if (requestedStringId >= mActualNumberOfStrings)
         return 0;
 
-    // 0!) The packet CRC with be added on the end of this function.
+    // 0!) The packet CRC will be added on the end of this function.
 
     // 1) Add the id of this string, and the total amount of strings - 1
     arrayToCopy[PMM_PORT_STRING_INDEX_STRING_X] = requestedStringId;
@@ -74,3 +73,6 @@ uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t
 
     return packetLength;
 }
+
+
+uint8_t PmmPortString::getActualNumberOfStrings() { return mActualNumberOfStrings;}

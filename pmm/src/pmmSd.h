@@ -45,12 +45,11 @@ class PmmSdFileLogPreAllocatedInParts
 {
 
 public:
-
     PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength);
     int writeInPmmFormat(uint8_t data[]);
 
-private:
 
+private:
     int allocateFilePart();
     int pmmFlush();
 
@@ -89,14 +88,17 @@ private:
 
 
 
+
+
 class PmmSd
 {
+
 public:
     PmmSd();
     
     int init(PmmErrorsCentral* pmmErrorsCentral);
 
-    int writeToFilename(char *filename, char *arrayToWrite, int32_t length);
+    int write(char *filename, char *arrayToWrite, int32_t length);
     int writeStringToFilename(char *filename, char *arrayToWrite);
 
     bool getSdIsBusy();

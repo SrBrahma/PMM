@@ -93,13 +93,6 @@ int PmmSd::writeStringToFilename(char *filename, char *arrayToWrite)
 
 
 
-/*
-int PmmSd::writeSmartSizeInPmmFormat(pmmSdFilePartsStructType* pmmSdFilePartsStruct, uint8_t sourceAddress, uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize)
-{
-    return 0;
-}
-*/
-
 //if (!file.open("dir2/DIR3/NAME3.txt", O_WRITE | O_APPEND | O_CREAT)) {
  // error("dir2/DIR3/NAME3.txt");
 

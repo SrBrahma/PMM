@@ -52,8 +52,23 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral)
 }
 
 
+int PmmSd::println(char filename[], uint8_t sourceAddress, char string[])
+{
+    if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
+    {
+        mFile.close();
+        return 1;
+    }
+    if (length != mFile.write(arrayToWrite, length))
+    {
+        mFile.close();
+        return 2;
+    }
+    mFile.close();
+    return 0;
+}
 
-int PmmSd::writeToFilename(char *filename, char *arrayToWrite, int32_t length)
+int PmmSd::writeToFilename(char filename[], char arrayToWrite[], int32_t length)
 {
     if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
     {

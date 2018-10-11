@@ -90,6 +90,7 @@ int PmmImu::initMpu()
 
     if(mMpu.testConnection())
     {
+        mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
         PMM_DEBUG_PRINT("PmmImu #1: MPU6050 INIT FAILED");
         return 1;
     }

@@ -3,9 +3,9 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <pmmTelemetryPorts/dataLog.h>
+#include "pmmPackages/dataLog/dataLog.h"
 #include <pmmConsts.h>
-#include <crc16.h>
+#include <crc.h>
 
 
 
@@ -66,19 +66,19 @@ void PmmPackageDataLog::unitePackageInfoPackets()
     unsigned stringSizeWithNullChar;
     unsigned variableCounter;
 
-    mPackageLogInfoRawArrayLength = 0;
+    mLogInfoRawPayloadArrayLength = 0;
 
     // 1) Copies all the packets into the big raw array
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter ++)
     {
         payloadLength = mPackageLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
-        memcpy(mPackageLogInfoRawArray + mPackageLogInfoRawArrayLength,
+        memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength,
                mPackageLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
                payloadLength);
 
         // Increases the raw array length by the copied telemetry array length.
-        mPackageLogInfoRawArrayLength += payloadLength;
+        mLogInfoRawPayloadArrayLength += payloadLength;
     }
 
 
@@ -104,7 +104,7 @@ void PmmPackageDataLog::unitePackageInfoPackets()
 
     // 2.3) Now get the strings of the variables
     logInfoRawArrayIndex++;
-    for (variableCounter = 0; logInfoRawArrayIndex < mPackageLogInfoRawArrayLength - 1; variableCounter++)
+    for (variableCounter = 0; logInfoRawArrayIndex < mLogInfoRawPayloadArrayLength - 1; variableCounter++)
     {
         stringSizeWithNullChar = strlen((char*)&mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
         memcpy(mVariableNameArray[variableCounter], &mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);

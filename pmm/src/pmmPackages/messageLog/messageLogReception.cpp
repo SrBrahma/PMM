@@ -1,7 +1,7 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include <pmmTelemetryPorts/pmmPortString.h>
+#include <pmmPackages/pmmPortString.h>
 #include <crc16.h>
 #include <pmmTelemetryProtocols.h>
 

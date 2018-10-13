@@ -9,7 +9,7 @@
 #include <pmmConsts.h>
 #include <pmmGps.h> // for GPS struct
 #include <pmmImu.h> // for IMU struct
-#include <pmmTelemetry.h>
+#include "pmmTelemetry/telemetry.h"
 
 
 
@@ -31,7 +31,21 @@
 #define PMM_TELEMETRY_TYPE_UINT64   9
 #define PMM_TELEMETRY_TYPE_DOUBLE   10
 
+// DataLog Defines
 
+    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH         30 // To avoid really big faulty strings that would mess the system
+
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_HEADER              0
+    #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
+    #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_RELATED_CRC    2 // Is 2 bytes wide, CRC 16
+    #define PMM_PORT_DATA_LOG_INDEX_LOG_LENGTH              4
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD          5 // Is 2 bytes wide, CRC 16
+
+    #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
+
+    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH    
+
+// LogInfo Defines
 
 #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET          0
 #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET          1
@@ -68,12 +82,15 @@ public:
 
     PmmPackageDataLog();
 
-    int init(PmmTelemetry* pmmTelemetry, uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+
+    // Transmission
+    void updateLogInfoRawPayload(); // Updates the LogInfo
 
 
     // Reception
-    void receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
-    void receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+    void receivedDataLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+    void receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
 
 
     // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
@@ -115,36 +132,48 @@ private:
     // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
     void addPackageBasicInfo(uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMs);
 
+
     uint8_t variableTypeToVariableSize(uint8_t variableType);
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
     void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
 
+
     // Build the Package Log Info Package
     void updatePackageLogInfoRaw();
     void updatePackageLogInfoInTelemetryFormat();
+
 
     // Uses the received packets via telemetry to get the Package Log Info
     void unitePackageInfoPackets();
 
 
 
-    PmmTelemetry *mPmmTelemetry;
 
-    char* mVariableNameArray[PMM_PORT_LOG_NUMBER_VARIABLES];
-    uint8_t mVariableTypeArray[PMM_PORT_LOG_NUMBER_VARIABLES];
-    uint8_t mVariableSizeArray[PMM_PORT_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
+    PmmTelemetry* mPmmTelemetry;
+
+
+    // Default variables added in every DataLog package:
+    uint8_t*  mSystemSessionPtr;
+
+
+    char*    mVariableNameArray   [PMM_PORT_LOG_NUMBER_VARIABLES];
+    uint8_t  mVariableTypeArray   [PMM_PORT_LOG_NUMBER_VARIABLES];
+    uint8_t  mVariableSizeArray   [PMM_PORT_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAddressArray[PMM_PORT_LOG_NUMBER_VARIABLES];
 
+
     uint16_t mLogInfoPackageCrc;
-    uint8_t mLogNumberOfVariables;
-    uint8_t mPackageLogSizeInBytes;
+    uint8_t  mLogNumberOfVariables;
+    uint8_t  mPackageLogSizeInBytes;
 
-    uint8_t mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_RAW_MAX_LENGTH];
-    uint16_t mPackageLogInfoRawArrayLength;
 
-    uint8_t mPackageLogInfoNumberOfPackets;
-    uint8_t mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
-    uint8_t mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
+    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_RAW_MAX_LENGTH];
+    uint16_t mLogInfoRawPayloadArrayLength;
+
+
+    uint8_t  mPackageLogInfoNumberOfPackets;
+    uint8_t  mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
+    uint8_t  mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
 
 
 

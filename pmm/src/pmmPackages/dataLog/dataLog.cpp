@@ -4,27 +4,21 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include "pmmPackages/dataLog/dataLog.h"
-#include <crc16.h>
+#include <crc.h>
 #include <pmmConsts.h>
-#include <pmmTelemetry.h>
+#include "pmmTelemetry/telemetry.h"
 
 
 
-#define PMM_PORT_LOG_INDEX_DATA 1
-// 0  is MLIN String CRC
-// 1+ is data (PMM_PORT_LOG_INDEX_DATA)
-
-
-
-// These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings not listed here
-// can be freely changed.
+// These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
+// not listed here can be freely changed.
 const PROGMEM char PMM_DATA_LOG_PACKAGE_MINI_SESSION_STRING[] = "miniSessionID";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[] = "packageID";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[] = "packageTime(ms)";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]           = "packageID";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]         = "packageTime(ms)";
 
-const PROGMEM char PMM_TELEMETRY_ALTITUDE_DEFAULT_STRING[] = {"altitude(m)"};
-const PROGMEM char PMM_TELEMETRY_GPS_LAT_DEFAULT_STRING[]  = {"gpsLongitude"};
-const PROGMEM char PMM_TELEMETRY_GPS_LON_DEFAULT_STRING[]  = {"gpsLatitude"};
+const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]             = "altitude(m)";
+const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]         = "gpsLongitude";
+const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]        = "gpsLatitude";
 
 
 
@@ -34,7 +28,7 @@ PmmPackageDataLog::PmmPackageDataLog()
 
 
 
-int PmmPackageDataLog:: init(PmmTelemetry* pmmTelemetry, uint8_t* miniSessionIdPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmPackageDataLog:: init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint8_t* miniSessionIdPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
     mPmmTelemetry = pmmTelemetry;
@@ -43,6 +37,7 @@ int PmmPackageDataLog:: init(PmmTelemetry* pmmTelemetry, uint8_t* miniSessionIdP
     mLogNumberOfVariables = 0;
     mPackageLogInfoNumberOfPackets = 0; // For receptor.
 
+    mSystemSessionPtr = systemSessionPtr;
     // These variables are always added to the package.
     addPackageBasicInfo(miniSessionIdPtr, packageIdPtr, packageTimeMsPtr);
 
@@ -175,8 +170,7 @@ void PmmPackageDataLog::addBarometer(void* barometer)
 
 void PmmPackageDataLog::addAltitudeBarometer(void* altitudePressure)
 {
-    const PROGMEM char* barometerAltitudeString = "barometerAltitude(m)";
-    includeVariableInPackage(barometerAltitudeString, PMM_TELEMETRY_TYPE_FLOAT, altitudePressure);
+    includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, PMM_TELEMETRY_TYPE_FLOAT, altitudePressure);
 }
 
 
@@ -205,10 +199,8 @@ void PmmPackageDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
 void PmmPackageDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
 {
     #ifdef GPS_FIX_LOCATION
-        const PROGMEM char* gpsLatitudeString = "gpsLatitude";
-        const PROGMEM char* gpsLongitudeString = "gpsLongitude";
-        includeVariableInPackage(gpsLatitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->latitude));
-        includeVariableInPackage(gpsLongitudeString, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->longitude));
+        includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->latitude));
+        includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, PMM_TELEMETRY_TYPE_FLOAT, &(pmmGpsStruct->longitude));
     #endif
 
     #ifdef GPS_FIX_ALTITUDE

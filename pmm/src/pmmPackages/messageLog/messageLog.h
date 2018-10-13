@@ -3,7 +3,7 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include <pmmTelemetry.h>
+#include "pmmTelemetry/telemetry.h"
 #include <pmmSd.h>
 #include <pmmTelemetryProtocols.h>
 

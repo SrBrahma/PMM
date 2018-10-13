@@ -13,7 +13,7 @@
 
 
 #if PMM_USE_TELEMETRY
-    #include <pmmTelemetry.h>
+    #include "pmmTelemetry/telemetry.h"
 #endif
 
 #if PMM_USE_GPS

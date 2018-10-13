@@ -79,11 +79,6 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 #define PMM_USE_TELEMETRY       1
 
-#define PMM_TELEMETRY_HEADER_TYPE_LENGTH    4         // The length of chars of the header type.
-
-#define PMM_PORT_LOG_NUMBER_VARIABLES  32
-#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH    251 // Must be 251 (LoRa max is 255, 4 bytes are used as default headers by the RadioHead lib (maybe will remove/change it on future)). read recv2() in RH_RF95.cpp.
-
 
 
 // =======================================================================

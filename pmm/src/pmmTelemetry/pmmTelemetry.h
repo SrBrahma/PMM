@@ -9,7 +9,7 @@
 #include <pmmConsts.h>
 #include <pmmErrorsCentral.h>
 #include <pmmTelemetryProtocols.h>
-#include "pmmPackages/pmmPorts.h"
+#include "pmmPackages/ports.h"
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8
 

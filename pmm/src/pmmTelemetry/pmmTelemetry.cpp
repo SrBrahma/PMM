@@ -2,7 +2,7 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <pmmTelemetry.h>
+#include "pmmTelemetry/telemetry.h"
 #include <RH_RF95.h>
 #include <pmmConsts.h>
 #include <pmmTelemetryProtocols.h>

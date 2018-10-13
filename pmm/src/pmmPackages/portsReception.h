@@ -1,8 +1,8 @@
 #ifndef PMM_PORTS_RECEPTION_h
 #define PMM_PORTS_RECEPTION_h
 
-#include <pmmTelemetryPorts/dataLog.h>
-#include <pmmTelemetryPorts/pmmPortString.h>
+#include <pmmPackages/dataLog.h>
+#include <pmmPackages/pmmPortString.h>
 #include <pmmTelemetryProtocols.h>
 
 class PmmPortsReception

@@ -4,9 +4,9 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 
-#include <pmmTelemetryPorts/pmmPortLog.h>
+#include <pmmTelemetryPorts/dataLog.h>
 
 // Received Package Log Info Package
-void PmmPortLog::receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmPackageDataLog::receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
 {
 }

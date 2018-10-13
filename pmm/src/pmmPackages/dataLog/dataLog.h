@@ -1,4 +1,4 @@
-/* PmmPortLog.h
+/* PmmPackageDataLog.h
  * Code for the Inertial Measure Unit (IMU!)
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
@@ -61,10 +61,59 @@
 
 
 
-class PmmPortLog // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
+class PmmPackageDataLog // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
 {
 
+public:
+
+    PmmPackageDataLog();
+
+    int init(PmmTelemetry* pmmTelemetry, uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+
+
+    // Reception
+    void receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+    void receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+
+
+    // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
+    void addMagnetometer(void* magnetometerArray);
+    void addGyroscope(void* gyroscopeArray);
+    void addAccelerometer(void* accelerometerArray);
+    void addBarometer(void* barometerPtr);
+    void addAltitudeBarometer(void* altitudePtr);
+    void addThermometer(void* thermometerPtr);
+
+    void addImu(pmmImuStructType* pmmImuStructPtr);
+    void addGps(pmmGpsStructType* pmmGpsStruct);
+
+    // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
+    // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
+    void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
+
+
+    // Getters
+    uint8_t getNumberOfVariables();
+    uint8_t getPackageLogSizeInBytes();
+
+    const char** getVariableNameArray();
+    uint8_t* getVariableTypeArray();
+    uint8_t* getVariableSizeArray();
+    uint8_t** getVariableAddressArray();
+
+
+    // Debug!
+    #if PMM_DEBUG_SERIAL
+        void debugPrintLogHeader();
+        void debugPrintLogContent();
+    #endif
+
+
+
 private:
+
+    // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
+    void addPackageBasicInfo(uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMs);
 
     uint8_t variableTypeToVariableSize(uint8_t variableType);
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
@@ -98,50 +147,6 @@ private:
     uint8_t mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
 
 
-
-
-
-public:
-
-    PmmPortLog();
-
-    int init(PmmTelemetry* pmmTelemetry);
-
-    // Reception
-    void receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
-    void receivedPackageLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
-
-    // Add variables to the package log. The types are specified in PmmPortLog.cpp.
-    void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
-
-    void addMagnetometer(void* magnetometerArray);
-    void addGyroscope(void* gyroscopeArray);
-    void addAccelerometer(void* accelerometerArray);
-    void addBarometer(void* barometerPtr);
-    void addAltitudeBarometer(void* altitudePtr);
-    void addThermometer(void* thermometerPtr);
-
-    void addImu(pmmImuStructType* pmmImuStructPtr);
-    void addGps(pmmGpsStructType* pmmGpsStruct);
-
-    // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
-    // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
-    void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
-
-    // Getters
-    uint8_t getNumberOfVariables();
-    uint8_t getPackageLogSizeInBytes();
-
-    const char** getVariableNameArray();
-    uint8_t* getVariableTypeArray();
-    uint8_t* getVariableSizeArray();
-    uint8_t** getVariableAddressArray();
-
-    // Debug!
-    #if PMM_DEBUG_SERIAL
-        void debugPrintLogHeader();
-        void debugPrintLogContent();
-    #endif
 
 }; // End of the class
 

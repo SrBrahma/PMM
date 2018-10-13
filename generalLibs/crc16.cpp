@@ -20,7 +20,7 @@ uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc)
     while (length--){
         x = crc >> 8 ^ *data_p++;
         x ^= x >> 4;
-        crc = (crc << 8) ^ (x << 12) ^ (x <<5 ^ x);
+        crc = (crc << 8) ^ (x << 12) ^ (x << 5 ^ x);
     }
     return crc;
 }
@@ -36,6 +36,7 @@ uint16_t crc16SingleByte(uint8_t value, uint16_t crc)
 
     return crc;
 }
+
 /*
 I compared this very simple crc16 lib to the FastCRC16. This small function is somewhat better than the FastCRC16, according to this test.
 Even if any parameter on FastCRC16 is wrong, the small function above is much smaller, and the time taken to calculate it is negligible.

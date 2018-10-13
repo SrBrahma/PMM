@@ -1,11 +1,11 @@
-/* PmmPortLog.h
+/* PmmPackageDataLog.h
  * Code for the Inertial Measure Unit (IMU!)
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 
 #include <pmmTelemetryPorts/pmmPortsReception.h>
-#include <pmmTelemetryPorts/pmmPortLog.h>
+#include <pmmTelemetryPorts/dataLog.h>
 #include <pmmTelemetryPorts/pmmPortString.h>
 #include <pmmTelemetryProtocols.h> // in RadioHead directory.
 
@@ -13,9 +13,9 @@ PmmPortsReception::PmmPortsReception()
 {
 }
 
-int PmmPortsReception::init(PmmPortLog* PmmPortLog, PmmPortString* PmmPortString)
+int PmmPortsReception::init(PmmPackageDataLog* PmmPackageDataLog, PmmPortString* PmmPortString)
 {
-    mPmmPortLog = PmmPortLog;
+    mPmmPortLog = PmmPackageDataLog;
     mPmmPortString = PmmPortString;
     return 0;
 }

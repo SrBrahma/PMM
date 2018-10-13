@@ -26,9 +26,9 @@
 
 
 // Packages
-#include "pmmTelemetryPorts/pmmPortLog.h"
-#include "pmmTelemetryPorts/pmmPortString.h"
-#include "pmmTelemetryPorts/pmmPortsReception.h"
+#include "pmmPackages/dataLog/dataLog.h"
+#include "pmmPackages/pmmPortString.h"
+#include "pmmPackages/pmmPortsReception.h"
 
 
 
@@ -60,7 +60,7 @@ void Pmm::init()
     #endif
 
     // Packages =====================================================================================
-    // PmmPortLog
+    // PmmPackageDataLog
     mPmmPortLog.init(&mPmmTelemetry);
     mPmmPortLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
 

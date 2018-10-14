@@ -3,14 +3,14 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include "pmmTelemetry/telemetry.h"
-#include <pmmSd.h>
-#include <pmmTelemetryProtocols.h>
+#include "pmmTelemetry/pmmTelemetry.h"
+#include "pmmSd/pmmSd.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 
-#define PMM_PORT_STRING_INDEX_LSB_CRC_PACKET    0
-#define PMM_PORT_STRING_INDEX_MSB_CRC_PACKET    1
-#define PMM_PORT_STRING_INDEX_STRING_X          2
-#define PMM_PORT_STRING_INDEX_OF_Y_MINUS_1      3
+#define PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET    0
+#define PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET    1
+#define PMM_PORT_MESSAGE_LOG_INDEX_STRING_X          2
+#define PMM_PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1      3
 // =
 #define PMM_PORT_STRING_HEADER_LENGTH           4
 // Package String header is ["MSTR"][CRC of the current packet: 2B][String X: 1B][of Y - 1: 1B]

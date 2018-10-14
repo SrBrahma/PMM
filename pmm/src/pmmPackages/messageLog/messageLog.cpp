@@ -1,8 +1,8 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include <pmmPackages/pmmPortString.h>
-#include <crc16.h>
+#include "pmmPackages/messageLog/messageLog.h" // antes era: #include <pmmPackages/pmmPortString.h>
+#include <crc.h>
 #include <byteSelection.h>
 
 const PROGMEM char* PMM_THIS_NAME = {PMM_THIS_NAME_DEFINE};
@@ -52,8 +52,8 @@ uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t
     // 0!) The packet CRC will be added on the end of this function.
 
     // 1) Add the id of this string, and the total amount of strings - 1
-    arrayToCopy[PMM_PORT_STRING_INDEX_STRING_X] = requestedStringId;
-    arrayToCopy[PMM_PORT_STRING_INDEX_OF_Y_MINUS_1] = mActualNumberOfStrings - 1;
+    arrayToCopy[PMM_PORT_MESSAGE_LOG_INDEX_STRING_X] = requestedStringId;
+    arrayToCopy[PMM_PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1] = mActualNumberOfStrings - 1;
 
     // 2) Now adds the payload, the null-terminated string!
     stringLengthWithNullChar = strlen(mString[requestedStringId]) + 1;
@@ -66,15 +66,15 @@ uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t
     // 4) Lastly, add the CRC of this packet! We want to be certain (actually, it doesn't give us 100% of error detection! Something like
     //   1/65536 certainty, assuming random errors. If it happens, is it God giving us a message? We will probably never know!!)
     packetLength = PMM_PORT_STRING_HEADER_LENGTH + stringLengthWithNullChar;
-    crc16Var = crc16(arrayToCopy + PMM_PORT_STRING_INDEX_MSB_CRC_PACKET + 1, packetLength - 2); // Remember to change this sum if you changed the Port Header!
+    crc16Var = crc16(arrayToCopy + PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1, packetLength - 2); // Remember to change this sum if you changed the Port Header!
     // Explaining:
-    // arrayToCopy + PMM_PORT_STRING_INDEX_MSB_CRC_PACKET + 1
+    // arrayToCopy + PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1
     //      The address is the next to the MSB CRC, so we sum (+) 1!
     // packetLength - 2
     //      The length to do the CRC is the total minus the 2 bytes used in the CRC itself!
 
-    arrayToCopy[PMM_PORT_STRING_INDEX_LSB_CRC_PACKET] = LSB0(crc16Var);     // Little endian! First the Least Significant Byte!
-    arrayToCopy[PMM_PORT_STRING_INDEX_MSB_CRC_PACKET] = MSB0(crc16Var);     // Little endian! Then the Most Significant Byte!
+    arrayToCopy[PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET] = LSB0(crc16Var);     // Little endian! First the Least Significant Byte!
+    arrayToCopy[PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET] = MSB0(crc16Var);     // Little endian! Then the Most Significant Byte!
 
     return packetLength;
 }

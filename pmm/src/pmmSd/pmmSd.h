@@ -5,10 +5,11 @@
 #ifndef PMM_SD_h
 #define PMM_SD_h
 
-
-#include <pmmErrorsCentral.h>
-#include <pmmConsts.h>
 #include <SdFat.h>
+
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
+#include "pmmConsts.h"
+
 
 #define PMM_SD_BASE_DIRECTORY               "/Minerva Rockets/pmm"
 #define PMM_SD_BACKUP_SUFFIX                "_backup"

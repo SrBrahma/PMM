@@ -8,7 +8,7 @@
 #define PMM_HEALTH_SIGNALS_h
 
 #include <pmmConsts.h>
-#include <pmmErrorsCentral.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 
 class PmmHealthSignals

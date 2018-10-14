@@ -5,8 +5,8 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <pmmConsts.h>
-#include <pmmErrorsCentral.h>
-#include <pmmHealthSignals.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
+#include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
 
 PmmHealthSignals::PmmHealthSignals()
 {

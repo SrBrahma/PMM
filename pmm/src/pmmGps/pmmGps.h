@@ -5,9 +5,10 @@
 #ifndef PMM_GPS_h
 #define PMM_GPS_h
 
-#include <pmmConsts.h>
 #include <NMEAGPS.h>
-#include <pmmErrorsCentral.h>
+
+#include "pmmConsts.h"
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
 

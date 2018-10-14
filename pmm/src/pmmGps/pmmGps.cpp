@@ -35,9 +35,9 @@
 
 #include <Arduino.h>
 #include <NMEAGPS.h>
-#include <pmmGps.h>
+#include "pmmGps/pmmGps.h"
 #include <pmmConsts.h>
-#include <pmmErrorsCentral.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 //-------------------------------------------------------------------------
 //  The GPSport.h include file tries to choose a default serial port

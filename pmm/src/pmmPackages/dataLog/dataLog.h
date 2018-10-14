@@ -31,7 +31,11 @@
 #define PMM_TELEMETRY_TYPE_UINT64   9
 #define PMM_TELEMETRY_TYPE_DOUBLE   10
 
+
+
 // DataLog and LogInfo Defines (Which I will as DATA_LOG anyway)
+
+    #define PMM_PACKAGE_DATA_LOG_MAX_VARIABLES              50  // This must be the same for the transmitter and the receptor, for now.
 
 
 
@@ -44,10 +48,12 @@
     #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_RELATED_CRC    2 // Is 2 bytes wide, CRC 16
     #define PMM_PORT_DATA_LOG_INDEX_LOG_LENGTH              4
     #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD          5 // Is 2 bytes wide, CRC 16
-
+    // Total length is equal to...
     #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
 
     #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
+
+
 
 // LogInfo Defines
 
@@ -56,21 +62,18 @@
     #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE         2
     #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE         3
     #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   4
-    // =
+    // Total length is equal to...
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 5
 
-    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_PORT_DATA_LOG_HEADER_LENGTH
-    // Header for all packets:
-    // [0~1] CRC of the packet
-    // [2~3] CRC of the package
-    // [4: 4 MSbits] Packet X [8: 4 LSbits] of a total of (Y - 1)
+    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
 
-    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH  PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
-    #define PMM_PORT_LOG_INFO_RAW_MAX_LENGTH      3000 // A slightly random number. Thinking only on the strings, which occupies most of the length, 50 variables * 30 chars = 1500 bytes. 3kB for 
-    #define PMM_PORT_LOG_INFO_MAX_PACKETS         (PMM_PORT_LOG_INFO_RAW_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    #define PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH        3000 // A slightly random number. Thinking only on the strings,
+                                                                 //   which occupies most of the length, 50 variables * 30 chars = 1500 bytes. 3kB for 
+    
+    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   (PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) \
+                                                            / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
     // Ceiling without ceil(). https://stackoverflow.com/a/2745086
     // Wrote it for initializing the LogInfo arrays in telemetry format.
-
     // packets = (packageRawSize + (headerSize * packets) + packetSize - 1) / packetSize
     // with some math magic trick, it can be rewritten as
     // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
@@ -79,7 +82,7 @@
 
 
 
-class PmmPackageDataLog // Intended to have >1 Objects of this class, on the future! Maybe someday we will want to have one object for reception, and another for transmission!
+class PmmPackageDataLog // Intended to have >1 Objects of this class, one for each DataLog Package
 {
 
 public:
@@ -98,14 +101,14 @@ public:
 
 
     // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
-    void addMagnetometer(void* magnetometerArray);
-    void addGyroscope(void* gyroscopeArray);
-    void addAccelerometer(void* accelerometerArray);
-    void addBarometer(void* barometerPtr);
+    void addMagnetometer     (void* magnetometerArray);
+    void addGyroscope        (void* gyroscopeArray);
+    void addAccelerometer    (void* accelerometerArray);
+    void addBarometer        (void* barometerPtr);
     void addAltitudeBarometer(void* altitudePtr);
-    void addThermometer(void* thermometerPtr);
+    void addThermometer      (void* thermometerPtr);
 
-    void addImu(pmmImuStructType* pmmImuStructPtr);
+    void addImu(pmmImuStructType* pmmImuStructPtr); // Adds all the sensors above.
     void addGps(pmmGpsStructType* pmmGpsStruct);
 
     // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
@@ -160,10 +163,10 @@ private:
     uint8_t*  mSystemSessionPtr;
 
 
-    char*    mVariableNameArray   [PMM_PORT_LOG_NUMBER_VARIABLES];
-    uint8_t  mVariableTypeArray   [PMM_PORT_LOG_NUMBER_VARIABLES];
-    uint8_t  mVariableSizeArray   [PMM_PORT_LOG_NUMBER_VARIABLES]; // For a faster size access for the telemetry
-    uint8_t* mVariableAddressArray[PMM_PORT_LOG_NUMBER_VARIABLES];
+    char*    mVariableNameArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableTypeArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableSizeArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
+    uint8_t* mVariableAddressArray[PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
 
 
     uint16_t mLogInfoPackageCrc;
@@ -171,12 +174,12 @@ private:
     uint8_t  mPackageLogSizeInBytes;
 
 
-    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_RAW_MAX_LENGTH];
+    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH];
     uint16_t mLogInfoRawPayloadArrayLength;
 
 
     uint8_t  mPackageLogInfoNumberOfPackets;
-    uint8_t  mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
+    uint8_t  mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH];
     uint8_t  mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
 
 

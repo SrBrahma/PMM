@@ -7,7 +7,7 @@
 #define RHGenericDriver_h
 
 #include <RadioHead.h>
-#include <pmmTelemetryProtocols.h>
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 // Defines bits of the FLAGS header reserved for use by the RadioHead library and
 // the flags available for use by applications

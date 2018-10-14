@@ -10,13 +10,14 @@
 
 #define DELAY_MS_BAROMETER 100 //random value
 
-#include <pmmConsts.h>
-#include <pmmErrorsCentral.h>
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <BMP085.h>
 #include <Wire.h>
 #include <I2Cdev.h>
+
+#include <pmmConsts.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 typedef struct
 {

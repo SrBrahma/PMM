@@ -13,10 +13,10 @@ void PmmPortString::receivedPackageString(uint8_t* payload, telemetryPacketInfoS
         return;
 
     // 1.b) Now test the CRC, to see if the packet content is valid
-    if (((payload[PMM_PORT_STRING_INDEX_MSB_CRC_PACKET] << 8) | (payload[PMM_PORT_STRING_INDEX_LSB_CRC_PACKET]))
-                  != crc16(payload + PMM_PORT_STRING_INDEX_MSB_CRC_PACKET + 1, packetStatus->payloadLength - 2))
+    if (((payload[PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET] << 8) | (payload[PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET]))
+                  != crc16(payload + PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1, packetStatus->payloadLength - 2))
     // Explaining:
-    // arrayToCopy + PMM_PORT_STRING_INDEX_MSB_CRC_PACKET + 1
+    // arrayToCopy + PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1
     //      The address is the next to the MSB CRC, so we sum (+) 1!
     // packetLength - 2
     //      The length to do the CRC is the total minus the 2 bytes used in the CRC itself!

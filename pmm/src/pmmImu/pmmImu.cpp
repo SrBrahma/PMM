@@ -9,8 +9,8 @@
 #include <HMC5883L.h>
 #include <BMP085.h>
 #include <pmmConsts.h>
-#include <pmmImu.h>
-#include <pmmErrorsCentral.h>
+#include "pmmImu/pmmImu.h"
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 PmmImu::PmmImu()
 {

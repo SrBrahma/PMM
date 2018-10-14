@@ -2,10 +2,10 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include "pmmTelemetry/telemetry.h"
+#include "pmmTelemetry/pmmTelemetry.h"
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmTelemetryProtocols.h>
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
     mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)

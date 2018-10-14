@@ -2,7 +2,7 @@
 #define PMM_PORTS_RECEPTION_h
 
 #include "pmmPackages/dataLog/dataLog.h"
-#include "pmmPackages/messageLog/pmmPortString.h"
+#include "pmmPackages/messageLog/messageLog.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 class PmmPortsReception

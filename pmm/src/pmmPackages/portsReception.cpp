@@ -4,10 +4,11 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 
-#include <pmmPackages/pmmPortsReception.h>
-#include <pmmPackages/dataLog/dataLog.h>
-#include <pmmPackages/dataLog/pmmPortString.h>
-#include <pmmTelemetryProtocols.h> // in RadioHead directory.
+#include "pmmPackages/portsReception.h"
+#include "pmmPackages/dataLog/dataLog.h"
+#include "pmmPackages/messageLog/messageLog.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
 
 PmmPortsReception::PmmPortsReception()
 {

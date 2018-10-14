@@ -3,10 +3,12 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include "pmmPackages/dataLog/dataLog.h"
+
 #include <crc.h>
-#include <pmmConsts.h>
-#include "pmmTelemetry/telemetry.h"
+
+#include "pmmConsts.h"
+#include "pmmPackages/dataLog/dataLog.h"
+#include "pmmTelemetry/pmmTelemetry.h"
 
 
 
@@ -81,7 +83,7 @@ uint8_t PmmPackageDataLog::variableTypeToVariableSize(uint8_t variableType)
 void PmmPackageDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);
-    if (mLogNumberOfVariables >= PMM_PORT_LOG_NUMBER_VARIABLES)
+    if (mLogNumberOfVariables >= PMM_PACKAGE_DATA_LOG_MAX_VARIABLES)
     {
         #if PMM_DEBUG_SERIAL
             Serial.print("PmmPort #2: Failed to add the variable \"");
@@ -111,11 +113,8 @@ void PmmPackageDataLog::includeVariableInPackage(const char *variableName, uint8
     mLogNumberOfVariables ++;
     mPackageLogSizeInBytes += varSize;
 
-    if (mLogNumberOfVariables > PMM_PORT_LOG_INDEX_DATA) // yeah it's right. It isn't actually necessary, just skip a few useless function calls.
-    {
-        updatePackageLogInfoRaw();
-        updatePackageLogInfoInTelemetryFormat();
-    }
+    updatePackageLogInfoRaw();
+    updatePackageLogInfoInTelemetryFormat();
 }
 
 void PmmPackageDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
@@ -282,10 +281,10 @@ void PmmPackageDataLog::debugPrintLogHeader()
     char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
     // For adding the first variable header to the print
-    if (mLogNumberOfVariables > PMM_PORT_LOG_INDEX_DATA)
-        snprintf(buffer, 512, "%s", mVariableNameArray[PMM_PORT_LOG_INDEX_DATA]);
+    if (mLogNumberOfVariables > 0)
+        snprintf(buffer, 512, "%s", mVariableNameArray[0]);
 
-    for (variableIndex = PMM_PORT_LOG_INDEX_DATA + 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
+    for (variableIndex = 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }

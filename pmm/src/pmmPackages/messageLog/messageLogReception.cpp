@@ -1,11 +1,12 @@
 
 #include <stdint.h> // for uint32_t
-#include <pmmConsts.h>
-#include <pmmPackages/pmmPortString.h>
-#include <crc16.h>
-#include <pmmTelemetryProtocols.h>
+#include <crc.h>
 
-void PmmPortString::receivedPackageString(uint8_t* payload, telemetryPacketInfoStructType* packetStatus)
+#include "pmmConsts.h"
+#include "pmmPackages/messageLog/messageLog.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
+void PmmPackageMessageLog::receivedPackageString(uint8_t* payload, telemetryPacketInfoStructType* packetStatus)
 {
     // 1) First check is the packet is valid
     // 1.a) If the packet size is smaller than the package header length, it's invalid

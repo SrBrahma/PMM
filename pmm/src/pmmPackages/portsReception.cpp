@@ -14,10 +14,10 @@ PmmPortsReception::PmmPortsReception()
 {
 }
 
-int PmmPortsReception::init(PmmPackageDataLog* PmmPackageDataLog, PmmPortString* PmmPortString)
+int PmmPortsReception::init(PmmPackageDataLog* pmmPackageDataLog, PmmPackageMessageLog* pmmPackageMessageLog)
 {
-    mPmmPortLog = PmmPackageDataLog;
-    mPmmPortString = PmmPortString;
+    mPmmPackageDataLog = pmmPackageDataLog;
+    mPmmPackageMessageLog = pmmPackageMessageLog;
     return 0;
 }
 
@@ -27,13 +27,13 @@ void PmmPortsReception::receivedPacket(uint8_t payload[], telemetryPacketInfoStr
     switch(payload[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
     {
         case PMM_PORT_LOG:
-            mPmmPortLog->receivedPackageLog(payload, packetStatus);
+            mPmmPackageDataLog->receivedPackageLog(payload, packetStatus);
             return;
         case PMM_PORT_LOG_INFO:
-            mPmmPortLog->receivedPackageLogInfo(payload, packetStatus);
+            mPmmPackageDataLog->receivedPackageLogInfo(payload, packetStatus);
             return;
         case PMM_PORT_STRING:
-            mPmmPortString->receivedPackageString(payload, packetStatus);
+            mPmmPackageMessageLog->receivedPackageString(payload, packetStatus);
             return;
         case PMM_PORT_REQUEST:
             return;

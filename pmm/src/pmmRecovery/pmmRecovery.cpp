@@ -5,7 +5,7 @@
  * and Marcelo Maronas
  * Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <pmmRecovery.h>
+#include "pmmRecovery/pmmRecovery.h"
 /*
 //---------------Recuperação---------------//
 //if (((abs(imu_struct.acelerometro[0]) < 1) && (abs(imu_struct.acelerometro[1]) < 1) && (abs(imu_struct.acelerometro[2]) < 1)) && (lastAltitude - imu_struct.barometro[1] > recThreshold))

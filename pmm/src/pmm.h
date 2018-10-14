@@ -5,28 +5,28 @@
 #define PMM_h
 
 #include <pmmConsts.h>
-#include <pmmImu.h>
-#include <pmmErrorsCentral.h>
-#include <pmmHealthSignals.h>
+#include "pmmImu/pmmImu.h"
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
+#include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
 
 
 
 #if PMM_USE_TELEMETRY
-    #include "pmmTelemetry/telemetry.h"
+    #include "pmmTelemetry/pmmTelemetry.h"
 #endif
 
 #if PMM_USE_GPS
-    #include <pmmGps.h>
+    #include "pmmGps/pmmGps.h"
 #endif
 
 #if PMM_USE_SD
-    #include <pmmSd.h>
+    #include "pmmSd/pmmSd.h"
 #endif
 
 //Packages
 #include "pmmPackages/dataLog/dataLog.h"
-#include "pmmPackages/pmmPortString.h"
-#include "pmmPackages/pmmPortsReception.h"
+#include "pmmPackages/messageLog/messageLog.h"
+#include "pmmPackages/portsReception.h"
 
 
 
@@ -43,8 +43,8 @@ private:
     PmmImu mPmmImu;
 
     // Packages
-    PmmPackageDataLog mPmmPortLog;
-    PmmPortString mPmmPortString;
+    PmmPackageDataLog mPmmPackageDataLog;
+    PmmPackageMessageLog mPmmPackageMessageLog;
     PmmPortsReception mPmmPortsReception;
 
     PmmErrorsCentral mPmmErrorsCentral;         /* Errors */

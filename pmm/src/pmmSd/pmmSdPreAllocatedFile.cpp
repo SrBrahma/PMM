@@ -4,8 +4,8 @@
 
 #include <pmmConsts.h>
 
-#include <pmmSd.h>
-#include <pmmErrorsCentral.h>
+#include "pmmSd/pmmSd.h"
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 #include <SdFat.h>
 
 

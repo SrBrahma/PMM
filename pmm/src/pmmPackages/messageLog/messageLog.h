@@ -7,26 +7,19 @@
 #include "pmmSd/pmmSd.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
-#define PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET    0
-#define PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET    1
-#define PMM_PORT_MESSAGE_LOG_INDEX_STRING_X          2
-#define PMM_PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1      3
-// =
-#define PMM_PORT_STRING_HEADER_LENGTH           4
-// Package String header is ["MSTR"][CRC of the current packet: 2B][String X: 1B][of Y - 1: 1B]
-// [0~1] CRC
-// [2] String X
-// [3] of a total of (Y - 1)
-// The payload is
-// [4+] The string, null-terminated. (I had to make a decision - having the null char or not. I chose to have. Maybe on future I change my mind.
-// As CRC exists in the package, it really doesn't change too much. On the future, it will probably exist the code for rebuilding the package from broken packages.
+#define PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET   0
+#define PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET   1
+#define PMM_PORT_MESSAGE_LOG_INDEX_STRING_X         2
+#define PMM_PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1     3
+// Total header length is equal to...
+#define PMM_PORT_STRING_HEADER_LENGTH               4
 
-#define PMM_PORT_STRING_MAX_STRING_LENGTH (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_STRING_HEADER_LENGTH)
+#define PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH (PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_STRING_HEADER_LENGTH)
 
 
 
 
-class PmmPortString
+class PmmPackageMessageLog
 {
 
 public:
@@ -46,7 +39,7 @@ private:
     uint32_t* mPackageLogMillisPtr; // To share the same millis as the Package Log
     PmmTelemetry* mPmmTelemetry;
     PmmSd* mPmmSd;
-    char mString[PMM_PORT_STRING_MAX_STRING_LENGTH];
+    char mString[PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH];
     uint8_t mActualNumberOfStrings;
 
 

@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <pmmTelemetryProtocols.h>
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 // if the given protocol is invalid, will by default use the Neo Protocol.
 uint8_t getProtocolHeaderLength(uint8_t protocol)

@@ -41,14 +41,16 @@
 
 // DataLog Defines
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30 // To avoid really big faulty strings that would mess the system
+    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30 // To avoid really big faulty strings that would mess the system. Includes the '\0'.
 
     #define PMM_PORT_DATA_LOG_INDEX_CRC_HEADER              0
     #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
-    #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_RELATED_CRC    2 // Is 2 bytes wide, CRC 16
+    #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_CRC_LSB        2
+    #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_CRC_MSB        3
     #define PMM_PORT_DATA_LOG_INDEX_LOG_LENGTH              4
-    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD          5 // Is 2 bytes wide, CRC 16
-    // Total length is equal to...
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD_LSB      5
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD_MSB      6
+    // Total header length is equal to...
     #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
 
     #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
@@ -57,12 +59,12 @@
 
 // LogInfo Defines
 
-    #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET          0
-    #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET          1
-    #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE         2
-    #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE         3
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB          0
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB          1
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB         2
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB         3
     #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   4
-    // Total length is equal to...
+    // Total header length is equal to...
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 5
 
     #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH

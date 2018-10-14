@@ -22,20 +22,20 @@
 
 // This is the maximum number of interrupts the driver can support
 // Most Arduinos can handle 2, Megas can handle more
-#define RH_RF95_NUM_INTERRUPTS 3
+#define RH_RF95_NUM_INTERRUPTS      3
 
 // Max number of octets the LORA Rx/Tx FIFO can hold
-#define RH_RF95_FIFO_SIZE 255
+#define RH_RF95_FIFO_SIZE           255
 
 // This is the maximum number of bytes that can be carried by the LORA.
 // We use some for headers, keeping fewer for RadioHead messages
-#define RH_RF95_MAX_PACKET_LENGTH RH_RF95_FIFO_SIZE
+#define RH_RF95_MAX_PACKET_LENGTH   RH_RF95_FIFO_SIZE
 
 // The crystal oscillator frequency of the module
-#define RH_RF95_FXOSC 32000000.0
+#define RH_RF95_FXOSC               32000000.0
 
 // The Frequency Synthesizer step = RH_RF95_FXOSC / 2^^19
-#define RH_RF95_FSTEP  (RH_RF95_FXOSC / 524288)
+#define RH_RF95_FSTEP               (RH_RF95_FXOSC / 524288)
 
 
 // Register names (LoRa Mode, from table 85)

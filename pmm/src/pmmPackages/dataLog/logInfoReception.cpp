@@ -23,10 +23,10 @@ void PmmPackageDataLog::receivedPackageLogInfo(uint8_t payload[], telemetryPacke
 
 
     // 2) Test the CRC, to see if the packet is valid.
-    if (((payload[PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET] << 8) | (payload[PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET])) != crc16(payload + PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET + 1, packetStatus->payloadLength - 2))
+    if (((payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB])) != crc16(payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetStatus->payloadLength - 2))
         return;
 
-    tempPackageCrc = (payload[PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE] << 8) | payload[PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE];
+    tempPackageCrc = (payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] << 8) | payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB];
 
 
     // 3) If changed the CRC16 of the entire package, or is the first packet ever received

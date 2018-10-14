@@ -5,9 +5,7 @@
 #include <crc.h>
 #include <byteSelection.h>
 
-const PROGMEM char* PMM_THIS_NAME = {PMM_THIS_NAME_DEFINE};
-
-int PmmPortString::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
+int PmmPackageMessageLog::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
 {
     mPmmTelemetry = pmmTelemetry;
     mPmmSd = pmmSd;
@@ -18,26 +16,26 @@ int PmmPortString::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr
 }
 
 // Adds a little message header, ex: [19402ms 92112id] Parachutes Deployed
-int PmmPortString::addString(char *string)
+int PmmPackageMessageLog::addString(char *string)
 {
-    snprintf(mString, PMM_PORT_STRING_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string); // Adds the time and the Package Log Id.
+    snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string); // Adds the time and the Package Log Id.
     
     return 0;
 }
 
-int PmmPortString::addRawString(char *string)    // Won't add the time and the Package Log Id.
+int PmmPackageMessageLog::addRawString(char *string)    // Won't add the time and the Package Log Id.
 {
-    snprintf(mString, PMM_PORT_STRING_MAX_STRING_LENGTH, "%s", string);
+    snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "%s", string);
     return 0;
 }
 
-bool PmmPortString::loadStringFromSd(char stringDestination[], uint16_t requestedStringId)
+bool PmmPackageMessageLog::loadStringFromSd(char stringDestination[], uint16_t requestedStringId)
 {
 
 }
 
 // As the payload length for now is 255 (with RFM95w and other modules like APC220), there is no need for now to break the String Package into packets.
-uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
+uint8_t PmmPackageMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
 {
     // Port format is in pmmPortString.h
 
@@ -80,4 +78,4 @@ uint8_t PmmPortString::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t
 }
 
 
-uint8_t PmmPortString::getActualNumberOfStrings() { return mActualNumberOfStrings;}
+uint8_t PmmPackageMessageLog::getActualNumberOfStrings() { return mActualNumberOfStrings;}

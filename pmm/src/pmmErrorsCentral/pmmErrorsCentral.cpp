@@ -2,7 +2,7 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <pmmErrorsCentral.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
     "No errors",                // OK,

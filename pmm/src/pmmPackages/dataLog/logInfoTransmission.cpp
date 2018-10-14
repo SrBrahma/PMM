@@ -42,11 +42,13 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
     }
 
 
-// 3) Add Variable strings
+// 3) Add the Variable strings
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {
         stringLengthWithNullChar = strlen(mVariableNameArray[variableCounter]) + 1; // Counts the '\0' char.
-        memcpy(&mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength], mVariableNameArray[variableCounter], stringLengthWithNullChar);
+        if (stringLengthWithNullChar)
+            
+        memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLengthWithNullChar);
         mLogInfoRawPayloadArrayLength += stringLengthWithNullChar;
     }
 

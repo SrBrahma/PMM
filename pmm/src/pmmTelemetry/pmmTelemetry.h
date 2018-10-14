@@ -7,12 +7,15 @@
 
 #include <RH_RF95.h>
 #include <pmmConsts.h>
-#include <pmmErrorsCentral.h>
-#include <pmmTelemetryProtocols.h>
+#include "pmmErrorsCentral/pmmErrorsCentral.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 #include "pmmPackages/ports.h"
 
-#define PMM_TELEMETRY_QUEUE_LENGTH 8
+// General defines
+#define PMM_TELEMETRY_MAX_PACKET_LENGTH    RH_RF95_MAX_PACKET_LENGTH // Is 255!
 
+
+#define PMM_TELEMETRY_QUEUE_LENGTH 8
 
 
 class PmmTelemetry

@@ -6,10 +6,10 @@
 #ifndef PMM_PORT_LOG_h
 #define PMM_PORT_LOG_h
 
-#include <pmmConsts.h>
-#include <pmmGps.h> // for GPS struct
-#include <pmmImu.h> // for IMU struct
-#include "pmmTelemetry/telemetry.h"
+#include "pmmConsts.h"
+#include "pmmGps/pmmGps.h" // for GPS struct
+#include "pmmImu/pmmImu.h" // for IMU struct
+#include "pmmTelemetry/pmmTelemetry.h"
 
 
 
@@ -31,9 +31,13 @@
 #define PMM_TELEMETRY_TYPE_UINT64   9
 #define PMM_TELEMETRY_TYPE_DOUBLE   10
 
+// DataLog and LogInfo Defines (Which I will as DATA_LOG anyway)
+
+
+
 // DataLog Defines
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH         30 // To avoid really big faulty strings that would mess the system
+    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30 // To avoid really big faulty strings that would mess the system
 
     #define PMM_PORT_DATA_LOG_INDEX_CRC_HEADER              0
     #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
@@ -43,33 +47,33 @@
 
     #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
 
-    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH    
+    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
 
 // LogInfo Defines
 
-#define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET          0
-#define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET          1
-#define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE         2
-#define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE         3
-#define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   4
-// =
-#define PMM_PORT_LOG_INFO_HEADER_LENGTH                 5
-// Header for all packets:
-// [0~1] CRC of the packet
-// [2~3] CRC of the package
-// [4: 4 MSbits] Packet X [8: 4 LSbits] of a total of (Y - 1)
+    #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKET          0
+    #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKET          1
+    #define PMM_PORT_LOG_INFO_INDEX_LSB_CRC_PACKAGE         2
+    #define PMM_PORT_LOG_INFO_INDEX_MSB_CRC_PACKAGE         3
+    #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   4
+    // =
+    #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 5
 
-#define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH  PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
-#define PMM_PORT_LOG_INFO_RAW_MAX_LENGTH      1024
-#define PMM_PORT_LOG_INFO_MAX_PACKETS         (PMM_PORT_LOG_INFO_RAW_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
-// Ceiling without ceil(). https://stackoverflow.com/a/2745086
-// Wrote it for initializing the MLIN arrays in telemetry format.
-// (I don't like the idea or doing uint8_t array[ceil(PMM_PORT_LOG_INFO_RAW_MAX_LENGTH / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)].
-// I really don't know if it is a good idea to put a function inside a length declaration. ChangeMyMindMeme.jpg)
-//
-// packets = (packageRawSize + (headerSize * packets) + packetSize - 1) / packetSize
-// with some math magic trick, it can be rewritten as
-// packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
+    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_PORT_DATA_LOG_HEADER_LENGTH
+    // Header for all packets:
+    // [0~1] CRC of the packet
+    // [2~3] CRC of the package
+    // [4: 4 MSbits] Packet X [8: 4 LSbits] of a total of (Y - 1)
+
+    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH  PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
+    #define PMM_PORT_LOG_INFO_RAW_MAX_LENGTH      3000 // A slightly random number. Thinking only on the strings, which occupies most of the length, 50 variables * 30 chars = 1500 bytes. 3kB for 
+    #define PMM_PORT_LOG_INFO_MAX_PACKETS         (PMM_PORT_LOG_INFO_RAW_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    // Ceiling without ceil(). https://stackoverflow.com/a/2745086
+    // Wrote it for initializing the LogInfo arrays in telemetry format.
+
+    // packets = (packageRawSize + (headerSize * packets) + packetSize - 1) / packetSize
+    // with some math magic trick, it can be rewritten as
+    // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
 
 
 

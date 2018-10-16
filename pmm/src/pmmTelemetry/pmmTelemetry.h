@@ -8,11 +8,15 @@
 #include <RH_RF95.h>
 #include <pmmConsts.h>
 #include "pmmErrorsCentral/pmmErrorsCentral.h"
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
 #include "pmmPackages/ports.h"
 
 // General defines
-#define PMM_TELEMETRY_MAX_PACKET_LENGTH    RH_RF95_MAX_PACKET_LENGTH // Is 255!
+#define PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH   255 // Max LoRa Packet Size!
+
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
+#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH 
 
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8

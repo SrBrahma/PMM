@@ -4,7 +4,7 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <stdint.h>
-#include <crc16.h>
+#include <crc.h>
 
 // Taken from https://stackoverflow.com/a/23726131 with a few changes.
 // crc has the default value of 0xFFFF, declared on crc16.h.

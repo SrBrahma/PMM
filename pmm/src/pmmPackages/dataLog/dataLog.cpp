@@ -92,7 +92,7 @@ void PmmPackageDataLog::includeVariableInPackage(const char *variableName, uint8
         #endif
         return;
     }
-    if ((mPackageLogSizeInBytes + varSize) >= PMM_TELEMETRY_MAX_PAYLOAD_LENGTH)
+    if ((mPackageLogSizeInBytes + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
     {
         #if PMM_DEBUG_SERIAL
             Serial.print("PmmPort #3: Failed to add the variable \"");
@@ -100,7 +100,7 @@ void PmmPackageDataLog::includeVariableInPackage(const char *variableName, uint8
             Serial.print("\". Exceeds the maximum payload length (tried to be ");
             Serial.print((mPackageLogSizeInBytes + varSize));
             Serial.print(", maximum is ");
-            Serial.print(PMM_TELEMETRY_MAX_PAYLOAD_LENGTH);
+            Serial.print(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
             Serial.print(".\n");
         #endif
         return;

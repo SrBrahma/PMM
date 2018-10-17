@@ -30,7 +30,7 @@ PmmPackageDataLog::PmmPackageDataLog()
 
 
 
-int PmmPackageDataLog:: init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint8_t* miniSessionIdPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmPackageDataLog::init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint8_t* miniSessionIdPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
     mPmmTelemetry = pmmTelemetry;

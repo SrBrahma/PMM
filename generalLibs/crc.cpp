@@ -1,36 +1,122 @@
-/* crc16.cpp
+/* crc.cpp
  * Code for a CRC16 calculation.
- * The credits for it goes to the author, found on the Stack Overflow link below.
+ * The credits for the crc8 and the crc16 codes goes to the authors. Links to them are found on each function.
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <stdint.h>
 #include <crc.h>
 
-// Taken from https://stackoverflow.com/a/23726131 with a few changes.
-// crc has the default value of 0xFFFF, declared on crc16.h.
-// changing the crc value is useful for doing multiple crc's in sequence, like
-// crc("123456", 6) is the same as
-// crc("456", 3, crc("123", 3))
+// For all these functions, the crc argument is optional, as they are defaulted to a value in the crc.h.
+// This argument exists so you can make sequential crc calculations even if the data isn't sequential, using the resulting CRC
+//  as the argument for the next CRC calculation.
+//
+// Example:
+// crc16("123456", 6)
+// is the same as
+// crc16("456", 3, crc("123", 3))
 
-// uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc = 0xFFFF);
-uint16_t crc16(uint8_t* data_p, uint16_t length, uint16_t crc)
+
+
+
+
+// =============               CRC 8               =======================
+
+// CRC8 Function (ROM=39 / RAM=4 / Average => 196_Tcy / 24.5_us for 8MHz clock)
+// CRC-8/MAXIM, as seen when comparing the results with this site https://crccalc.com/.
+// Default value to crc argument is 0x00, as seen in crc.h.
+//
+// Found on this page: https://www.ccsinfo.com/forum/viewtopic.php?t=37015, by T. Scott Dattalo
+// Changed a little bit to support arrays and uint8_t type.
+
+uint8_t crc8(uint8_t data[], uint8_t length, uint8_t crc)
+{
+    uint8_t i;
+
+    while (length--)
+    {
+        i = (*data++ ^ crc) & 0xff;
+        crc = 0;
+
+        if(i & 1)
+            crc ^= 0x5e;
+        if(i & 2)
+            crc ^= 0xbc;
+        if(i & 4)
+            crc ^= 0x61;
+        if(i & 8)
+            crc ^= 0xc2;
+        if(i & 0x10)
+            crc ^= 0x9d;
+        if(i & 0x20)
+            crc ^= 0x23;
+        if(i & 0x40)
+            crc ^= 0x46;
+        if(i & 0x80)
+            crc ^= 0x8c;
+    }
+
+    return(crc);
+}
+
+uint8_t crc8SingleByte(uint8_t data, uint8_t crc)
+{
+    uint8_t i;
+
+    i = (data ^ crc) & 0xff;
+    crc = 0;
+
+    if(i & 1)
+        crc ^= 0x5e;
+    if(i & 2)
+        crc ^= 0xbc;
+    if(i & 4)
+        crc ^= 0x61;
+    if(i & 8)
+        crc ^= 0xc2;
+    if(i & 0x10)
+        crc ^= 0x9d;
+    if(i & 0x20)
+        crc ^= 0x23;
+    if(i & 0x40)
+        crc ^= 0x46;
+    if(i & 0x80)
+        crc ^= 0x8c;
+
+    return(crc);
+}
+
+
+
+
+
+// ================         CRC16            =====================
+
+// 
+// CRC-16/CCITT-FALSE, as seen when comparing the results with this site https://crccalc.com/.
+// Default value to crc argument is 0xFFFF, as seen in crc.h.
+//
+// Taken from https://stackoverflow.com/a/23726131
+// Changed a little bit.
+uint16_t crc16(uint8_t data[], uint16_t length, uint16_t crc)
 {
     uint8_t x;
 
-    while (length--){
-        x = crc >> 8 ^ *data_p++;
+    while (length--)
+    {
+        x = crc >> 8 ^ *data++;
         x ^= x >> 4;
         crc = (crc << 8) ^ (x << 12) ^ (x << 5 ^ x);
     }
+
     return crc;
 }
 
-// uint16_t crc16SingleByte(uint8_t value, uint16_t crc = 0xFFFF);
-uint16_t crc16SingleByte(uint8_t value, uint16_t crc)
+// in crc.h uint16_t crc16SingleByte(uint8_t value, uint16_t crc = CRC16_DEFAULT_VALUE);
+uint16_t crc16SingleByte(uint8_t data, uint16_t crc)
 {
     uint8_t x;
 
-    x = crc >> 8 ^ value;
+    x = crc >> 8 ^ data;
     x ^= x >> 4;
     crc = (crc << 8) ^ (x << 12) ^ (x <<5 ^ x);
 

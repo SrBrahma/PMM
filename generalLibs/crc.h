@@ -6,8 +6,8 @@
 
 
 
-#ifndef CRC16_h
-#define CRC16_h
+#ifndef CRC_h
+#define CRC_h
 
 
 

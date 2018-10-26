@@ -7,6 +7,6 @@
 #include "pmmPackages/dataLog/dataLog.h"
 
 // Received Package Log Info Package
-void PmmPackageDataLog::receivedPackageLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmPackageDataLog::receivedDataLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
 {
 }

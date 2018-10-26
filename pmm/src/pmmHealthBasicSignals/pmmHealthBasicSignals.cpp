@@ -34,7 +34,7 @@ int PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
 
 
 //       ..........     ..........
-//  .....          .....          .....
+//  .....          .....          ..... 0xFF 0xFF 0xii 0xii 0xii
 // A confusing but working code.
 int PmmHealthSignals::update()
 {

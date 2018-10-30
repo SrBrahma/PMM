@@ -131,7 +131,7 @@ The output from the code below is
 This small crc16 function:  839ms for 1.000.000 iterations.
 FastCRC16:                  851ms for 1.000.000 iterations.
 
-Comparation done in Teensy 3.6. Yeah, it is fast as #@&*!.
+Comparation done in Teensy 3.6. Yeah, it is fast!.
 
 
 FastCRC16 CRC16;

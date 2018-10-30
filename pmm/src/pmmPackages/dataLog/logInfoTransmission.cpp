@@ -1,6 +1,6 @@
 #include "crc.h"
 #include "pmmPackages/dataLog/dataLog.h"
-
+#include <string.h>
 
 
 // LogInfo in Telemetry format, for transmission.
@@ -62,7 +62,6 @@ void PmmPackageDataLog::updatePackageLogInfoInTelemetryFormat()
 
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
-    mLogInfoPackageCrc;
     uint16_t payloadBytesInThisPacket;
     uint8_t packetCounter;
 

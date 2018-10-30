@@ -38,29 +38,29 @@ public:
     void update();
 
 private:
+    uint8_t mSessionId;
     uint32_t mPackageTimeMs, mPackageLogId;
+    
+    PmmErrorsCentral mPmmErrorsCentral;
 
     PmmImu mPmmImu;
 
-    // Packages
-    PmmPackageDataLog mPmmPackageDataLog;
-    PmmPackageMessageLog mPmmPackageMessageLog;
-    PmmPortsReception mPmmPortsReception;
-
-    PmmErrorsCentral mPmmErrorsCentral;         /* Errors */
-
-    #if PMM_USE_TELEMETRY                       /* Telemetry */
+    #if PMM_USE_TELEMETRY
     PmmTelemetry mPmmTelemetry;
     #endif
 
-    #if PMM_USE_GPS                             /* GPS */
+    #if PMM_USE_GPS
     PmmGps mPmmGps;
     #endif
 
-    //#if PMM_USE_SD       // is commented so it can be an argument for the packages objects init                       /* SD */
+    #if PMM_USE_SD
     PmmSd mPmmSd;
-    //#endif
+    #endif
 
+        // Packages
+    PmmPackageDataLog mPmmPackageDataLog;
+    PmmPackageMessageLog mPmmPackageMessageLog;
+    PmmPortsReception mPmmPortsReception;
 };
 
 #endif

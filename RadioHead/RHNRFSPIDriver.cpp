@@ -30,7 +30,7 @@ bool RHNRFSPIDriver::init()
 // Low level commands for interfacing with the device
 uint8_t RHNRFSPIDriver::spiCommand(uint8_t command)
 {
-    uint8_t status;
+    uint8_t status = 0; // By Henrique Bruno. Set as 0 to remove the annoying 'status' may be used uninitialized in this function [-Wmaybe-uninitialized] message.
     ATOMIC_BLOCK_START;
     _spi.beginTransaction();
     digitalWrite(_slaveSelectPin, LOW);
@@ -43,7 +43,7 @@ uint8_t RHNRFSPIDriver::spiCommand(uint8_t command)
 
 uint8_t RHNRFSPIDriver::spiRead(uint8_t reg)
 {
-    uint8_t val;
+    uint8_t val = 0; // By Henrique Bruno. Set as 0 to remove the annoying 'val' may be used uninitialized in this function [-Wmaybe-uninitialized] message.
     ATOMIC_BLOCK_START;
     _spi.beginTransaction();
     digitalWrite(_slaveSelectPin, LOW);

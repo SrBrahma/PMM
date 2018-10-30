@@ -2,7 +2,6 @@
 #define PMM_TELEMETRY_PROTOCOLS_h
 
 #include <stdint.h>                     // For uintx_t types
-#include "pmmTelemetry/pmmTelemetry.h"  // For PMM_TELEMETRY_MAX_PAYLOAD_LENGTH define
 
 // Addresses
 #define RH_THIS_SYSTEM_ADDRESS  0x01    // You may change it!
@@ -55,7 +54,8 @@
     // Total length is
     #define PMM_NEO_PROTOCOL_HEADER_LENGTH              6   // The minimum length, counting
 
-    #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
+    // The define below is defined on pmmTelemetry.h, as there was happening a circular dependency!
+    // #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
 
 // Define instead of typedef enum, because I didn't wanted to use 4 bytes in telemetryProtocolsContentStructType just to store the few protocols
 #define PMM_NEO_PROTOCOL_ID                 1

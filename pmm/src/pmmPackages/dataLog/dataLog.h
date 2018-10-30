@@ -53,31 +53,41 @@
     // Total header length is equal to...
     #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
 
-    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
+    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
 
 
 
 // LogInfo Defines
+    //    --------------------- 1.0 ------------------------
+    //    [Positions] : [ Function ] : [ Length in Bytes ]
 
+    //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
+    //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+    //    c) [ 3 ] : [ Packet X of (Y - 1) ........ ] : [ 1 ]
+    //    d) [4,5] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+
+    //                        Total header length = 6 bytes.
+    //    --------------------------------------------------
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB          0
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB          1
-    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB         2
-    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB         3
-    #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   4
+    #define PMM_PORT_LOG_INFO_INDEX_SESSION_ID              2
+    #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   3
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB         4
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB         5
+    
     // Total header length is equal to...
-    #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 5
+    #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 6
 
     #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
 
     #define PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH        3000 // A slightly random number. Thinking only on the strings,
                                                                  //   which occupies most of the length, 50 variables * 30 chars = 1500 bytes. 3kB for 
     
-    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   (PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) \
-                                                            / (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   (PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH
     // Ceiling without ceil(). https://stackoverflow.com/a/2745086
     // Wrote it for initializing the LogInfo arrays in telemetry format.
-    // packets = (packageRawSize + (headerSize * packets) + packetSize - 1) / packetSize
-    // with some math magic trick, it can be rewritten as
+    // packets = (rawPayloadTotalLength + (headerSize * packets) + packetSize - 1) / packetSize
+    // with some math magic tricks, it can be rewritten as
     // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
 
 
@@ -91,7 +101,7 @@ public:
 
     PmmPackageDataLog();
 
-    int init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
     // Transmission
     void updateLogInfoRawPayload(); // Updates the LogInfo

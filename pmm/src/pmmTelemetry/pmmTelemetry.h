@@ -5,18 +5,23 @@
 #ifndef PMM_TELEMETRY_h
 #define PMM_TELEMETRY_h
 
-#include <RH_RF95.h>
-#include <pmmConsts.h>
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
-#include "pmmPackages/ports.h"
 
 // General defines
+
+#include <RH_RF95.h>                            // Our current RF module!
+#include <pmmConsts.h>                          // For the pinout of the RF module
+#include "pmmErrorsCentral/pmmErrorsCentral.h"  // For errors reporting and health status
+#include "pmmPackages/ports.h"                  // To inform the received packets and direct them to the respective Packages
+#include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
+
+
 #define PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH   255 // Max LoRa Packet Size!
 
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
+#define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH     PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
 
-#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH 
+#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH // Since this is currently the only protocol.
+
 
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8

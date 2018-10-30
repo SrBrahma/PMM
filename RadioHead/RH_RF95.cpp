@@ -5,10 +5,10 @@
 
 
 #include <RH_RF95.h>
-
-#include <pmmTelemetryProtocols.h>
-#include "crc16.h"
+#include "crc.h"
 #include "byteSelection.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
 
 // Interrupt vectors for the 3 Arduino interrupt pins
 // Each interrupt can be handled by a different instance of RH_RF95, allowing you to have

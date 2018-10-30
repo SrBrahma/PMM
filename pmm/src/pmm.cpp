@@ -24,6 +24,7 @@
     #include "pmmSd/pmmSd.h"
 #endif
 
+#include "pmmEeprom/pmmEeprom.h"
 
 // Packages
 #include "pmmPackages/dataLog/dataLog.h"
@@ -90,7 +91,7 @@ void Pmm::init()
         mPmmPackageDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
-
+    
     mPackageLogId = 0;
     mPackageTimeMs = 0;
 

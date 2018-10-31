@@ -10,6 +10,7 @@
 #include "pmmGps/pmmGps.h" // for GPS struct
 #include "pmmImu/pmmImu.h" // for IMU struct
 #include "pmmTelemetry/pmmTelemetry.h"
+#include "pmmSd/pmmSd.h"
 
 
 
@@ -101,7 +102,7 @@ public:
 
     PmmPackageDataLog();
 
-    int init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
     // Transmission
     void updateLogInfoRawPayload(); // Updates the LogInfo
@@ -149,7 +150,7 @@ public:
 private:
 
     // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
-    void addPackageBasicInfo(uint8_t* miniSessionIdPtr, uint32_t* packageId, uint32_t* packageTimeMs);
+    void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
 
     uint8_t variableTypeToVariableSize(uint8_t variableType);
@@ -169,7 +170,7 @@ private:
 
 
     PmmTelemetry* mPmmTelemetry;
-
+    PmmSd* mPmmSd;
 
     // Default variables added in every DataLog package:
     uint8_t*  mSystemSessionPtr;

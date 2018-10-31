@@ -3,10 +3,29 @@
  * PMM pins, PMM only macros etc.
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <Arduino.h> // for uint32_t type
-
 #ifndef PMM_CONSTS_h
 #define PMM_CONSTS_h
+
+#include <Arduino.h>    // For LED_BUILTIN define
+
+// =======================================================================
+//  General
+// =======================================================================
+#define PMM_THIS_NAME_DEFINE            "Aurora" // Used in pmmPackageString.cpp.
+
+#define PMM_IS_PDA                      1
+
+#define PMM_USE_BUZZER                  0
+#define PMM_USE_LED_RECOVERY            0
+#define PMM_USE_LED_ERRORS              0
+#define PMM_USE_LED_ALL_OK_AND_RF       0
+
+#define PMM_PIN_BUZZER                  99
+#define PMM_PIN_LED_RECOVERY            99
+#define PMM_PIN_LED_ERRORS              99
+#define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
+
+#define PMM_VARIABLE_STRING_LENGTH      22
 
 
 
@@ -16,10 +35,11 @@
 #define PMM_DEBUG_SERIAL                    1
 #define PMM_DEBUG_SERIAL_MORE               1 // Additional debug messages.
 
-#define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 /* [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
-computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
-the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket! */
+#define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
+// computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
+// the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket!
 #define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
+
 
 #if PMM_DEBUG_SERIAL
     #define PMM_DEBUG_PRINT(x) Serial.println(x)
@@ -27,50 +47,29 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
     #define PMM_DEBUG_PRINT(x) do {} while (0)
 #endif
 
+
 #if PMM_DEBUG_SERIAL_MORE
     #define PMM_DEBUG_PRINT_MORE(x) Serial.println(x)
 #else
     #define PMM_DEBUG_PRINT_MORE(x) do {} while (0)
 #endif
 
-#define PMM_DEBUG_PRINT_IMU_MORE 1 // Prints "barometer updated!" etc
 
-
-
-// =======================================================================
-//  General
-// =======================================================================
-#define PMM_THIS_NAME_DEFINE        "Aurora" // Used in pmmPackageString.cpp.
-
-#define PMM_IS_PDA                  1
-
-#define PMM_USE_BUZZER              0
-#define PMM_USE_LED_RECOVERY        0
-#define PMM_USE_LED_ERRORS          0
-#define PMM_USE_LED_ALL_OK_AND_RF   0
-
-#define PMM_PIN_BUZZER                  99
-#define PMM_PIN_LED_RECOVERY            99
-#define PMM_PIN_LED_ERRORS              99
-#define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
-
-#define PMM_VARIABLE_STRING_LENGTH          22
-
-
+#define PMM_DEBUG_PRINT_IMU_MORE            1 // Prints "barometer updated!" etc
 
 
 
 // =======================================================================
 //  IMU
 // =======================================================================
-#define PMM_USE_IMU                 1
+#define PMM_USE_IMU             1
 
 
 
 // =======================================================================
 //  SD
 // =======================================================================
-#define PMM_USE_SD                  1
+#define PMM_USE_SD              1
 
 
 
@@ -84,7 +83,6 @@ the code will proceed, without Serial debugging. Great case you forgot to disabl
 // =======================================================================
 //  LoRa
 // =======================================================================
-
 #define PMM_RF_INIT_MAX_TRIES   10
 
 #define PMM_PIN_RFM95_CS        10

@@ -3,7 +3,7 @@
 
 #include "pmmEeprom/pmmEeprom.h"
 
-int init()
+int PmmEeprom::init()
 {
     // 1) Compare the PMM_EEPROM_VERSION_STRING with some addresses of the EEPROM, to check if this is the first time
     // this code is running (if the version changed, it also counts!)
@@ -21,18 +21,18 @@ int init()
     return 0;
 }
 
-uint8_t getSessionId()
+uint8_t PmmEeprom::getSessionId()
 {
     return EEPROM.read(PMM_EEPROM_INDEX_SESSION_ID);
 }
 
-void setSessionId(uint8_t value)
+void PmmEeprom::setSessionId(uint8_t value)
 {
     EEPROM.write(PMM_EEPROM_INDEX_SESSION_ID, value);
 }
 
 
-void writeDefaultValues()
+void PmmEeprom::writeDefaultValues()
 {
     uint8_t intendedVersionString[] = PMM_EEPROM_VERSION_STRING;
     unsigned counter;

@@ -14,7 +14,7 @@
 #define PMM_EEPROM_INDEX_SESSION_ID                     23
 #define PMM_EEPROM_DEFAULT_VALUE_SESSION_ID             0
 
-class pmmEeprom
+class PmmEeprom
 {
 public:
     int init();

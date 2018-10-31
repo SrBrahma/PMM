@@ -35,7 +35,11 @@
 
 void Pmm::init()
 {
-    // Debug
+
+    mMillis = 0;
+    mLoopId = 0;
+
+  // Debug
     #if PMM_DEBUG_SERIAL
         uint32_t serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
@@ -53,47 +57,53 @@ void Pmm::init()
     #endif
 
 
-    mPmmErrorsCentral.init(&mPackageLogId);
+    mPmmErrorsCentral.init(&mLoopId);
 
-    // Telemetry ====================================================================================
+
+  // Telemetry ====================================================================================
     #if PMM_USE_TELEMETRY
         mPmmTelemetry.init(&mPmmErrorsCentral);
     #endif
 
-    // Packages =====================================================================================
-    // PmmPackageDataLog
-    mPmmPackageDataLog.init(&mPmmTelemetry);
-    mPmmPackageDataLog.addPackageBasicInfo(&mPackageLogId, &mPackageTimeMs);
 
-    // PmmPackageMessageLog
-    mPmmPackageMessageLog.init(&mPackageLogId, &mPackageTimeMs, &mPmmTelemetry, &mPmmSd);
-
-    // PmmPortsReception
-    mPmmPortsReception.init(&mPmmPackageDataLog, &mPmmPackageMessageLog);
+  // SD ===========================================================================================
+    #if PMM_USE_SD
+        mPmmSd.init(&mPmmErrorsCentral);
+    #endif
 
 
-    // GPS ==========================================================================================
+  // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init(&mPmmErrorsCentral);
         mPmmPackageDataLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
-    // SD ===========================================================================================
-    #if PMM_USE_SD
-        mPmmSd.init(&mPmmErrorsCentral);
-    #endif
-
-
-    // IMU ==========================================================================================
+  // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init(&mPmmErrorsCentral);
         mPmmPackageDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
-    
-    mPackageLogId = 0;
-    mPackageTimeMs = 0;
+
+  // Packages =====================================================================================
+
+    // PmmPackageDataLog
+    mPmmPackageDataLog.init(&mPmmTelemetry, &mPmmSd, &mSessionId, &mLoopId, &mMillis);
+
+        #if PMM_USE_GPS
+            mPmmPackageDataLog.addGps(mPmmGps.getGpsStructPtr());
+        #endif
+        
+        #if PMM_USE_IMU
+            mPmmPackageDataLog.addImu(mPmmImu.getImuStructPtr());
+        #endif
+
+    // PmmPackageMessageLog
+    mPmmPackageMessageLog.init(&mLoopId, &mMillis, &mPmmTelemetry, &mPmmSd);
+
+    // PmmPortsReception
+    mPmmPortsReception.init(&mPmmPackageDataLog, &mPmmPackageMessageLog);
 
 
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
@@ -106,11 +116,8 @@ void Pmm::init()
 // Where EVERYTHING happens!
 void Pmm::update()
 {
-    //PMM_DEBUG_PRINT_MORE("Pmm [M]: Looped!");
-    //PMM_DEBUG_PRINT(i++);
 
-
-    mPackageTimeMs = millis();                  // Packet time, in miliseconds. (unsigned long)
+    mMillis = millis();
 
 
 
@@ -161,5 +168,5 @@ void Pmm::update()
     }*/
 
         //mPmmErrorsCentral.updateLedsAndBuzzer();
-    mPackageLogId ++;
+    mLoopId ++;
 }

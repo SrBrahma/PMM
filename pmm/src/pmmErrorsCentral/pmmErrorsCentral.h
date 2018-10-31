@@ -52,7 +52,7 @@ private:
 public:
     PmmErrorsCentral();
 
-    int init (const uint32_t* packageLogIdPtr);
+    int init(uint32_t* packageLogIdPtr);
 
     // Getters
     const pmmErrorStructType* getErrorsStructArray();

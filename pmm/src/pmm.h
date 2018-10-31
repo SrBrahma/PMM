@@ -39,7 +39,7 @@ public:
 
 private:
     uint8_t mSessionId;
-    uint32_t mPackageTimeMs, mPackageLogId;
+    uint32_t mMillis, mLoopId;
     
     PmmErrorsCentral mPmmErrorsCentral;
 

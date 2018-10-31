@@ -8,8 +8,9 @@
 
 #include "pmmConsts.h"
 #include "pmmPackages/dataLog/dataLog.h"
-#include "pmmTelemetry/pmmTelemetry.h"
 
+#include "pmmTelemetry/pmmTelemetry.h"
+#include "pmmSd/pmmSd.h"
 
 
 // These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
@@ -30,18 +31,20 @@ PmmPackageDataLog::PmmPackageDataLog()
 
 
 
-int PmmPackageDataLog::init(PmmTelemetry* pmmTelemetry, uint8_t* systemSessionPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmPackageDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
     mPmmTelemetry = pmmTelemetry;
-
+    mPmmSd = pmmSd;
+    
     mPackageLogSizeInBytes = 0;
     mLogNumberOfVariables = 0;
     mPackageLogInfoNumberOfPackets = 0; // For receptor.
 
     mSystemSessionPtr = systemSessionPtr;
+
     // These variables are always added to the package.
-    addPackageBasicInfo(miniSessionIdPtr, packageIdPtr, packageTimeMsPtr);
+    addPackageBasicInfo(packageIdPtr, packageTimeMsPtr);
 
     return 0;
 }
@@ -126,9 +129,8 @@ void PmmPackageDataLog::includeArrayInPackage(const char **variableName, uint8_t
 
 
 
-void PmmPackageDataLog::addPackageBasicInfo(uint8_t* miniSessionIdPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+void PmmPackageDataLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_MINI_SESSION_STRING, PMM_TELEMETRY_TYPE_UINT8,  miniSessionIdPtr);
     includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,           PMM_TELEMETRY_TYPE_UINT32, packageIdPtr);
     includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING,         PMM_TELEMETRY_TYPE_UINT32, packageTimeMsPtr);
 }

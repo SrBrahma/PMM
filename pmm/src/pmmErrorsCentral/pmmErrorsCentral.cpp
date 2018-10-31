@@ -2,6 +2,8 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+#include <Arduino.h> // For PROGMEM. Also includes uint32_t type, so no stdint.h include needed.
+
 #include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 const PROGMEM char *pmmErrorString[ERRORS_CODE_AMOUNT] = {
@@ -30,13 +32,14 @@ PmmErrorsCentral::PmmErrorsCentral()
 {
 }
 
-int PmmErrorsCentral::init (const uint32_t* packageLogIdPtr)
+int PmmErrorsCentral::init(uint32_t* packageLogIdPtr)
 {
     mPackageLogIdPtr = packageLogIdPtr;
     mActualNumberOfErrors = 0;
     mSdIsWorking = mTelemetryIsWorking = mGpsIsWorking = mBarometerIsWorking = mAccelerometerIsWorking = mGyroscopeIsWorking = mMagnetometerIsWorking = 1; // All systems starts functional
     return 0;
 }
+
 
 // Getters
 const pmmErrorStructType* PmmErrorsCentral::getErrorsStructArray() { return mErrorsStructArray; }
@@ -48,6 +51,7 @@ int PmmErrorsCentral::getBarometerIsWorking() { return mBarometerIsWorking; }
 int PmmErrorsCentral::getAccelerometerIsWorking() { return mAccelerometerIsWorking; }
 int PmmErrorsCentral::getGyroscopeIsWorking() { return mGyroscopeIsWorking; }
 int PmmErrorsCentral::getMagnetometerIsWorking() { return mMagnetometerIsWorking; }
+
 
 // Setters
 void PmmErrorsCentral::reportErrorByCode(pmmErrorCodeType errorCode)
@@ -93,6 +97,7 @@ void PmmErrorsCentral::reportErrorByCode(pmmErrorCodeType errorCode)
             break;
     } // End of switch
 } // End of function
+
 
 void PmmErrorsCentral::setSdIsWorking(int value)
 {

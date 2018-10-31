@@ -4,6 +4,8 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+#include <Arduino.h> // For PROGMEM. Also includes uint32_t type, so no stdint.h include needed.
+
 #include <pmmConsts.h>
 #include "pmmErrorsCentral/pmmErrorsCentral.h"
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"

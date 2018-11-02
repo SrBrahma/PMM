@@ -97,13 +97,12 @@ class PmmSd
 public:
     PmmSd();
     
-    int init(PmmErrorsCentral* pmmErrorsCentral);
+    int init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId);
 
-    int write(char *filename, char *arrayToWrite, int32_t length);
-    int writeStringToFilename(char *filename, char *arrayToWrite);
+    int println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
+    int write(char filename[], char arrayToWrite[], size_t length, uint8_t sourceAddress, uint8_t sourceSession = 0);
 
     bool getSdIsBusy();
-    char* getThisSessionNamePtr();
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 

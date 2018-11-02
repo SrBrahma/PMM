@@ -2,10 +2,9 @@
 #define PMM_PORT_STRING_h
 
 #include <stdint.h> // for uint32_t
-#include <pmmConsts.h>
+
 #include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmSd/pmmSd.h"
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 #define PMM_PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET   0
 #define PMM_PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET   1
@@ -14,7 +13,7 @@
 // Total header length is equal to...
 #define PMM_PORT_STRING_HEADER_LENGTH               4
 
-#define PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH (PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_STRING_HEADER_LENGTH)
+#define PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_STRING_HEADER_LENGTH)
 
 
 
@@ -32,7 +31,7 @@ public:
     uint8_t getActualNumberOfStrings();
     uint8_t getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId);
 
-    bool loadStringFromSd(char stringDestination[], uint16_t requestedStringId);
+    int loadStringFromSd(char stringDestination[], uint16_t requestedStringId);
 
 private:
     uint32_t* mPackageLogIdPtr;

@@ -11,19 +11,16 @@
 
 #include <RH_RF95.h>                            // Our current RF module!
 
-#include <pmmConsts.h>                          // For the pinout of the RF module
 #include "pmmErrorsCentral/pmmErrorsCentral.h"  // For errors reporting and health status
-#include "pmmPackages/ports.h"                  // To inform the received packets and direct them to the respective Packages
+
 #include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
 
 
 #define PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH   255 // Max LoRa Packet Size!
 
-#define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH     PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
+#define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH     (PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH)
 
 #define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH // Since this is currently the only protocol.
-
-
 
 #define PMM_TELEMETRY_QUEUE_LENGTH 8
 
@@ -36,8 +33,6 @@ class PmmTelemetry
         PMM_TELEMETRY_SEND_SMART_SIZES
     } pmmTelemetrySendType;
 
-
-
     typedef enum
     {
         PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
@@ -45,8 +40,6 @@ class PmmTelemetry
         PMM_TELEMETRY_QUEUE_PRIORITY_LOW,
         PMM_TELEMETRY_QUEUE_PRIORITY_DEFAULT
     } pmmTelemetryQueuePrioritiesType;
-
-
 
     typedef struct
     {
@@ -64,8 +57,11 @@ class PmmTelemetry
     } pmmTelemetryQueueStructType;
     
 public:
+
     PmmTelemetry();
+
     int init(PmmErrorsCentral *pmmErrorsCentral);
+
     int updateReception();
     int updateTransmission();
 
@@ -84,6 +80,7 @@ public:
 
 
 private:
+
     uint8_t mReceivedPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     telemetryPacketInfoStructType mReceivedPacketStatusStruct;
 
@@ -98,13 +95,6 @@ private:
     pmmTelemetryQueueStructType mDefaultPriorityQueueStruct;
 
     int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
-
-
-
-        //PmmTelemetry(); // https://stackoverflow.com/a/12927220
-
-
-
 
 };
 

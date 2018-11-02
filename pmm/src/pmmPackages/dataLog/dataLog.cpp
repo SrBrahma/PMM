@@ -15,7 +15,6 @@
 
 // These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
 // not listed here can be freely changed.
-const PROGMEM char PMM_DATA_LOG_PACKAGE_MINI_SESSION_STRING[] = "miniSessionID";
 const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]           = "packageID";
 const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]         = "packageTime(ms)";
 

@@ -16,7 +16,7 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
     //    --------------------------------------------------
     //
     unsigned variableCounter;
-    unsigned stringLength;
+    unsigned stringLength;              // The length withou null char!
     mLogInfoRawPayloadArrayLength = 0;  // Zero the length of the array.
 
 
@@ -45,7 +45,9 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
 // 3) Add the Variable strings
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
     {
-        stringLength = strnlen(mVariableNameArray[variableCounter], PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH - 1); // with strnlen we avoid mysterious broken strings
+        for (stringLength = 0;
+             stringLength < PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH && mVariableNameArray[variableCounter][stringLength];
+             stringLength++); // As I couldn't find a way to use strnlen, made it!
             
         memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
         mLogInfoRawPayloadArrayLength += stringLength;
@@ -58,8 +60,6 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
 
 void PmmPackageDataLog::updatePackageLogInfoInTelemetryFormat()
 {
-
-
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
     uint16_t payloadBytesInThisPacket;

@@ -13,7 +13,7 @@ RHGenericDriver::RHGenericDriver()
 
 bool RHGenericDriver::init()
 {
-    mThisAddress = RH_THIS_SYSTEM_ADDRESS;
+    mThisAddress = PMM_TELEMETRY_ADDRESS_THIS_SYSTEM;
 
     mInvalidReceivedPacketsCounter = 0,
     mSuccessfulReceivedPacketsCounter = 0;

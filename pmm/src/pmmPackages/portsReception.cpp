@@ -3,11 +3,11 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-
+#include "pmmPackages/ports.h"
 #include "pmmPackages/portsReception.h"
 #include "pmmPackages/dataLog/dataLog.h"
 #include "pmmPackages/messageLog/messageLog.h"
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h" // To know how to decompose the Port field from the received packet
 
 
 PmmPortsReception::PmmPortsReception()
@@ -26,13 +26,13 @@ void PmmPortsReception::receivedPacket(uint8_t payload[], telemetryPacketInfoStr
     // 1) Which kind of packet is it?
     switch(payload[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
     {
-        case PMM_PORT_LOG:
-            mPmmPackageDataLog->receivedPackageLog(payload, packetStatus);
+        case PMM_PORT_DATA_LOG:
+            mPmmPackageDataLog->receivedDataLog(payload, packetStatus);
             return;
         case PMM_PORT_LOG_INFO:
-            mPmmPackageDataLog->receivedPackageLogInfo(payload, packetStatus);
+            mPmmPackageDataLog->receivedLogInfo(payload, packetStatus);
             return;
-        case PMM_PORT_STRING:
+        case PMM_PORT_MESSAGE_LOG:
             mPmmPackageMessageLog->receivedPackageString(payload, packetStatus);
             return;
         case PMM_PORT_REQUEST:

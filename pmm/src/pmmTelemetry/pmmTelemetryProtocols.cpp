@@ -29,8 +29,8 @@ uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[]
 
                 // 1.2) Check the Destination address of this packet
                 // 1.2.1) Is the Destination address valid?
-                if (packetData[PMM_NEO_PROTOCOL_INDEX_DESTINATION] >= RH_INITIAL_FORBIDDEN_DESTINATION_ADDRESS &&
-                    packetData[PMM_NEO_PROTOCOL_INDEX_DESTINATION] <= RH_FINAL_FORBIDDEN_DESTINATION_ADDRESS)
+                if (packetData[PMM_NEO_PROTOCOL_INDEX_DESTINATION] >= PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION &&
+                    packetData[PMM_NEO_PROTOCOL_INDEX_DESTINATION] <= PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION)
                     return 0;
 
                 // 1.2.2) Is this system address the Destination of this packet, or are we in in promiscuous mode?
@@ -38,8 +38,8 @@ uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[]
                     return 0;
 
                 // 1.3) Check the Source address of this packet
-                if (packetData[PMM_NEO_PROTOCOL_INDEX_SOURCE] >= RH_INITIAL_FORBIDDEN_SOURCE_ADDRESS &&
-                    packetData[PMM_NEO_PROTOCOL_INDEX_SOURCE] <= RH_FINAL_FORBIDDEN_SOURCE_ADDRESS)
+                if (packetData[PMM_NEO_PROTOCOL_INDEX_SOURCE] >= PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE &&
+                    packetData[PMM_NEO_PROTOCOL_INDEX_SOURCE] <= PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE)
                     return 0;
 
                 return PMM_NEO_PROTOCOL_HEADER_LENGTH;

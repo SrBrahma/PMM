@@ -34,7 +34,7 @@
 /// \par Headers
 ///
 /// Each message sent and received by a RadioHead driver includes 4 headers:
-/// -TO The node address that the message is being sent to (broadcast RH_BROADCAST_ADDRESS (255) is permitted)
+/// -TO The node address that the message is being sent to (broadcast PMM_TELEMETRY_ADDRESS_BROADCAST (255) is permitted)
 /// -FROM The node address of the sending node
 /// -ID A message ID, distinct (over short time scales) for each message sent by a particilar node
 /// -FLAGS A bitmask of flags. The most significant 4 bits are reserved for use by RadioHead. The least

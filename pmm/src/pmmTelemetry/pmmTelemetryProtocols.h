@@ -4,33 +4,27 @@
 #include <stdint.h>                     // For uintx_t types
 
 // Addresses
-#define RH_THIS_SYSTEM_ADDRESS  0x01    // You may change it!
+#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM  0x01    // You may change it!
 
-    // Reserved addresses
-    #define RH_INITIAL_RESERVED_ADDRESS 0xF0
-
-        // Source only addresses
-            #define RH_INITIAL_FORBIDDEN_DESTINATION_ADDRESS 0xF0
-                // #define No source only reserved address for now!
-            #define RH_FINAL_FORBIDDEN_DESTINATION_ADDRESS   0xF8
-        // End of Soure only addresses
+    // Source only addresses
+        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION 0xF0
+            // #define No source only reserved address for now!
+        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION   0xF8
+    // End of Soure only addresses
 
 
-        // Can't be source or destination addresses. Note that it is between the two limits of the forbidden addresses!
-            #define RH_SELF_ADDRESS         0xF8    // Have some specifics uses in the code.
+    // Can't be source or destination addresses. Note that it is between the two limits of the forbidden addresses!
+        #define PMM_TELEMETRY_ADDRESS_SELF         0xF8    // Have some specifics uses in the code.
 
 
-        // Destination only addresses
-            #define RH_INITIAL_FORBIDDEN_SOURCE_ADDRESS 0xF8
+    // Destination only addresses
+        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE 0xF8
 
-            #define RH_TO_ALL_PDA_ADDRESS   0xFE    // Destination only.
-            #define RH_BROADCAST_ADDRESS    0xFF    // Destination only. This is the address that indicates a broadcast
+        #define PMM_TELEMETRY_ADDRESS_FINAL_FORBIDDEN_SOURCE   0xFE    // Destination only.
+        #define PMM_TELEMETRY_ADDRESS_BROADCAST    0xFF    // Destination only. This is the address that indicates a broadcast
 
-            #define RH_FINAL_FORBIDDEN_SOURCE_ADDRESS   0xFF
-        // End of Destination only addresses
-
-    #define RH_FINAL_RESERVED_ADDRESS   0xFF
-    // End of Reserved addresses
+        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE   0xFF
+    // End of Destination only addresses
     
 // End of addresses
 
@@ -93,13 +87,3 @@ uint8_t getProtocolHeaderLength(uint8_t protocol);
 // It also checks if the Destination Address of the received packet is the same as the address of this system.
 uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[], uint8_t bufferLength, uint8_t thisAddress, int promiscuousMode);
 
-
-
-
-
-
-
-
-
-
-//

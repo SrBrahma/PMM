@@ -6,11 +6,10 @@
 #ifndef PMM_PORT_LOG_h
 #define PMM_PORT_LOG_h
 
-#include "pmmConsts.h"
-#include "pmmGps/pmmGps.h" // for GPS struct
-#include "pmmImu/pmmImu.h" // for IMU struct
 #include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmSd/pmmSd.h"
+#include "pmmGps/pmmGps.h" // for GPS struct
+#include "pmmImu/pmmImu.h" // for IMU struct
 
 
 
@@ -54,7 +53,7 @@
     // Total header length is equal to...
     #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
 
-    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH
+    #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH)
 
 
 
@@ -79,19 +78,13 @@
     // Total header length is equal to...
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 6
 
-    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH
+    #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
 
-    #define PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH        3000 // A slightly random number. Thinking only on the strings,
-                                                                 //   which occupies most of the length, 50 variables * 30 chars = 1500 bytes. 3kB for 
+    #define PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH        2000 // A slightly random number. Thinking only on the strings, which occupies most of the
+                                                                 //  length, 50 variables * 30 chars = 1500 bytes. 2kB for to be sure it won't overflow.
     
-    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   (PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH
+    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   ((PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
     // Ceiling without ceil(). https://stackoverflow.com/a/2745086
-    // Wrote it for initializing the LogInfo arrays in telemetry format.
-    // packets = (rawPayloadTotalLength + (headerSize * packets) + packetSize - 1) / packetSize
-    // with some math magic tricks, it can be rewritten as
-    // packets = (packageRawSize + packetSize - 1) / (packetSize - headerSize)
-
-
 
 
 

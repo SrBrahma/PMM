@@ -26,7 +26,6 @@ void RH_RF95::getPacketInfoInStruct(uint8_t packet[], telemetryPacketInfoStructT
             packetStatusStruct->payloadLength       = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
             packetStatusStruct->rssi                = getLastRssi();
             packetStatusStruct->snr                 = getLastSNR();
-            packetStatusStruct->invalidAutoCrc      = mInvalidAutoLoraPayloadCrc;
     }
 
 }

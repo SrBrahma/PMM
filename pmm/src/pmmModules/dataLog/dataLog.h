@@ -189,10 +189,10 @@ private:
     uint8_t*  mSystemSessionPtr;
 
 
-    char*    mVariableNameArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableTypeArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableSizeArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
-    uint8_t* mVariableAddressArray[PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
+    char*    mVariableNameArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableTypeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableSizeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
+    uint8_t* mVariableAddressArray[PMM_MODULE_DATA_LOG_MAX_VARIABLES];
 
 
     uint16_t mLogInfoPackageCrc;

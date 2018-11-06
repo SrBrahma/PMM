@@ -31,5 +31,6 @@ void PmmModuleDataLog::receivedDataLog(uint8_t payload[], telemetryPacketInfoStr
     {
         return; // For now the package will just be ignored. On the future it can be more treated.
     }
-    if (payload[packetStatus->payloadLength]
+    if (payload[packetStatus->payloadLength])
+        return; // dumb
 }

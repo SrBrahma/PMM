@@ -62,7 +62,7 @@ typedef struct
     uint8_t destinationAddress;
     uint8_t port;
     uint8_t payloadLength;
-    bool    invalidAutoCrc;
+
     int8_t  snr;
     int16_t rssi; //in dBm
 } telemetryPacketInfoStructType;
@@ -75,8 +75,6 @@ typedef struct
     uint8_t port;
 } telemetryProtocolsContentStructType;
 
-#endif
-
 
 
 uint8_t getProtocolHeaderLength(uint8_t protocol);
@@ -87,3 +85,5 @@ uint8_t getProtocolHeaderLength(uint8_t protocol);
 // It also checks if the Destination Address of the received packet is the same as the address of this system.
 uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[], uint8_t bufferLength, uint8_t thisAddress, int promiscuousMode);
 
+
+#endif

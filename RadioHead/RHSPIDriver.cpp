@@ -83,7 +83,19 @@ uint8_t RHSPIDriver::spiBurstWrite(uint8_t reg, const uint8_t* src, uint8_t len)
     return status;
 }
 
-/* By Henrique Bruno - UFRJ Minerva Rockets*/
+void RHSPIDriver::setSlaveSelectPin(uint8_t slaveSelectPin)
+{
+    _slaveSelectPin = slaveSelectPin;
+}
+
+void RHSPIDriver::spiUsingInterrupt(uint8_t interruptNumber)
+{
+    _spi.usingInterrupt(interruptNumber);
+}
+
+// NOT USED ANYMORE, as briefly explained in RH_RF95.cpp
+// By Henrique Bruno - UFRJ Minerva Rockets 
+/*
 void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t** src, uint8_t sizesArray[], uint8_t numberVariables)
 {
     // uint8_t status = 0;
@@ -109,13 +121,4 @@ void RHSPIDriver::spiBurstWriteArrayOfPointersOfSmartSizes(uint8_t reg, uint8_t*
     _spi.endTransaction();
     ATOMIC_BLOCK_END;
 }
-
-void RHSPIDriver::setSlaveSelectPin(uint8_t slaveSelectPin)
-{
-    _slaveSelectPin = slaveSelectPin;
-}
-
-void RHSPIDriver::spiUsingInterrupt(uint8_t interruptNumber)
-{
-    _spi.usingInterrupt(interruptNumber);
-}
+*/

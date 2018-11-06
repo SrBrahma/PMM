@@ -1,11 +1,11 @@
 #include "crc.h"
-#include "pmmPackages/dataLog/dataLog.h"
+#include "pmmModules/dataLog/dataLog.h"
 #include <string.h>
 
 
 // 02/11/2018, Ok.
 // LogInfo in Telemetry format, for transmission.
-void PmmPackageDataLog::updateLogInfoCombinedPayload()
+void PmmModuleDataLog::updateLogInfoCombinedPayload()
 {
     // As stated in Telemetry Packages Guide, the LogInfo Package payload is
     // --------------------------------------------------
@@ -52,7 +52,7 @@ void PmmPackageDataLog::updateLogInfoCombinedPayload()
         // As I couldn't find a way to use strnlen, made it!
         // Again, the stringLength doesn't include the '\0'.
         for (stringLength = 0;
-             ((stringLength < (PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH - 1)) && mVariableNameArray[variableCounter][stringLength]); // - 1 as the MAX_STRING_LENGTH includes the '\0'.
+             ((stringLength < (PMM_MODULE_DATA_LOG_MAX_STRING_LENGTH - 1)) && mVariableNameArray[variableCounter][stringLength]); // - 1 as the MAX_STRING_LENGTH includes the '\0'.
              stringLength++); 
             
         memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
@@ -64,7 +64,7 @@ void PmmPackageDataLog::updateLogInfoCombinedPayload()
 
 
 
-void PmmPackageDataLog::updateLogInfoInTelemetryFormat()
+void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
 {
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;

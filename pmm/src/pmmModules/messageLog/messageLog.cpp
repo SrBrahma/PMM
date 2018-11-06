@@ -1,11 +1,11 @@
 
 #include <stdint.h> // for uint32_t
 #include <pmmConsts.h>
-#include "pmmPackages/messageLog/messageLog.h" // antes era: #include <pmmPackages/pmmPortString.h>
+#include "pmmModules/messageLog/messageLog.h" // antes era: #include <pmmPackages/pmmPortString.h>
 #include <crc.h>
 #include <byteSelection.h>
 
-int PmmPackageMessageLog::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
+int PmmModuleMessageLog::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
 {
     mPmmTelemetry = pmmTelemetry;
     mPmmSd = pmmSd;
@@ -16,26 +16,26 @@ int PmmPackageMessageLog::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMi
 }
 
 // Adds a little message header, ex: [19402ms 92112id] Parachutes Deployed
-int PmmPackageMessageLog::addString(char *string)
+int PmmModuleMessageLog::addString(char *string)
 {
     snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string); // Adds the time and the Package Log Id.
     
     return 0;
 }
 
-int PmmPackageMessageLog::addRawString(char *string)    // Won't add the time and the Package Log Id.
+int PmmModuleMessageLog::addRawString(char *string)    // Won't add the time and the Package Log Id.
 {
     snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "%s", string);
     return 0;
 }
 
-int PmmPackageMessageLog::loadStringFromSd(char stringDestination[], uint16_t requestedStringId)
+int PmmModuleMessageLog::loadStringFromSd(char stringDestination[], uint16_t requestedStringId)
 {
     return 0;
 }
 
 // As the payload length for now is 255 (with RFM95w and other modules like APC220), there is no need for now to break the String Package into packets.
-uint8_t PmmPackageMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
+uint8_t PmmModuleMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
 {
     // Port format is in pmmPortString.h
 
@@ -78,4 +78,4 @@ uint8_t PmmPackageMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, 
 }
 
 
-uint8_t PmmPackageMessageLog::getActualNumberOfStrings() { return mActualNumberOfStrings;}
+uint8_t PmmModuleMessageLog::getActualNumberOfStrings() { return mActualNumberOfStrings;}

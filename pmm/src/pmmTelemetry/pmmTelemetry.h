@@ -27,11 +27,6 @@
 
 class PmmTelemetry
 {
-    typedef enum
-    {
-        PMM_TELEMETRY_SEND,
-        PMM_TELEMETRY_SEND_SMART_SIZES
-    } pmmTelemetrySendType;
 
     typedef enum
     {
@@ -43,13 +38,10 @@ class PmmTelemetry
 
     typedef struct
     {
-        pmmTelemetrySendType sendTypeArray[PMM_TELEMETRY_QUEUE_LENGTH];
-        uint8_t** uint8_tPtrToPtrArray[PMM_TELEMETRY_QUEUE_LENGTH]; // Used in sendArrayOfPointersOfSmartSizes() (as the pointer of data array)
-        uint8_t*  uint8_tPtrArray[PMM_TELEMETRY_QUEUE_LENGTH];      // Used in send() (as the data array) and the sendArrayOfPointersOfSmartSizes() (the sizes array)
-        uint8_t   numberVariablesArray[PMM_TELEMETRY_QUEUE_LENGTH]; // Used in sendArrayOfPointersOfSmartSizes()
-        uint8_t   lengthInBytesArray[PMM_TELEMETRY_QUEUE_LENGTH];   // Used in send() and the sendArrayOfPointersOfSmartSizes()
-
         telemetryProtocolsContentStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
+
+        uint8_t*  uint8_tPtrArray[PMM_TELEMETRY_QUEUE_LENGTH];      // Used in send(), as the data array
+        uint8_t   lengthInBytesArray[PMM_TELEMETRY_QUEUE_LENGTH];   // Used in send(), as the length of the data array
 
         uint8_t   actualIndex;
         uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
@@ -67,17 +59,17 @@ public:
 
     int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
-    int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
-                                 telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
-
     uint8_t* getReceivedPacketArray();
+    
     telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();
 
     //void setPackageLogInfoReceivedFunctionPtr
     //void setPackageStringReceivedFunctionPtr
     //void setPackageRequestReceivedFunctionPtr;
 
-
+    // NOT USED ANYMORE
+    //int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
+    //                             telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
 private:
 

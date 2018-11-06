@@ -24,9 +24,9 @@
 #endif
 
 //Packages
-#include "pmmPackages/dataLog/dataLog.h"
-#include "pmmPackages/messageLog/messageLog.h"
-#include "pmmPackages/portsReception.h"
+#include "pmmModules/dataLog/dataLog.h"
+#include "pmmModules/messageLog/messageLog.h"
+#include "pmmModules/portsReception.h"
 
 
 
@@ -58,8 +58,8 @@ private:
     #endif
 
         // Packages
-    PmmPackageDataLog mPmmPackageDataLog;
-    PmmPackageMessageLog mPmmPackageMessageLog;
+    PmmModuleDataLog mPmmModuleDataLog;
+    PmmModuleMessageLog mPmmModuleMessageLog;
     PmmPortsReception mPmmPortsReception;
 };
 

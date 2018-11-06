@@ -30,9 +30,9 @@
 
 
 // Packages
-#include "pmmPackages/dataLog/dataLog.h"
-#include "pmmPackages/messageLog/messageLog.h"
-#include "pmmPackages/portsReception.h"
+#include "pmmModules/dataLog/dataLog.h"
+#include "pmmModules/messageLog/messageLog.h"
+#include "pmmModules/portsReception.h"
 
 
 
@@ -78,39 +78,39 @@ void Pmm::init()
   // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init(&mPmmErrorsCentral);
-        mPmmPackageDataLog.addGps(mPmmGps.getGpsStructPtr());
+        mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
   // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init(&mPmmErrorsCentral);
-        mPmmPackageDataLog.addImu(mPmmImu.getImuStructPtr());
+        mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
 
   // Packages =====================================================================================
 
-    // PmmPackageDataLog
-    mPmmPackageDataLog.init(&mPmmTelemetry, &mPmmSd, &mSessionId, &mLoopId, &mMillis);
+    // PmmModuleDataLog
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, &mSessionId, &mLoopId, &mMillis);
 
         #if PMM_USE_GPS
-            mPmmPackageDataLog.addGps(mPmmGps.getGpsStructPtr());
+            mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
         #endif
         
         #if PMM_USE_IMU
-            mPmmPackageDataLog.addImu(mPmmImu.getImuStructPtr());
+            mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
         #endif
 
-    // PmmPackageMessageLog
-    mPmmPackageMessageLog.init(&mLoopId, &mMillis, &mPmmTelemetry, &mPmmSd);
+    // PmmModuleMessageLog
+    mPmmModuleMessageLog.init(&mLoopId, &mMillis, &mPmmTelemetry, &mPmmSd);
 
     // PmmPortsReception
-    mPmmPortsReception.init(&mPmmPackageDataLog, &mPmmPackageMessageLog);
+    mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
 
 
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
-    mPmmPackageDataLog.debugPrintLogHeader();
+    mPmmModuleDataLog.debugPrintLogHeader();
 }
 
 
@@ -144,7 +144,7 @@ void Pmm::update()
 
 
     #if PMM_DEBUG_SERIAL
-        mPmmPackageDataLog.debugPrintLogContent();
+        mPmmModuleDataLog.debugPrintLogContent();
         Serial.println();
     #endif
 

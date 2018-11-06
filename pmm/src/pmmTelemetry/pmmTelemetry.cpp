@@ -100,31 +100,11 @@ int PmmTelemetry::updateTransmission()
     else
         return 0; // Nothing to send!
 
-
-    // 4) Which kind of send is it? A normal send(), or a sendOfSmartSizes? (Or a future kind of send!)
-    // Then, send!
-    switch(queueStructPtr->sendTypeArray[queueStructPtr->actualIndex])
-    {
-        case PMM_TELEMETRY_SEND:
-            mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
-                       queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
-                      &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
-            break;
-
-        case PMM_TELEMETRY_SEND_SMART_SIZES:
-            mRf95.sendArrayOfPointersOfSmartSizes(
-                queueStructPtr->uint8_tPtrToPtrArray[queueStructPtr->actualIndex], // The array of data array
-                queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],      // The sizes array
-                queueStructPtr->numberVariablesArray[queueStructPtr->actualIndex], // The number of variables
+    // 4) Send it! On the future other options of telemetry may be added. This a little problem to who will work with my code on the future. 'Boa sorte', little fella.
+    mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
                 queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
-               &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]);  // The total byte size
-            break;
+                &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
 
-        default:
-            // Error here! Invalid type! Treat it on the future!
-            break;
-
-    } // End of switch
 
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
@@ -207,8 +187,6 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
     if (newItemIndex == -1)
         return 1;   // If no available space on the queue, return 1.
 
-
-    pmmTelemetryQueueStructPtr->sendTypeArray[newItemIndex] = PMM_TELEMETRY_SEND;
     pmmTelemetryQueueStructPtr->uint8_tPtrArray[newItemIndex] = dataArray;
     pmmTelemetryQueueStructPtr->lengthInBytesArray[newItemIndex] = totalByteSize;
     pmmTelemetryQueueStructPtr->protocolsContentStructArray[newItemIndex] = protocolsContentStruct;
@@ -216,9 +194,19 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
     return 0;
 }
 
+// Getters
+uint8_t* PmmTelemetry::getReceivedPacketArray()
+{
+    return mReceivedPayload;
+}
 
+telemetryPacketInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
+{
+    return &mReceivedPacketStatusStruct;
+}
 
-/* Returns 0 if added to the queue successfully, 1 ifn't. */
+// NOT USED ANYMORE. Will be removed someday. Returns 0 if added to the queue successfully, 1 ifn't.
+/*
 int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
@@ -236,16 +224,4 @@ int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8
     pmmTelemetryQueueStructPtr->protocolsContentStructArray [newItemIndex] = protocolsContentStruct;
 
     return 0;
-}
-
-
-// Getters
-uint8_t* PmmTelemetry::getReceivedPacketArray()
-{
-    return mReceivedPayload;
-}
-
-telemetryPacketInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
-{
-    return &mReceivedPacketStatusStruct;
-}
+}*/

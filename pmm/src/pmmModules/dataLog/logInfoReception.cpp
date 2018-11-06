@@ -1,9 +1,9 @@
-/* PmmPackageDataLog.cpp
+/* PmmModuleDataLog.cpp
  * Defines the Package Log (MLOG) and the Package Log Information (MLIN).
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include "pmmPackages/dataLog/dataLog.h"
+#include "pmmModules/dataLog/dataLog.h"
 #include <pmmConsts.h>
 #include <crc.h>
 
@@ -12,7 +12,7 @@
 
 
 // Received Package Log Info Package
-void PmmPackageDataLog::receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmModuleDataLog::receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;
@@ -58,7 +58,7 @@ void PmmPackageDataLog::receivedLogInfo(uint8_t payload[], telemetryPacketInfoSt
 
 
 
-void PmmPackageDataLog::unitePackageInfoPackets()
+void PmmModuleDataLog::unitePackageInfoPackets()
 {
     unsigned packetCounter;
     unsigned payloadLength;

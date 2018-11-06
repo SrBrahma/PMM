@@ -1,7 +1,7 @@
-/* PmmPackageDataLog.h
+/* PmmModuleDataLog.h
  * Code for the Inertial Measure Unit (IMU!)
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #ifndef PMM_PORT_LOG_h
 #define PMM_PORT_LOG_h
@@ -14,44 +14,43 @@
 
 
 // 000X 0-1 (1 byte)
-#define PMM_TELEMETRY_TYPE_UINT8    0
-#define PMM_TELEMETRY_TYPE_INT8     1
+#define PMM_EXTENSION_DATA_LOG_TYPE_UINT8    0
+#define PMM_EXTENSION_DATA_LOG_TYPE_INT8     1
 
 // 00X0 2-3 (2 bytes)
-#define PMM_TELEMETRY_TYPE_UINT16   2
-#define PMM_TELEMETRY_TYPE_INT16    3
+#define PMM_EXTENSION_DATA_LOG_TYPE_UINT16   2
+#define PMM_EXTENSION_DATA_LOG_TYPE_INT16    3
 
 // 0X00 4-8 (4 bytes)
-#define PMM_TELEMETRY_TYPE_UINT32   4
-#define PMM_TELEMETRY_TYPE_INT32    5
-#define PMM_TELEMETRY_TYPE_FLOAT    6
+#define PMM_EXTENSION_DATA_LOG_TYPE_UINT32   4
+#define PMM_EXTENSION_DATA_LOG_TYPE_INT32    5
+#define PMM_EXTENSION_DATA_LOG_TYPE_FLOAT    6
 
 // X000 8-15 (8 bytes)
-#define PMM_TELEMETRY_TYPE_INT64    8
-#define PMM_TELEMETRY_TYPE_UINT64   9
-#define PMM_TELEMETRY_TYPE_DOUBLE   10
+#define PMM_EXTENSION_DATA_LOG_TYPE_INT64    8
+#define PMM_EXTENSION_DATA_LOG_TYPE_UINT64   9
+#define PMM_EXTENSION_DATA_LOG_TYPE_DOUBLE   10
 
 
 
 // DataLog and LogInfo Defines (Which I will as DATA_LOG anyway)
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_VARIABLES              50  // This must be the same for the transmitter and the receptor, for now.
+    #define PMM_EXTENSION_DATA_LOG_MAX_VARIABLES            50  // This must be the same for the transmitter and the receptor, for now.
 
 
 
 // DataLog Defines
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30 // To avoid really big faulty strings that would mess the system. Includes the '\0'.
+    #define PMM_EXTENSION_DATA_LOG_MAX_STRING_LENGTH        30 // To avoid really big faulty strings that would mess the system. Includes the '\0'.
 
-    #define PMM_PORT_DATA_LOG_INDEX_CRC_HEADER              0
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_8_HEADER            0
     #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
     #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_CRC_LSB        2
     #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_CRC_MSB        3
-    #define PMM_PORT_DATA_LOG_INDEX_LOG_LENGTH              4
-    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD_LSB      5
-    #define PMM_PORT_DATA_LOG_INDEX_CRC_OF_PAYLOAD_MSB      6
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_LSB      4
+    #define PMM_PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_MSB      5
     // Total header length is equal to...
-    #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 7
+    #define PMM_PORT_DATA_LOG_HEADER_LENGTH                 6
 
     #define PMM_PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_DATA_LOG_HEADER_LENGTH)
 
@@ -88,17 +87,18 @@
 
 
 
-class PmmPackageDataLog // Intended to have >1 Objects of this class, one for each DataLog Package
+class PmmModuleDataLog // Intended to have >1 Objects of this class, one for each DataLog Package
 {
 
 public:
 
-    PmmPackageDataLog();
+    PmmModuleDataLog();
 
     int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
     // Transmission
     void updateLogInfoRawPayload(); // Updates the LogInfo
+    int sendDataLog();
 
 
     // Reception
@@ -106,7 +106,7 @@ public:
     void receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
 
 
-    // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
+    // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
     void addMagnetometer     (void* magnetometerArray);
     void addGyroscope        (void* gyroscopeArray);
     void addAccelerometer    (void* accelerometerArray);
@@ -118,7 +118,7 @@ public:
     void addGps(pmmGpsStructType* pmmGpsStruct);
 
     // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
-    // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_TELEMETRY_TYPE_UINT8;
+    // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_EXTENSION_DATA_LOG_TYPE_UINT8;
     void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
 
 
@@ -142,7 +142,7 @@ public:
 
 private:
 
-    // Add variables to the package log. The types are specified in PmmPackageDataLog.cpp.
+    // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
 
@@ -169,10 +169,10 @@ private:
     uint8_t*  mSystemSessionPtr;
 
 
-    char*    mVariableNameArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableTypeArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableSizeArray   [PMM_PACKAGE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
-    uint8_t* mVariableAddressArray[PMM_PACKAGE_DATA_LOG_MAX_VARIABLES];
+    char*    mVariableNameArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableTypeArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
+    uint8_t  mVariableSizeArray   [PMM_EXTENSION_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
+    uint8_t* mVariableAddressArray[PMM_EXTENSION_DATA_LOG_MAX_VARIABLES];
 
 
     uint16_t mLogInfoPackageCrc;

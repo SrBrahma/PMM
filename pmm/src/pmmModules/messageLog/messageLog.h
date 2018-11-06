@@ -18,7 +18,7 @@
 
 
 
-class PmmPackageMessageLog
+class PmmModuleMessageLog
 {
 
 public:

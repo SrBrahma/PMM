@@ -33,15 +33,15 @@
 
 
 
-// DataLog and LogInfo Defines (Which I will as DATA_LOG anyway)
+// DataLog AND LogInfo Defines (Which I will call as DATA_LOG)
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_VARIABLES              50  // This must be the same for the transmitter and the receptor, for now.
-
+    #define PMM_PACKAGE_DATA_LOG_MAX_VARIABLES              50  // This must be the same value for the transmitter and the receptor.
+    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30  // The maximum Variable String. Includes the '\0'.
 
 
 // DataLog Defines
 
-    #define PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH          30 // To avoid really big faulty strings that would mess the system. Includes the '\0'.
+    
 
     #define PMM_PORT_DATA_LOG_INDEX_CRC_HEADER              0
     #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
@@ -78,13 +78,32 @@
     // Total header length is equal to...
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 6
 
+
+    //    -------------- LogInfo Payload 1.0 ---------------
+    //    [Positions] : [ Function ] : [ Length in Bytes ]
+    //
+    //    a) [ 6 ] : [ Number of Variables ] : [ 1 ]
+    //    b) [7,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
+    //    c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
+    //    
+    //    Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength
+    //    --------------------------------------------------
+
+    // The maximum payload length per packet.
     #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
 
-    #define PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH        2000 // A slightly random number. Thinking only on the strings, which occupies most of the
-                                                                 //  length, 50 variables * 30 chars = 1500 bytes. 2kB for to be sure it won't overflow.
-    
-    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   ((PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH + PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
-    // Ceiling without ceil(). https://stackoverflow.com/a/2745086
+    // When sending the types of the variables (4 bits each type), they are grouped into 1 byte, to make the telemetry packet smaller (read the Telemetry Guide).
+    //   If the number of variables is odd, the last variable type won't be grouped with another variable type, as there isn't another one,
+    //   but it will still take 1 byte on the telemetry packet to send it. So, it's the same as: maxLengthVariablesType = ceil(numberVariables/2).
+    #define PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH     ((PMM_PACKAGE_DATA_LOG_MAX_VARIABLES + 2 - 1) / 2)
+                                                            // Ceiling without ceil(). https://stackoverflow.com/a/2745086
+
+    // The total payload length, combining all the packets.
+    #define PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH   (1 + PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH + PMM_PACKAGE_DATA_LOG_MAX_VARIABLES*PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH)
+   
+    // How many packets are needed to send the Combined Payload.
+    #define PMM_PORT_LOG_INFO_MAX_PACKETS                   ((PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH + PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
+                                                            // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
 
 
@@ -98,7 +117,7 @@ public:
     int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
     // Transmission
-    void updateLogInfoRawPayload(); // Updates the LogInfo
+    void updateLogInfoCombinedPayload(); // Updates the LogInfo
 
 
     // Reception
@@ -153,7 +172,7 @@ private:
 
     // Build the Package Log Info Package
     void updatePackageLogInfoRaw();
-    void updatePackageLogInfoInTelemetryFormat();
+    void updateLogInfoInTelemetryFormat();
 
 
     // Uses the received packets via telemetry to get the Package Log Info
@@ -180,7 +199,7 @@ private:
     uint8_t  mPackageLogSizeInBytes;
 
 
-    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_RAW_PAYLOAD_MAX_LENGTH];
+    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
     uint16_t mLogInfoRawPayloadArrayLength;
 
 

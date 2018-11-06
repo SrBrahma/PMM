@@ -3,8 +3,9 @@
 #include <string.h>
 
 
+// 02/11/2018, Ok.
 // LogInfo in Telemetry format, for transmission.
-void PmmPackageDataLog::updateLogInfoRawPayload()
+void PmmPackageDataLog::updateLogInfoCombinedPayload()
 {
     // As stated in Telemetry Packages Guide, the LogInfo Package payload is
     // --------------------------------------------------
@@ -17,37 +18,42 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
     //
     unsigned variableCounter;
     unsigned stringLength;              // The length withou null char!
+
     mLogInfoRawPayloadArrayLength = 0;  // Zero the length of the array.
 
 
-
-// 1) Add the Number of variables
+// 1) Add the "Number of variables"
     mPackageLogInfoRawArray[0] = mLogNumberOfVariables;
     mLogInfoRawPayloadArrayLength ++;
 
 
+// 2) Add the "Variable types"
 
-// 2) Add the Variable types
-
-    // Adds the variables types in groups of two, as the types are always <= 4 bits, the group makes 8 bits.
+    // 2.1) Adds the variables types in groups of two, as the types are always <= 4 bits, the group makes 8 bits.
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
     {
-        if (!variableCounter % 2) // If the number is even (rest of division by 2 is 0)
+        if (!variableCounter % 2) // If the counter is even (rest of division by 2 is 0)
             mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] = (mVariableTypeArray[variableCounter] << 4);
-        else // So the number is odd (rest of division by 2 is 1)
+        else // Else, the number is odd (rest of division by 2 is 1)
         {
             mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] |= mVariableTypeArray[variableCounter];
             mLogInfoRawPayloadArrayLength++;
         }
     }
 
+    // 2.2) If the the previous loop ended on a odd number (so the last conditional-valid value on the counter was even), increase the length.
+    if (variableCounter % 2) 
+        mLogInfoRawPayloadArrayLength++;
+
 
 // 3) Add the Variable strings
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
     {
+        // As I couldn't find a way to use strnlen, made it!
+        // Again, the stringLength doesn't include the '\0'.
         for (stringLength = 0;
-             stringLength < PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH && mVariableNameArray[variableCounter][stringLength];
-             stringLength++); // As I couldn't find a way to use strnlen, made it!
+             ((stringLength < (PMM_PACKAGE_DATA_LOG_MAX_STRING_LENGTH - 1)) && mVariableNameArray[variableCounter][stringLength]); // - 1 as the MAX_STRING_LENGTH includes the '\0'.
+             stringLength++); 
             
         memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
         mLogInfoRawPayloadArrayLength += stringLength;
@@ -58,7 +64,7 @@ void PmmPackageDataLog::updateLogInfoRawPayload()
 
 
 
-void PmmPackageDataLog::updatePackageLogInfoInTelemetryFormat()
+void PmmPackageDataLog::updateLogInfoInTelemetryFormat()
 {
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
@@ -68,10 +74,10 @@ void PmmPackageDataLog::updatePackageLogInfoInTelemetryFormat()
     // Calculate the total number of packets.
     mPackageLogInfoNumberOfPackets = ceil(mLogInfoRawPayloadArrayLength / (float) PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
     // This is different to PMM_PORT_LOG_INFO_MAX_PACKETS, as the macro is the maximum number of packets, and this variable is the current maximum
-    // number of packets. This one varies with the current contents in MLIN Package.
-    
+    // number of packets. This one varies with the current contents in LogInfo Package.
 
-    // 1) Copies the raw array content and the package header into the packets
+
+// 1) Copies the raw array content and the package header into the packets
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
     {
         packetLength = PMM_PORT_LOG_INFO_HEADER_LENGTH; // The initial length is the default header length
@@ -101,14 +107,14 @@ void PmmPackageDataLog::updatePackageLogInfoInTelemetryFormat()
         mLogInfoPackageCrc = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength, mLogInfoPackageCrc); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
     }
 
-    // 2) Assign the entire package crc16 to all packets.
+// 2) Assign the entire package crc16 to all packets.
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
     {
         mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB] = mLogInfoPackageCrc;        // Little endian!
         mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] = mLogInfoPackageCrc >> 8;   //
     }
 
-    // 3) CRC16 of this packet:
+// 3) CRC16 of this packet:
     for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
     {
         crc16ThisPacket = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength); // As the temporary CRC16 of this packet is know to be 0,

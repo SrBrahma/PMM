@@ -115,8 +115,8 @@ void PmmPackageDataLog::includeVariableInPackage(const char *variableName, uint8
     mLogNumberOfVariables ++;
     mPackageLogSizeInBytes += varSize;
 
-    updatePackageLogInfoRaw();
-    updatePackageLogInfoInTelemetryFormat();
+    updateLogInfoCombinedPayload();
+    updateLogInfoInTelemetryFormat();
 }
 
 void PmmPackageDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)

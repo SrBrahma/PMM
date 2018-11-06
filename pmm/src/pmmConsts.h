@@ -25,8 +25,6 @@
 #define PMM_PIN_LED_ERRORS              99
 #define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
 
-#define PMM_VARIABLE_STRING_LENGTH      22
-
 
 
 // =======================================================================

@@ -87,7 +87,7 @@ int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
 
 int PmmSdFileLogPreAllocatedInParts::pmmFlush()
 {
-    unsigned alreadyWrittenBlocks;
+    unsigned alreadyWrittenBlocks = 0;
     unsigned availableBlocksOnThisPart;
     unsigned blocksToWriteNow;
     unsigned remainingBlocksToWrite = mBufferSizeInBlocks;
@@ -125,6 +125,7 @@ int PmmSdFileLogPreAllocatedInParts::pmmFlush()
     } // End of while loop
 
     mBufferActualIndex = 0; // !
+    return 0;
 }
 
 
@@ -165,10 +166,10 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
 
         // 3.3) How much data can we write, with our current available buffer?
         if (remainingDataBytes > availableBytesOnBuffer)
-            bytesToWriteNow = availableBlocksOnThisPart;
+            bytesToWriteNow = availableBytesOnBuffer;
 
         if (remainingDataBytes <= availableBytesOnBuffer)
-            bytesToWriteNow = remainingBlocksToWrite;
+            bytesToWriteNow = remainingDataBytes;
 
 
         // 3.4) Can we write something now?

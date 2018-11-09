@@ -36,7 +36,7 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
 
 
 
-    PMM_DEBUG_PRINT_MORE("PmmSd: Initialized successfully!");
+    PMM_DEBUG_PRINT_MORE("PmmSd [M]: Initialized successfully!");
     return 0;
 }
 

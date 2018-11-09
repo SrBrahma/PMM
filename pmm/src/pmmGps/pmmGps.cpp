@@ -70,8 +70,14 @@ int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
         mTempLastReadMillis = 0;
         mLastReadMillis = 0;
     #endif
+
+    if (Serial1)
+        PMM_DEBUG_PRINT_MORE("PmmGps [M]: Initialized successfully!");
+
+    else
+        PMM_DEBUG_PRINT("PmmGps #1: INIT FAILED!");
+
     return 0;
-    PMM_DEBUG_PRINT_MORE("PmmGps: Initialized successfully!");
 }
 
 int PmmGps::update()

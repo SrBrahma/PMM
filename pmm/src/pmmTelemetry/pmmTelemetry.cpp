@@ -3,7 +3,7 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <RH_RF95.h>                    // Our current RF module
-#include "pmmConsts.h"                  // For the pinout of the RF module
+#include "pmmConsts.h"                  // For the pinout of the RF module and RF frequency
 #include "pmmTelemetry/pmmTelemetry.h"
 
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
@@ -35,7 +35,7 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
 
     // These delays are the default of the lora code. Maybe they aren't even needed.
-    delay(100);
+    delay(10);
     digitalWrite(PMM_PIN_RFM95_RST, LOW);
     delay(10);
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
@@ -58,7 +58,7 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     // So it initialized!
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
     mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
-    PMM_DEBUG_PRINT_MORE("PmmTelemetry: LoRa initialized successfully!");
+    PMM_DEBUG_PRINT_MORE("PmmTelemetry [M]: LoRa initialized successfully!");
 
     return 0;
 }

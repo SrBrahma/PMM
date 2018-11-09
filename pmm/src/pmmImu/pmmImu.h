@@ -21,9 +21,9 @@
 
 typedef struct
 {
-    float accelerometerArray[3]; //Posicoes 1,2,3, respectivamente sao as Aceleracoes em x,y,z
-    float magnetometerArray[3]; //Posicoes 1,2,3, respectivamente sao as Campos Magneticos em x,y,z
-    float gyroscopeArray[3]; //Posicoes 1, 2, 3, respectivamente sao a velocidade angular em x,y,z
+    float accelerometerArray[3];    // Accelerations in x,y,z
+    float magnetometerArray[3];     // Magnetic fields in x,y,z
+    float gyroscopeArray[3];        // Angular velocity in x,y,z
     float pressure;
     float altitudePressure;
     float temperature;

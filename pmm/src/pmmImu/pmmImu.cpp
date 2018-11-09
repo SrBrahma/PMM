@@ -136,11 +136,13 @@ int PmmImu::initBmp()  //BMP085 Setup
 
 
 
+
+
 int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 {
     mNextMillisBarometer = 0;
     mPmmErrorsCentral = pmmErrorsCentral;
-    mMagnetometerDeclinationRad = 369.4/1000; // https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
+    mMagnetometerDeclinationRad = 369.4 / 1000; // https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
 
     Wire.begin(); // as seen in the sensors example!
 
@@ -172,6 +174,8 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 
 
 
+
+
 int PmmImu::updateMpu()
 {
     mMpu.getMotion6(&mAccelerometerRaw[0], &mAccelerometerRaw[1], &mAccelerometerRaw[2], &mGyroscopeRaw[0], &mGyroscopeRaw[1], &mGyroscopeRaw[2]);
@@ -192,7 +196,8 @@ int PmmImu::updateMpu()
 int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
 {
     mMagnetometer.getHeading(&mMagnetometerRaw[0], &mMagnetometerRaw[1], &mMagnetometerRaw[2]);
-
+    Serial.print("VALOR EH ");
+    Serial.println(mMagnetometerRaw[0]);
     mPmmImuStruct.magnetometerArray[0] = mMagnetometerRaw[0] * mMagnetometerScale;
     mPmmImuStruct.magnetometerArray[1] = mMagnetometerRaw[1] * mMagnetometerScale;
     mPmmImuStruct.magnetometerArray[2] = mMagnetometerRaw[2] * mMagnetometerScale;

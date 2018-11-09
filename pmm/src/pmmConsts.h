@@ -13,7 +13,7 @@
 // =======================================================================
 #define PMM_THIS_NAME_DEFINE            "Aurora" // Used in pmmPackageString.cpp.
 
-#define PMM_IS_PDA                      1
+#define PMM_IS_PDA                      0
 
 #define PMM_USE_BUZZER                  0
 #define PMM_USE_LED_RECOVERY            0
@@ -38,6 +38,11 @@
 // the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket!
 #define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
 
+// These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
+// The PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED is 1.
+#define PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED   1
+#define PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT   5000
+
 
 #if PMM_DEBUG_SERIAL
     #define PMM_DEBUG_PRINT(x) Serial.println(x)
@@ -53,7 +58,7 @@
 #endif
 
 
-#define PMM_DEBUG_PRINT_IMU_MORE            1 // Prints "barometer updated!" etc
+#define PMM_DEBUG_PRINT_IMU_MORE            0 // Prints "barometer updated!" etc
 
 
 
@@ -83,12 +88,12 @@
 // =======================================================================
 #define PMM_RF_INIT_MAX_TRIES   10
 
-#define PMM_PIN_RFM95_CS        10
+#define PMM_PIN_RFM95_CS        9
 #define PMM_PIN_RFM95_RST       38
-#define PMM_PIN_RFM95_INT       6
+#define PMM_PIN_RFM95_INT       5
 #define PMM_LORA_FREQUENCY      915.0
 
-#define PMM_LORA_TX_POWER       23 // 5~23
+#define PMM_LORA_TX_POWER       13 // 5~23
 
 
 

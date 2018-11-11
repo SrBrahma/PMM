@@ -61,8 +61,8 @@ typedef struct
     uint8_t sourceAddress;
     uint8_t destinationAddress;
     uint8_t port;
-    uint8_t payloadLength;
-
+    uint8_t payloadLengthByPhysicalLayer;     // The length of the packet' payload, given bt the Physical Layer (LoRa, etc).
+    uint8_t payloadLengthByTransportLayer;    // The length of the packet' payload, given bt the Transport Layer (PMM Neo Protocol).
     int8_t  snr;
     int16_t rssi; //in dBm
 } telemetryPacketInfoStructType;

@@ -1,7 +1,7 @@
 /* pmmImu.cpp
  * Code for the Inertial Measure Unit (IMU!)
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <Wire.h>
 #include <I2Cdev.h>
@@ -95,10 +95,10 @@ int PmmImu::initMpu()
         return 1;
     }
     /*
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip*/
+    mpu.setXGyroscopeOffset(220);
+    mpu.setYGyroscopeOffset(76);
+    mpu.setZGyroscopeOffset(-85);
+    mpu.setZAccelerometerOffset(1788); // 1688 factory default for my test chip*/
     PMM_DEBUG_PRINT_MORE("PmmImu [M]: MPU6050 initialized successfully!");
     return 0;
 

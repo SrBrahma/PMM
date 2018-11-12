@@ -21,7 +21,7 @@ void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLaye
             receivedPacketAllInfoStruct->sourceAddress      = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
             receivedPacketAllInfoStruct->destinationAddress = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
             receivedPacketAllInfoStruct->port               = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
-            receivedPacketAllInfoStruct->payloadLength      = packet[PMM_NEO_PROTOCOL_INDEX_PAYLOAD_LENGTH];
+            receivedPacketAllInfoStruct->payloadLength      = packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] - PMM_NEO_PROTOCOL_HEADER_LENGTH;
 
             break;
     }
@@ -60,9 +60,8 @@ uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructTyp
             if (packet[PMM_NEO_PROTOCOL_INDEX_PORT] != toBeSentTelemetryPacketInfoStruct->port);
                 packet[PMM_NEO_PROTOCOL_INDEX_PORT]  = toBeSentTelemetryPacketInfoStruct->port;
 
-            // NEO, 7) Write the Payload Length
-            if (packet[PMM_NEO_PROTOCOL_INDEX_PAYLOAD_LENGTH] != toBeSentTelemetryPacketInfoStruct->payloadLength);
-                packet[PMM_NEO_PROTOCOL_INDEX_PAYLOAD_LENGTH]  = toBeSentTelemetryPacketInfoStruct->payloadLength;
+            // NEO, 7) Write the Payload Length. It doesn't check the value before, as it would need to sum the value 2 times, on the check and on the write.
+            packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]  = toBeSentTelemetryPacketInfoStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
 
             // NEO, 8) Write the CRC of this header
             uint16_t crcVar = crc16(packet, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
@@ -107,7 +106,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 1; // Too short to be a real message
 
                 // NEO, 3.2) Compares the length given by the Physical Layer (LoRa) and by the Transport Layer (Neo Protocol).
-                if ((packetLength - PMM_NEO_PROTOCOL_HEADER_LENGTH) != packet[PMM_NEO_PROTOCOL_INDEX_PAYLOAD_LENGTH])
+                if (packetLength != packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH])
                     return 2;
 
                 // NEO, 4) Checks the CRC.

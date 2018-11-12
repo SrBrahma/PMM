@@ -197,9 +197,6 @@ protected:
     /// Whether the transport is in promiscuous mode
     int                 mPromiscuousMode;
 
-    /// The value of the last received RSSI value, in some transport specific units
-    volatile int16_t    mLastRssi;
-
     /// Count of the number of bad messages (eg bad checksum etc) received
     volatile uint16_t   mInvalidReceivedPacketsCounter;
     /// Count of the number of successfully transmitted messaged

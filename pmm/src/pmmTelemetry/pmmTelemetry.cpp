@@ -5,7 +5,6 @@
 #include <RH_RF95.h>                    // Our current RF module
 #include "pmmConsts.h"                  // For the pinout of the RF module and RF frequency
 #include "pmmTelemetry/pmmTelemetry.h"
-
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
@@ -29,17 +28,12 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     mDefaultPriorityQueueStruct.actualIndex = 0;
     mDefaultPriorityQueueStruct.remainingItemsOnQueue = 0;
 
-    //RH_RF95 mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT);
-
     pinMode(PMM_PIN_RFM95_RST, OUTPUT);
-    digitalWrite(PMM_PIN_RFM95_RST, HIGH);
-
-    // These delays are the default of the lora code. Maybe they aren't even needed.
-    delay(10);
+    delay(15);                              // Reset pin should be left floating for >10ms, according to "7.2.1. POR" in SX1272 manual.
     digitalWrite(PMM_PIN_RFM95_RST, LOW);
-    delay(10);
+    delay(1);                               // > 100uS, according to "7.2.2. Manual Reset" in SX1272 manual.
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
-    delay(10);
+    delay(6);                               // >5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
 
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
@@ -101,9 +95,7 @@ int PmmTelemetry::updateTransmission()
         return 0; // Nothing to send!
 
     // 4) Send it! On the future other options of telemetry may be added. This a little problem to who will work with my code on the future. 'Boa sorte', little fella.
-    mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex],     // The data array
-                queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex],
-                &queueStructPtr->protocolsContentStructArray[queueStructPtr->actualIndex]); // The length
+    mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex], queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]);
 
 
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
@@ -123,9 +115,11 @@ int PmmTelemetry::updateTransmission()
 // Returns 1 if received anything, else, 0.
 int PmmTelemetry::updateReception()
 {
-    if (mRf95.receivePayloadAndStatusStruct(mReceivedPayload, &mReceivedPacketStatusStruct))
+    if (mRf95.receivePayloadAndInfoStruct(mReceivedPacket, mReceivedPacketPhysicalLayerInfoStructPtr));
+    {
+        getReceivedPacketAllInfoStruct(mReceivedPacket, mReceivedPacketPhysicalLayerInfoStructPtr, mReceivedPacketAllInfoStructPtr);
         return 1;
-
+    }
     return 0;
 }
 
@@ -179,7 +173,7 @@ int PmmTelemetry::tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmT
 
 
 /* Returns 0 if added to the queue successfully, 1 ifn't. */
-int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
+int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]"
     int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
@@ -194,20 +188,14 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, tel
     return 0;
 }
 
-// Getters
-uint8_t* PmmTelemetry::getReceivedPacketArray()
+receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
 {
-    return mReceivedPayload;
-}
-
-telemetryPacketInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
-{
-    return &mReceivedPacketStatusStruct;
+    return mReceivedPacketAllInfoStructPtr;
 }
 
 // NOT USED ANYMORE. Will be removed someday. Returns 0 if added to the queue successfully, 1 ifn't.
 /*
-int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
+int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
 {
     pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
 

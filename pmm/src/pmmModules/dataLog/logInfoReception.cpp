@@ -9,21 +9,22 @@
 
 
 // Received Package Log Info Package
-void PmmModuleDataLog::receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
     uint16_t tempPackageCrc;
     unsigned packetId;
 
 // 1) If the packet size is smaller than the packet header length, it's invalid
-    if (packetStatus->payloadLength < PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    if (packetInfo->payloadLength < PMM_PORT_LOG_INFO_HEADER_LENGTH)
         return;
 
 
 // 2) Test the CRC, to see if the packet is valid.
-    if (((payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB])) != crc16(payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetStatus->payloadLength - 2))
+    if (((packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
+                                  != crc16(packetInfo->payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetInfo->payloadLength - 2))
         return;
 
-    tempPackageCrc = (payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] << 8) | payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB];
+    tempPackageCrc = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] << 8) | packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB];
 
 
 // 3) If changed the CRC16 of the entire package, or is the first packet ever received
@@ -31,17 +32,17 @@ void PmmModuleDataLog::receivedLogInfo(uint8_t payload[], telemetryPacketInfoStr
     {
         memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
         mLogInfoPackageCrc = tempPackageCrc;
-        mPackageLogInfoNumberOfPackets = (payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] & 0xF) + 1; // Only get the 4 least significant bits, and sum 1!
+        mPackageLogInfoNumberOfPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] & 0xF) + 1; // Only get the 4 least significant bits, and sum 1!
         // If is the first packet or if changed the entirePackageCrc, reset some parameters
     }
 
 // 4) Get the packetId from the received packet
-    packetId = payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] >> 4;
+    packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] >> 4;
 
     // Copies the received array
-    memcpy(mPackageLogInfoTelemetryArray[packetId], payload, packetStatus->payloadLength);
+    memcpy(mPackageLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
 
-    mPackageLogInfoTelemetryArrayLengths[packetId] = packetStatus->payloadLength;
+    mPackageLogInfoTelemetryArrayLengths[packetId] = packetInfo->payloadLength;
 
     for (packetId = 0; packetId < mPackageLogInfoNumberOfPackets; packetId ++)
     {

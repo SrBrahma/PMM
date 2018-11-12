@@ -8,44 +8,23 @@
 #include <crc.h>
 #include "byteSelection.h"
 
-
-
-
-
-// It assumes the packet was already validated by the validateReceivedPacketAndReturnProtocolHeaderLength() function,
-// which is called in handleInterrupt() function.
-void RH_RF95::getPacketInfoInStruct(uint8_t packet[], telemetryPacketInfoStructType* packetStatusStruct)
-{
-    // 1) Which protocol is this packet using?
-    switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
-    {
-        case PMM_NEO_PROTOCOL_ID:
-            packetStatusStruct->sourceAddress       = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
-            packetStatusStruct->destinationAddress  = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
-            packetStatusStruct->port                = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
-            packetStatusStruct->payloadLength       = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
-            packetStatusStruct->rssi                = getLastRssi();
-            packetStatusStruct->snr                 = getLastSNR();
-    }
-
-}
-
-
-
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
-// This version retuns by reference a telemetryPacketInfoStructType
-bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInfoStructType* packetStatusStruct)
+// This version retuns by reference a receivedPacketPhysicalLayerInfoStructType, which includes the packetLength, the SNR and the RSSI.
+// Returns true when received a "valid" packet (valid protocol, valid addresses, valid crc).
+bool RH_RF95::receivePayloadAndInfoStruct(uint8_t* payload, receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct)
 {
     if (!getIsThereANewReceivedPacket())
         return false;
 
-    if (!payload || !packetStatusStruct ) // Avoid NULL addresses
+    if (!payload || !receivedPacketPhysicalLayerInfoStruct) // Avoid NULL addresses
         return false;
 
     ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
 
-    getPacketInfoInStruct(mPacketBuffer, packetStatusStruct);
-    memcpy(payload, mPacketBuffer + mReceivedPacketProtocolHeaderLength, packetStatusStruct->payloadLength);
+    memcpy(payload, mPacketBuffer, mReceivedPacketLength);
+    receivedPacketPhysicalLayerInfoStruct->packetLength = mReceivedPacketLength;
+    receivedPacketPhysicalLayerInfoStruct->snr          = mLastSNR;
+    receivedPacketPhysicalLayerInfoStruct->rssi         = mLastRssi;
 
     ATOMIC_BLOCK_END;
 
@@ -53,21 +32,23 @@ bool RH_RF95::receivePayloadAndStatusStruct(uint8_t* payload, telemetryPacketInf
     return true;
 }
 
-
-
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
-// This version returns by reference the packetLength
-bool RH_RF95::receivePayload(uint8_t* buffer, uint8_t* packetLength)
+// This version returns by reference only the packetLength.
+bool RH_RF95::receivePayload(uint8_t packet[], uint8_t* packetLength)
 {
     if (!getIsThereANewReceivedPacket())
         return false;
-    if (buffer && packetLength) // Avoid NULL addresses
-    {
-        ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
-        *packetLength = mReceivedPacketBufferLength - mReceivedPacketProtocolHeaderLength;
-        memcpy(buffer, mPacketBuffer + mReceivedPacketProtocolHeaderLength, *packetLength);
-        ATOMIC_BLOCK_END;
-    }
+    
+    if (!packet || !packetLength) // Avoid NULL addresses
+        return false;
+
+    ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
+
+    *packetLength = mReceivedPacketLength;
+    memcpy(packet, mPacketBuffer, *packetLength);
+    
+    ATOMIC_BLOCK_END;
+
     clearRxBuf(); // This message accepted and cleared
     return true;
 }
@@ -83,25 +64,28 @@ void RH_RF95::handleInterrupt()
 {
     // Read the interrupt register
     uint8_t irq_flags = spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-    if (mMode == RH_MODE_IS_RECEIVING && irq_flags & RH_RF95_PAYLOAD_CRC_ERROR)
+
+    if (mMode == RH_MODE_IS_RECEIVING && (irq_flags & RH_RF95_PAYLOAD_CRC_ERROR))
     {
         mInvalidAutoLoraPayloadCrc = true;
         mInvalidReceivedPacketsCounter++;
     }
-    if (mMode == RH_MODE_IS_RECEIVING && irq_flags & (RH_RF95_RX_TIMEOUT))
+
+    else if (mMode == RH_MODE_IS_RECEIVING && (irq_flags & RH_RF95_RX_TIMEOUT))
     {
         mInvalidReceivedPacketsCounter++;
     }
-    else if (mMode == RH_MODE_IS_RECEIVING && irq_flags & RH_RF95_RX_DONE)
+
+    else if (mMode == RH_MODE_IS_RECEIVING && (irq_flags & RH_RF95_RX_DONE))
     {
         // Have received a packet
-        mReceivedPacketBufferLength = spiRead(RH_RF95_REG_13_RX_NB_BYTES);
+        mReceivedPacketLength = spiRead(RH_RF95_REG_13_RX_NB_BYTES);
 
         // Reset the fifo read ptr to the beginning of the packet
         spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, spiRead(RH_RF95_REG_10_FIFO_RX_CURRENT_ADDR));
-        spiBurstRead(RH_RF95_REG_00_FIFO, mPacketBuffer, mReceivedPacketBufferLength);
+        spiBurstRead(RH_RF95_REG_00_FIFO, mPacketBuffer, mReceivedPacketLength);
 
-        spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
+        // spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags HB: this looks useless. at the end this already happens. TWICE.
 
         // Remember the last signal to noise ratio, LORA mode
         // Per page 111, SX1276/77/78/79 datasheet
@@ -112,9 +96,8 @@ void RH_RF95::handleInterrupt()
         // weakest receiveable signals are reported RSSI at about -66
         mLastRssi = spiRead(RH_RF95_REG_1A_PKT_RSSI_VALUE);
 
-
-        // We have received a message.
-        if((mReceivedPacketProtocolHeaderLength = validateReceivedPacketAndReturnProtocolHeaderLength(mPacketBuffer, mReceivedPacketBufferLength, mThisAddress, mPromiscuousMode)));
+        // Validates the received message on the PMM Protocols.
+        if(!validateReceivedPacket(mPacketBuffer, mReceivedPacketLength, mThisAddress, mPromiscuousMode));    // The validate function returns non-zero when errors found.
         {
             // Adjust the RSSI, datasheet page 87
             if (mLastSNR < 0)
@@ -126,25 +109,28 @@ void RH_RF95::handleInterrupt()
             else
                 mLastRssi -= 164;
 
-            mIsThereANewReceivedPacket = true;
+            mIsThereANewReceivedPacket = true;  // We have a valid packet!
 
-            if (mInvalidAutoLoraPayloadCrc)
+            if (mInvalidAutoLoraPayloadCrc)         // If it was true, now it's false. It's checked on the first if in this function.
                 mInvalidAutoLoraPayloadCrc = false;
-
-            setModeIdle();
         }
+        
+        setModeIdle();
 
     }
-    else if (mMode == RH_MODE_IS_TRANSMITTING && irq_flags & RH_RF95_TX_DONE)
+
+    else if (mMode == RH_MODE_IS_TRANSMITTING && (irq_flags & RH_RF95_TX_DONE))
     {
         mSuccessfulTransmittedPacketsCounter++;
         setModeIdle();
     }
-    else if (mMode == RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD && irq_flags & RH_RF95_CAD_DONE)
+
+    else if (mMode == RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD && (irq_flags & RH_RF95_CAD_DONE))
     {
         mCad = irq_flags & RH_RF95_CAD_DETECTED;
         setModeIdle();
     }
+
     // Sigh: on some processors, for some unknown reason, doing this only once does not actually
     // clear the radio's interrupt flag. So we do it twice. Why?
     spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags

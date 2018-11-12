@@ -138,15 +138,6 @@ void RHGenericDriver::setThisAddress(uint8_t address)
     mThisAddress = address;
 }
 
-
-
-int16_t RHGenericDriver::getLastRssi()
-{
-    return mLastRssi;
-}
-
-
-
 RHGenericDriver::RHMode  RHGenericDriver::getMode()
 {
     return mMode;

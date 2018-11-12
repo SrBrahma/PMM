@@ -14,7 +14,6 @@
 #include <HMC5883L.h>
 #include <BMP085.h>
 #include <Wire.h>
-#include <I2Cdev.h>
 
 #include <pmmConsts.h>
 #include "pmmErrorsCentral/pmmErrorsCentral.h"

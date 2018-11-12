@@ -38,7 +38,7 @@ class PmmTelemetry
 
     typedef struct
     {
-        telemetryProtocolsContentStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
+        toBeSentTelemetryPacketInfoStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
 
         uint8_t*  uint8_tPtrArray[PMM_TELEMETRY_QUEUE_LENGTH];      // Used in send(), as the data array
         uint8_t   lengthInBytesArray[PMM_TELEMETRY_QUEUE_LENGTH];   // Used in send(), as the length of the data array
@@ -57,11 +57,11 @@ public:
     int updateReception();
     int updateTransmission();
 
-    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
     uint8_t* getReceivedPacketArray();
     
-    telemetryPacketInfoStructType* getReceivedPacketStatusStructPtr();
+    receivedPacketAllInfoStructType* getReceivedPacketStatusStructPtr();
 
     //void setPackageLogInfoReceivedFunctionPtr
     //void setPackageStringReceivedFunctionPtr
@@ -69,12 +69,14 @@ public:
 
     // NOT USED ANYMORE
     //int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
-    //                             telemetryProtocolsContentStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+    //                             toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
 
 private:
 
-    uint8_t mReceivedPayload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
-    telemetryPacketInfoStructType mReceivedPacketStatusStruct;
+    uint8_t mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
+    uint8_t* mPayloadPointer;
+    receivedPacketAllInfoStructType* mReceivedPacketAllInfoStructPtr;
+    receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
 
     PmmErrorsCentral *mPmmErrorsCentral;
     RH_RF95 mRf95;

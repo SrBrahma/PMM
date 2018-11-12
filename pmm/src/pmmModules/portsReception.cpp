@@ -21,19 +21,19 @@ int PmmPortsReception::init(PmmModuleDataLog* pmmPackageDataLog, PmmModuleMessag
     return 0;
 }
 
-void PmmPortsReception::receivedPacket(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmPortsReception::receivedPacket(receivedPacketAllInfoStructType* packetInfo)
 {
     // 1) Which kind of packet is it?
-    switch(payload[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    switch(packetInfo->protocol)
     {
         case PMM_PORT_DATA_LOG:
-            mPmmModuleDataLog->receivedDataLog(payload, packetStatus);
+            mPmmModuleDataLog->receivedDataLog(packetInfo);
             return;
         case PMM_PORT_LOG_INFO:
-            mPmmModuleDataLog->receivedLogInfo(payload, packetStatus);
+            mPmmModuleDataLog->receivedLogInfo(packetInfo);
             return;
         case PMM_PORT_MESSAGE_LOG:
-            mPmmModuleMessageLog->receivedPackageString(payload, packetStatus);
+            mPmmModuleMessageLog->receivedPackageString(packetInfo);
             return;
         case PMM_PORT_REQUEST:
             return;

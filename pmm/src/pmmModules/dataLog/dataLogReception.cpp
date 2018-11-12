@@ -7,7 +7,7 @@
 #include "pmmModules/dataLog/dataLog.h"
 
 // Received Package Log Info Package
-void PmmModuleDataLog::receivedDataLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus)
+void PmmModuleDataLog::receivedDataLog(receivedPacketAllInfoStructType* packetInfo)
 {
     //        --------------- DataLog Header 1.0 ---------------
     //        [Positions] : [Function] : [ Length in Bytes ]
@@ -27,10 +27,10 @@ void PmmModuleDataLog::receivedDataLog(uint8_t payload[], telemetryPacketInfoStr
     //        --------------------------------------------------
 
     // 1) First, check the CRC 8 of this header, as there are important data in the header.
-    if (payload[PMM_PORT_DATA_LOG_INDEX_CRC_8_HEADER] != crc8(payload + 1, PMM_PORT_DATA_LOG_HEADER_LENGTH - 1))
+    if (packetInfo->payload[PMM_PORT_DATA_LOG_INDEX_CRC_8_HEADER] != crc8(packetInfo->payload + 1, PMM_PORT_DATA_LOG_HEADER_LENGTH - 1))
     {
         return; // For now the package will just be ignored. On the future it can be more treated.
     }
-    if (payload[packetStatus->payloadLength])
+    if (packetInfo->payload[packetInfo->payloadLength])
         return; // dumb
 }

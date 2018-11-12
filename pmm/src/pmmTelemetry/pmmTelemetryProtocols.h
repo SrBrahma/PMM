@@ -40,50 +40,71 @@
 #define PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL          0   // Where is the protocol identifier in the packet
 
     // PMM Neo Protocol
-    #define PMM_NEO_PROTOCOL_INDEX_SOURCE               1   // Who sent this packet?
-    #define PMM_NEO_PROTOCOL_INDEX_DESTINATION          2   // Who this packet wants to reach?
-    #define PMM_NEO_PROTOCOL_INDEX_PORT                 3   // Who this packet wants to reach?
-    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB       4   // Least significant byte
-    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB       5   // Most significant byte
+    #define PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH        1   // How many bytes do we have on the payload?
+    #define PMM_NEO_PROTOCOL_INDEX_SOURCE               2   // Who sent this packet?
+    #define PMM_NEO_PROTOCOL_INDEX_DESTINATION          3   // Who this packet wants to reach?
+    #define PMM_NEO_PROTOCOL_INDEX_PORT                 4   // Who this packet wants to reach?
+    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB       5   // Least significant byte
+    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB       6   // Most significant byte
     // Total length is
-    #define PMM_NEO_PROTOCOL_HEADER_LENGTH              6   // The minimum length, counting
+    #define PMM_NEO_PROTOCOL_HEADER_LENGTH              7   // The minimum length, counting
 
     // The define below is defined on pmmTelemetry.h, as there was happening a circular dependency!
     // #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
 
-// Define instead of typedef enum, because I didn't wanted to use 4 bytes in telemetryProtocolsContentStructType just to store the few protocols
-#define PMM_NEO_PROTOCOL_ID                 1
+    #define PMM_NEO_PROTOCOL_ID                 1
 
 
 
 typedef struct
 {
-    uint8_t sourceAddress;
-    uint8_t destinationAddress;
-    uint8_t port;
-    uint8_t payloadLengthByPhysicalLayer;     // The length of the packet' payload, given bt the Physical Layer (LoRa, etc).
-    uint8_t payloadLengthByTransportLayer;    // The length of the packet' payload, given bt the Transport Layer (PMM Neo Protocol).
+    uint8_t* payload;
+    int8_t   snr;                // in dBm
+    int8_t   rssi;               // in dBm
+    uint8_t  protocol;
+    uint8_t  sourceAddress;
+    uint8_t  destinationAddress;
+    uint8_t  port;
+    uint8_t  payloadLength;
+} receivedPacketAllInfoStructType;
+
+typedef struct
+{
+    uint8_t packetLength;
     int8_t  snr;
-    int16_t rssi; //in dBm
-} telemetryPacketInfoStructType;
+    int8_t  rssi; //in dBm
+} receivedPacketPhysicalLayerInfoStructType;
 
 typedef struct
 {
     uint8_t protocol;
     uint8_t sourceAddress;
     uint8_t destinationAddress;
+    uint8_t payloadLength;
     uint8_t port;
-} telemetryProtocolsContentStructType;
+} toBeSentTelemetryPacketInfoStructType;
 
 
 
-uint8_t getProtocolHeaderLength(uint8_t protocol);
 
+// ===== Reception functions =====
+// This function checks the received telemetry packet:
+// 
+// 1) Check if the length of the packet is > 0.
+// 2) Checks the protocol.
+// 3) Checks the length of the packet again, now based on the protocol.
+// 4) Checks the CRC, if handled by the protocol.
+// 5) Check if the Destination Address is to this device and if is valid (there are forbidden addresses).
+// 6) Check if the Source Address is valid (there are forbidden addresses).
+//
+// Ok return value is 0.
+// If any of these checks fails, another value will be returned and the packet, discarded.
+// These steps can be slightly different from protocol to protocol.
+int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisAddress, int promiscuousMode);
 
+void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
 
-// Check the packet protocol and return the length of the header. If 0 is returned, the packet is invalid.
-// It also checks if the Destination Address of the received packet is the same as the address of this system.
-uint8_t validateReceivedPacketAndReturnProtocolHeaderLength(uint8_t packetData[], uint8_t bufferLength, uint8_t thisAddress, int promiscuousMode);
-
+// ===== Transmissin functions =====
+uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructType* toBeSentTelemetryPacketInfoStruct);
 
 #endif

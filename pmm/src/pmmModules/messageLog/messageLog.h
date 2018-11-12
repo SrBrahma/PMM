@@ -26,7 +26,7 @@ public:
     int addString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
     int addRawString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
 
-    void receivedPackageString(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+    void receivedPackageString(receivedPacketAllInfoStructType* packetInfo);
 
     uint8_t getActualNumberOfStrings();
     uint8_t getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId);

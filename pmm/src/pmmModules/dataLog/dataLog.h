@@ -122,8 +122,8 @@ public:
 
 
     // Reception
-    void receivedDataLog(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
-    void receivedLogInfo(uint8_t payload[], telemetryPacketInfoStructType* packetStatus);
+    void receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
+    void receivedLogInfo(receivedPacketAllInfoStructType* packetInfo);
 
 
     // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.

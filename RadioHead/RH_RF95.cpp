@@ -5,8 +5,6 @@
 
 
 #include <RH_RF95.h>
-#include "crc.h"
-#include "byteSelection.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
 
@@ -122,65 +120,15 @@ bool RH_RF95::init()
     return true;
 }
 
-// if the given protocol is invalid, will by default use the Neo Protocol.
-uint8_t RH_RF95::getProtocolHeaderLength(uint8_t protocol)
-{
-    switch (protocol)
-    {
-        default:
-        case PMM_NEO_PROTOCOL_ID:
-            return PMM_NEO_PROTOCOL_HEADER_LENGTH;
-    }
-}
-
-
-// Adds the corresponding header depending on the protocol. May add some informations, like CRC, depending on protocol.
-// It assumes you already checked the total length of the packet to be sent.
-// It assumes you had also already done
-// Position at the beginning of the FIFO
-// spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-void RH_RF95::addProtocolHeader(telemetryProtocolsContentStructType* protocolsContentStruct)
-{
-    // 1) Which protocol are we using?
-    switch (protocolsContentStruct->protocol)
-    {
-        // 1.1) Will by default (if the given protocol is invalid) use the Neo Protocol (is the only available at the current time!)
-        default:
-        case PMM_NEO_PROTOCOL_ID:
-            // 1.1.1) Write the Protocol ID
-            spiWrite(RH_RF95_REG_00_FIFO, PMM_NEO_PROTOCOL_ID);
-            // 1.1.2) Write the Source Address
-            spiWrite(RH_RF95_REG_00_FIFO, protocolsContentStruct->sourceAddress);
-            // 1.1.3) Write the Destination Address
-            spiWrite(RH_RF95_REG_00_FIFO, protocolsContentStruct->destinationAddress);
-            // 1.1.4) Write the Port
-            spiWrite(RH_RF95_REG_00_FIFO, protocolsContentStruct->port);
-
-            // 1.1.5.1) Calculates the packet CRC
-            uint16_t tempCrc16;
-            tempCrc16 = crc16SingleByte(PMM_NEO_PROTOCOL_ID);
-            tempCrc16 = crc16SingleByte(protocolsContentStruct->sourceAddress, tempCrc16);
-            tempCrc16 = crc16SingleByte(protocolsContentStruct->destinationAddress, tempCrc16);
-            tempCrc16 = crc16SingleByte(protocolsContentStruct->port, tempCrc16);
-
-            // 1.1.5.2) Write the CRC16, in Little Endian.
-            spiWrite(RH_RF95_REG_00_FIFO, LSB0(tempCrc16));
-            spiWrite(RH_RF95_REG_00_FIFO, LSB1(tempCrc16));
-
-            break;
-    }
-}
-
-
 // Won't automatically add any header on the packet! Know what you are doing!
-bool RH_RF95::sendRaw(uint8_t data[], uint8_t dataLength)
+bool RH_RF95::send(uint8_t packet[], uint8_t packetLength)
 {
     // 1) Test the pointer
-    if (!data)
+    if (!packet)
         return false;
 
     // 2) Check if the length is valid
-    if (dataLength > RH_RF95_MAX_PACKET_LENGTH || !dataLength) // If invalid length
+    if (packetLength > RH_RF95_MAX_PACKET_LENGTH || !packetLength) // If invalid length
         return false;
 
     // 3) Can we send the packet now?
@@ -196,10 +144,10 @@ bool RH_RF95::sendRaw(uint8_t data[], uint8_t dataLength)
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
 
     // 4.2) The message data
-    spiBurstWrite(RH_RF95_REG_00_FIFO, data, dataLength);
+    spiBurstWrite(RH_RF95_REG_00_FIFO, packet, packetLength);
 
     // 4.3) Set the LoRa payload length register to the total amount of data we are sending
-    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, dataLength);
+    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength);
 
     // 5) Send!
     setModeTransmission(); // Start the transmitter
@@ -207,48 +155,6 @@ bool RH_RF95::sendRaw(uint8_t data[], uint8_t dataLength)
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return true;
 }
-
-// protocol default is PMM_NEO_PROTOCOL_ID
-bool RH_RF95::send(uint8_t data[], uint8_t dataLength, telemetryProtocolsContentStructType* protocolsContentStruct)
-{
-    // 1) Test the pointers
-    if (!data || !protocolsContentStruct)
-        return false;
-
-    // 2) Check if the total length is valid
-    uint8_t totalPacketLength = dataLength + getProtocolHeaderLength(protocolsContentStruct->protocol);
-    if ((totalPacketLength > RH_RF95_MAX_PACKET_LENGTH) || !dataLength)
-        return false;
-
-    // 3) Can we send the packet now?
-    waitPacketSent(); // Make sure we dont interrupt an outgoing message
-    setModeIdle();
-
-    if (!waitCAD())
-        return false;  // Check channel activity
-
-    // 4) Start sending the data to LoRa!
-
-    // 4.1) Position at the beginning of the FIFO
-    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-
-    // 4.2) The message protocol header
-    addProtocolHeader(protocolsContentStruct);
-
-    // 4.3) The message data
-    spiBurstWrite(RH_RF95_REG_00_FIFO, data, dataLength);
-
-    // 4.4) Set the LoRa payload length register to the total amount of data we are sending
-    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, totalPacketLength);
-
-    // 5) Send!
-    setModeTransmission(); // Start the transmitter
-
-    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
-    return true;
-}
-
-
 
 bool RH_RF95::setFrequency(float centre)
 {
@@ -399,16 +305,8 @@ void RH_RF95::clearRxBuf()
 {
     ATOMIC_BLOCK_START;
     mIsThereANewReceivedPacket = false;
-    mReceivedPacketBufferLength = 0;
+    mReceivedPacketLength = 0;
     ATOMIC_BLOCK_END;
-}
-
-
-
-// Getters!
-int RH_RF95::getLastSNR()
-{
-    return mLastSNR;
 }
 
 // These are low level functions that call the interrupt handler for the correct
@@ -468,11 +366,21 @@ int RH_RF95::frequencyError()
     return error;
 }
 
+int8_t RH_RF95::getLastSNR()
+{
+    return mLastSNR;
+}
+
+int8_t RH_RF95::getLastRssi()
+{
+    return mLastRssi;
+}
+
 // NOT USED ANYMORE. It was a fast way of transmitting multiple types variables, but now is retiredfor some code reasons.
 // By Henrique Bruno, UFRJ Minerva Rockets.
 /*
 bool RH_RF95::sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
-                                              telemetryProtocolsContentStructType* protocolsContentStruct)
+                                              toBeSentTelemetryPacketInfoStructType* protocolsContentStruct)
 {
     // 1) Test the pointers
     if (!data || !dataLengthsArray || !protocolsContentStruct)

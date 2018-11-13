@@ -11,6 +11,18 @@
 // Received Package Log Info Package
 void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
+    //    --------------- LogInfo Header 1.0 ---------------
+    //    [Positions] : [ Function ] : [ Length in Bytes ]
+    //
+    //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
+    //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+    //    c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+    //    d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+    //    e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+    //
+    //                        Total header length = 7 bytes.
+    //    --------------------------------------------------
+
     uint16_t tempPackageCrc;
     unsigned packetId;
 
@@ -32,12 +44,12 @@ void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetIn
     {
         memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
         mLogInfoPackageCrc = tempPackageCrc;
-        mPackageLogInfoNumberOfPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] & 0xF) + 1; // Only get the 4 least significant bits, and sum 1!
+        mPackageLogInfoNumberOfPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS]); // Only get the 4 least significant bits, and sum 1!
         // If is the first packet or if changed the entirePackageCrc, reset some parameters
     }
 
 // 4) Get the packetId from the received packet
-    packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] >> 4;
+    packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X];
 
     // Copies the received array
     memcpy(mPackageLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
@@ -85,6 +97,7 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 
     // 2.1) First get the number of variables
     mLogNumberOfVariables = mPackageLogInfoRawArray[0];
+    
     // 2.2) Get the variable types and sizes
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter++)
     {

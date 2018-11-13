@@ -42,8 +42,6 @@
 
 // DataLog Defines
 
-    
-
     #define PMM_PORT_DATA_LOG_INDEX_CRC_8_HEADER            0
     #define PMM_PORT_DATA_LOG_INDEX_SESSION_ID              1
     #define PMM_PORT_DATA_LOG_INDEX_LOG_INFO_CRC_LSB        2
@@ -58,32 +56,34 @@
 
 
 // LogInfo Defines
-    //    --------------------- 1.0 ------------------------
+    //    --------------- LogInfo Header 1.0 ---------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
-
+    //
     //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
     //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
-    //    c) [ 3 ] : [ Packet X of (Y - 1) ........ ] : [ 1 ]
-    //    d) [4,5] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
-
-    //                        Total header length = 6 bytes.
+    //    c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+    //    d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+    //    e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+    //
+    //                        Total header length = 7 bytes.
     //    --------------------------------------------------
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB          0
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB          1
     #define PMM_PORT_LOG_INFO_INDEX_SESSION_ID              2
-    #define PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1   3
-    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB         4
-    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB         5
+    #define PMM_PORT_LOG_INFO_INDEX_PACKET_X                3
+    #define PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS            4
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB         5
+    #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB         6
     
     // Total header length is equal to...
-    #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 6
+    #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 7
 
 
     //    -------------- LogInfo Payload 1.0 ---------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
     //
-    //    a) [ 6 ] : [ Number of Variables ] : [ 1 ]
-    //    b) [7,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
+    //    a) [ 7 ] : [ Number of Variables ] : [ 1 ]
+    //    b) [8,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
     //    c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
     //    
     //    Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength
@@ -118,7 +118,7 @@ public:
 
     // Transmission
     void updateLogInfoCombinedPayload(); // Updates the LogInfo
-    int sendDataLog();
+    int  sendDataLog();
 
 
     // Reception
@@ -165,20 +165,16 @@ private:
     // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
     void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
-
     uint8_t variableTypeToVariableSize(uint8_t variableType);
     void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
     void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
-
 
     // Build the Package Log Info Package
     void updatePackageLogInfoRaw();
     void updateLogInfoInTelemetryFormat();
 
-
     // Uses the received packets via telemetry to get the Package Log Info
     void unitePackageInfoPackets();
-
 
 
 
@@ -188,7 +184,7 @@ private:
     // Default variables added in every DataLog package:
     uint8_t*  mSystemSessionPtr;
 
-
+    // Transmission
     char*    mVariableNameArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableTypeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableSizeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry

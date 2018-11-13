@@ -7,8 +7,19 @@
 // LogInfo in Telemetry format, for transmission.
 void PmmModuleDataLog::updateLogInfoCombinedPayload()
 {
-    // As stated in Telemetry Packages Guide, the LogInfo Package payload is
-    // --------------------------------------------------
+    //    --------------- LogInfo Header 1.0 ---------------
+    //    [Positions] : [ Function ] : [ Length in Bytes ]
+    //
+    //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
+    //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+    //    c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+    //    d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+    //    e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+    //
+    //                        Total header length = 7 bytes.
+    //    --------------------------------------------------
+
+    //    --------------------------------------------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
     //
     //    a) [ 6 ] : [ Number of variables ] : [ 1 ]
@@ -66,6 +77,18 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
 void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
 {
+    //    --------------- LogInfo Header 1.0 ---------------
+    //    [Positions] : [ Function ] : [ Length in Bytes ]
+    //
+    //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
+    //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+    //    c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+    //    d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+    //    e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+    //
+    //                        Total header length = 7 bytes.
+    //    --------------------------------------------------
+
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
     uint16_t payloadBytesInThisPacket;
@@ -90,8 +113,9 @@ void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
 
         packetLength += payloadBytesInThisPacket;
 
-        // Adds the requested packet and the total number of packets - 1.
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X_OF_Y_MINUS_1] = (packetCounter << 4) | (mPackageLogInfoNumberOfPackets - 1);
+        // Adds the requested packet and the total number of packets.
+        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X] = packetCounter;
+        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS] = mPackageLogInfoNumberOfPackets;
 
         // Now adds the data, which was built on updatePackageLogInfoRaw(). + skips the packet header.
         memcpy(mPackageLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH, mPackageLogInfoRawArray, payloadBytesInThisPacket);

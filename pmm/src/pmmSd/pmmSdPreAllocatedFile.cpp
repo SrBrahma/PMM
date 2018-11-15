@@ -10,7 +10,7 @@
 
 
 
-PmmSdFileLogPreAllocatedInParts::PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength)
+PmmSdFastLog::PmmSdFastLog(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength)
 {
     // 1) Do some basic init stuff
     mCurrentNumberOfParts    = 0;
@@ -43,19 +43,31 @@ PmmSdFileLogPreAllocatedInParts::PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sd
 }
 
 
-
-int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
+// Allocates a file part with a length of X blocks.
+// Returns the address of the first block.
+// If any error found, will return 0.
+uint32_t PmmSdFastLog::allocateFilePart(char baseFilename[], char filenameExtension[], uint16_t blocksToAllocateInThisPart)
 {
-    static char tempFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
+    static char newFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
 
     uint32_t bgnBlock, endBlock;
 
-    // 1) How will be called the new part file?
-    snprintf(tempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", mBaseFilename,
-             mCurrentNumberOfParts, mFilenameExtension);
+    unsigned filePartId = 0;
+
+    do
+    {
+        // 1) How will be called the new part file?
+        if (filenameExtension[0] == '.')
+            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", baseFilename, filePartId, filenameExtension);
+        else    // Add the '.' before the extension, if the given didn't have.
+            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u.%s", baseFilename, filePartId, filenameExtension);
+        filePartId++;
+    }
+    while (mSdEx->exists(newFilename));
+    
 
     // 2) Allocate the new file!
-    if (!mFile.createContiguous(tempFilename, PMM_SD_BLOCK_SIZE * mBlocksAllocationPerPart))
+    if (!mFile.createContiguous(newFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
     {
         return 1;
         // error("createContiguous failed");
@@ -76,16 +88,12 @@ int PmmSdFileLogPreAllocatedInParts::allocateFilePart()
 
     mActualBlockAddress = bgnBlock;
 
-    mCurrentNumberOfParts++;
-
-    mActualBlockInPart = 0; // !
-
-    return 0;
+    return bgnBlock;
 }
 
 
 
-int PmmSdFileLogPreAllocatedInParts::pmmFlush()
+int PmmSdFastLog::flush()
 {
     unsigned alreadyWrittenBlocks = 0;
     unsigned availableBlocksOnThisPart;
@@ -120,7 +128,7 @@ int PmmSdFileLogPreAllocatedInParts::pmmFlush()
         // 2) If we still have data to write, it's because our file part is full! Allocate a new part!
         if (remainingBlocksToWrite)
             allocateFilePart();
-            // mActualBlockInPart = 0; Happens at allocateFilePart()!
+            mActualBlockInPart = 0; // !
 
     } // End of while loop
 
@@ -130,7 +138,7 @@ int PmmSdFileLogPreAllocatedInParts::pmmFlush()
 
 
 
-int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
+int PmmSdFastLog::write(uint8_t dataArray[])
 {
     unsigned availableBytesOnBuffer;
     unsigned remainingDataBytes;
@@ -144,8 +152,8 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
     // 2) Write the Magic Number Start to the buffer
     // 2.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
     if (mBufferActualIndex >= mBufferTotalLength - 1)
-        pmmFlush();
-        // mBufferActualIndex = 0; Happens at pmmFlush()!
+        flush();
+        // mBufferActualIndex = 0; Happens at flush()!
 
     // 2.2) Write it!
     mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_START;
@@ -185,16 +193,16 @@ int PmmSdFileLogPreAllocatedInParts::writeInPmmFormat(uint8_t dataArray[])
 
         // 3.5) If we still have data to be written to the buffer, it's because the buffer is full! FLUSH!
         if (remainingDataBytes)
-            pmmFlush();
-            // mBufferActualIndex = 0; Happens at pmmFlush()!
+            flush();
+            // mBufferActualIndex = 0; Happens at flush()!
 
     }
 
     // 4) Write the Magic Number End to the buffer
     // 4.1) Is there space on the buffer to write it? If not, flush to the SD and reset the actual Index!
     if (mBufferActualIndex >= mBufferTotalLength - 1)
-        pmmFlush();
-        // mBufferActualIndex = 0; Happens at pmmFlush()!
+        flush();
+        // mBufferActualIndex = 0; Happens at flush()!
 
 
     // 4.2) Write it!

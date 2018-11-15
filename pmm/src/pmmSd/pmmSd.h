@@ -42,17 +42,17 @@ uint16_t mebibytesToBlocksAmount(uint16_t mebibytes); // Mebibyte is 1024 kibiby
 // This need a deconstructor!
 // The maximum buffer length is defined by PMM_SD_MAXIMUM_BUFFER_LENTH_KIB! If the given value is greater than this, will be replaced by this maximum!
 // As the blocksAllocationPerPart is an uint16_t, the maximum file part size is 32MiB. As making bigger file parts doesn't seem too reasonable for the system specifications, will leave this way.
-class PmmSdFileLogPreAllocatedInParts
+class PmmSdFastLog
 {
 
 public:
-    PmmSdFileLogPreAllocatedInParts(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength);
-    int writeInPmmFormat(uint8_t data[]);
+    PmmSdFastLog(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength);
+    int write(uint8_t data[]);
 
 
 private:
     int allocateFilePart();
-    int pmmFlush();
+    int flush();
 
 
     // File informations
@@ -76,8 +76,8 @@ private:
     
     uint16_t    mBufferSizeInBlocks;            // A buffer of this*512 bytes will be created. Bigger buffer may not necessarily means a faster write rate. Test it.
 
-    uint16_t    mBufferTotalLength; // Being uint16_t, limits the buffer to have a maximum length of 65536; 64KiB. We will NEVER use it. (in 30 years, this comment will be funny,
-    uint16_t    mBufferActualIndex; // because someone will use a 64KiB as buffer to an SD card in a microcontroller lol)
+    uint16_t    mBufferTotalLength; // Being uint16_t, limits the buffer to have a maximum length of 65536; 64KiB. We will NEVER use it. (in 30 years, this comment will be funny)
+    uint16_t    mBufferActualIndex;
 
     uint16_t    mDataLength;
 
@@ -106,14 +106,13 @@ public:
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
-    SdFatSdioEX getSdEx();
-
+    
 
 private:
-    PmmErrorsCentral *mPmmErrorsCentral;
-
     SdFatSdioEX mSdEx;
     File mFile;
+
+    PmmErrorsCentral *mPmmErrorsCentral;
 
     uint16_t mThisSessionId;
     char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string

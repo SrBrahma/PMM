@@ -88,12 +88,51 @@ int PmmSd::write(char filename[], char arrayToWrite[], size_t length, uint8_t so
 }
 
 
-
-SdFatSdioEX PmmSd::getSdEx()
+// Allocates a file part with a length of X blocks.
+// Returns the address of the first block.
+// If any error found, will return 0.
+uint32_t PmmSd::allocateFilePart(File* file, char baseFilename[], char filenameExtension[], uint16_t blocksToAllocateInThisPart)
 {
-    return mSdEx;
-}
+    static char newFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
 
+    uint32_t bgnBlock, endBlock;
+
+    unsigned filePartId = 0;
+
+    do
+    {
+        // 1) How will be called the new part file?
+        if (filenameExtension[0] == '.')
+            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", baseFilename, filePartId, filenameExtension);
+        else    // Add the '.' before the extension, if the given didn't have.
+            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u.%s", baseFilename, filePartId, filenameExtension);
+        filePartId++;
+    }
+    while (mSdEx->exists(newFilename));
+    
+
+    // 2) Allocate the new file!
+    if (!file->createContiguous(newFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
+    {
+        return 1;
+        // error("createContiguous failed");
+    }
+
+    // 3) Get the address of the blocks of the new file on the SD.
+    if (file->contiguousRange(&bgnBlock, &endBlock))
+    {
+        return 1;
+        // error("contiguousRange failed");
+    }
+
+    if (!mSdEx->card()->erase(bgnBlock, endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    {
+        return 1;
+        // error("erase failed");
+    }
+
+    return bgnBlock;
+}
 
 
 bool PmmSd::getSdIsBusy()

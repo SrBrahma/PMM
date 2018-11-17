@@ -10,7 +10,7 @@
 
 
 
-PmmSdFastLog::PmmSdFastLog(SdFatSdioEX* sdEx, char* baseFilename, uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength)
+PmmSdFastLog::PmmSdFastLog(PmmSd* pmmSd, char baseFilename[], uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength)
 {
     // 1) Do some basic init stuff
     mCurrentNumberOfParts    = 0;
@@ -18,7 +18,7 @@ PmmSdFastLog::PmmSdFastLog(SdFatSdioEX* sdEx, char* baseFilename, uint8_t source
 
 
     // 2) Get the arguments
-    mSdEx = sdEx;
+    mPmmSd = pmmSd;
     snprintf(mBaseFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s", baseFilename);
     mSourceAddress           = sourceAddress;
     mBlocksAllocationPerPart = blocksAllocationPerPart;
@@ -38,61 +38,13 @@ PmmSdFastLog::PmmSdFastLog(SdFatSdioEX* sdEx, char* baseFilename, uint8_t source
     // if (!mBufferPointer) ERROR OH NO
 
     // 5) Allocate the first part of the file
-    allocateFilePart();
+    //allocateFilePart();
     
 }
 
 
-// Allocates a file part with a length of X blocks.
-// Returns the address of the first block.
-// If any error found, will return 0.
-uint32_t PmmSdFastLog::allocateFilePart(char baseFilename[], char filenameExtension[], uint16_t blocksToAllocateInThisPart)
-{
-    static char newFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
 
-    uint32_t bgnBlock, endBlock;
-
-    unsigned filePartId = 0;
-
-    do
-    {
-        // 1) How will be called the new part file?
-        if (filenameExtension[0] == '.')
-            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u%s", baseFilename, filePartId, filenameExtension);
-        else    // Add the '.' before the extension, if the given didn't have.
-            snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u.%s", baseFilename, filePartId, filenameExtension);
-        filePartId++;
-    }
-    while (mSdEx->exists(newFilename));
-    
-
-    // 2) Allocate the new file!
-    if (!mFile.createContiguous(newFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
-    {
-        return 1;
-        // error("createContiguous failed");
-    }
-
-    // 3) Get the address of the blocks of the new file on the SD.
-    if (mFile.contiguousRange(&bgnBlock, &endBlock))
-    {
-        return 1;
-        // error("contiguousRange failed");
-    }
-
-    if (!mSdEx->card()->erase(bgnBlock, endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
-    {
-        return 1;
-        // error("erase failed");
-    }
-
-    mActualBlockAddress = bgnBlock;
-
-    return bgnBlock;
-}
-
-
-
+// not tested yet. don't use.
 int PmmSdFastLog::flush()
 {
     unsigned alreadyWrittenBlocks = 0;
@@ -115,9 +67,7 @@ int PmmSdFastLog::flush()
         if (blocksToWriteNow > 0)
         {
             // 1.2) Write the blocks!
-            if (!mSdEx->card()->writeBlocks(mActualBlockAddress,
-                                            mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE,
-                                            blocksToWriteNow));
+            if (!mSdEx->card()->writeBlocks(mActualBlockAddress, mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE, blocksToWriteNow));
                 return 1;
 
             alreadyWrittenBlocks += blocksToWriteNow;
@@ -127,8 +77,10 @@ int PmmSdFastLog::flush()
 
         // 2) If we still have data to write, it's because our file part is full! Allocate a new part!
         if (remainingBlocksToWrite)
+        {
             allocateFilePart();
             mActualBlockInPart = 0; // !
+        }
 
     } // End of while loop
 
@@ -137,7 +89,7 @@ int PmmSdFastLog::flush()
 }
 
 
-
+// not tested yet. don't use.
 int PmmSdFastLog::write(uint8_t dataArray[])
 {
     unsigned availableBytesOnBuffer;

@@ -43,12 +43,12 @@ void Pmm::init()
     mLoopId = 0;
 
   // Debug
-    #if PMM_DEBUG_SERIAL
+    #if PMM_DEBUG
         uint32_t serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         
-        #if PMM_DEBUG_SERIAL_TIMEOUT_ENABLED
-            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_SERIAL_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
+        #if PMM_DEBUG_TIMEOUT_ENABLED
+            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
         
         #else
             while (!Serial);
@@ -112,19 +112,19 @@ void Pmm::init()
     PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmModuleDataLog.debugPrintLogHeader();
 
-    #if PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED
+    #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
         if (Serial)
         {
-            Serial.print("\nPmm: Press any key to continue the code. (set PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n");
+            Serial.print("\nPmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n");
             for (;!Serial.available();delay(10));
         }
-    #elif PMM_DEBUG_SERIAL && PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT
+    #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
         if (Serial)
         {
             Serial.print("\nPmm: System is halted for ");
-            Serial.print(PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT);
+            Serial.print(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
             Serial.println(" ms so you can read the init messages.");
-            delay(PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT);
+            delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
     #endif
 }
@@ -159,7 +159,7 @@ void Pmm::update()
 
 
 
-    #if PMM_DEBUG_SERIAL
+    #if PMM_DEBUG
         mPmmModuleDataLog.debugPrintLogContent();
         Serial.println();
     #endif

@@ -10,6 +10,15 @@
 
 #define DELAY_MS_BAROMETER 100 //random value
 
+#define PMM_IMU_DEBUG       1
+#define PMM_IMU_DEBUG_MORE  1 // For this to work, 
+
+#if PMM_IMU_DEBUG_MORE
+    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINT_MORE(x)
+#else
+    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
+#endif
+
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <BMP085.h>

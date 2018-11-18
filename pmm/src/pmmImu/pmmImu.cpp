@@ -240,9 +240,7 @@ int PmmImu::update()
     if (mPmmErrorsCentral->getAccelerometerIsWorking())//accelIsWorking)
     {
         updateMpu();
-        #if PMM_DEBUG_PRINT_IMU_MORE
-            PMM_DEBUG_PRINT_MORE("PmmImu [M]: Mpu updated!");
-        #endif
+        PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Mpu updated!");
     }
     /*
     if (mPmmErrorsCentral->getGyroscopeIsWorking())//gyroIsWorking)
@@ -251,19 +249,17 @@ int PmmImu::update()
     if (mPmmErrorsCentral->getMagnetometerIsWorking())//magnIsWorking)
     {
         updateMagnetometer();
-        #if PMM_DEBUG_PRINT_IMU_MORE
-            PMM_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer updated!");
-        #endif
+        PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer updated!");
     }
 
     if (millis() >= mNextMillisBarometer)
     {
         mNextMillisBarometer = millis() + DELAY_MS_BAROMETER;
         if (mPmmErrorsCentral->getBarometerIsWorking())//baroIsWorking)
+        {
             updateBmp();
-            #if PMM_DEBUG_PRINT_IMU_MORE
-                PMM_DEBUG_PRINT_MORE("PmmImu [M]: Barometer updated!");
-            #endif
+            PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Barometer updated!");
+        }
     }
     return 0;
 }

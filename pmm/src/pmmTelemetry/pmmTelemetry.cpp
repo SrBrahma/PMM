@@ -38,7 +38,7 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
     {
-        #if PMM_DEBUG_SERIAL
+        #if PMM_DEBUG
             Serial.print("PmmTelemetry: LoRa didn't initialized, attempt number "); Serial.println(initCounter);
         #endif
         if (++initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
@@ -69,7 +69,7 @@ int PmmTelemetry::updateTransmission()
         return 1;
 
     /* tempMillis = millis();
-    #if PMM_DEBUG_SERIAL_MORE
+    #if PMM_DEBUG_MORE
         Serial.print("PmmTelemetry [M]: Time taken waiting previous package to be sent = ");
         Serial.print(millis() - tempMillis);
         Serial.println("ms.");

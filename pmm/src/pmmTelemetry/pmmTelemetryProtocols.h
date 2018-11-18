@@ -2,13 +2,17 @@
 #define PMM_TELEMETRY_PROTOCOLS_h
 
 #include <stdint.h>                     // For uintx_t types
-
+#include <pmmConsts.h>                  // For ADDRESS_THIS_SYSTEM define.
 // Addresses
-#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM  0x01    // You may change it!
+
+// This is defined at pmmConsts.h for a more centralized control of the important defines, so the user won't have to access different files
+// for normal operation.
+#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM  PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H 
+
 
     // Source only addresses
         #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION 0xF0
-            // #define No source only reserved address for now!
+            // #define No source only reserved addresses for now!
         #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION   0xF8
     // End of Soure only addresses
 

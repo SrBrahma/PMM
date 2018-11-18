@@ -153,7 +153,7 @@ public:
 
 
     // Debug!
-    #if PMM_DEBUG_SERIAL
+    #if PMM_DEBUG
         void debugPrintLogHeader();
         void debugPrintLogContent();
     #endif

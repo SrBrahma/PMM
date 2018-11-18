@@ -87,7 +87,7 @@ void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_
     uint8_t varSize = variableTypeToVariableSize(variableType);
     if (mLogNumberOfVariables >= PMM_MODULE_DATA_LOG_MAX_VARIABLES)
     {
-        #if PMM_DEBUG_SERIAL
+        #if PMM_DEBUG
             Serial.print("PmmPort #2: Failed to add the variable \"");
             Serial.print(variableName);
             Serial.print("\". Exceeds the maximum number of variables in the Package Log.\n");
@@ -96,7 +96,7 @@ void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_
     }
     if ((mPackageLogSizeInBytes + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
     {
-        #if PMM_DEBUG_SERIAL
+        #if PMM_DEBUG
             Serial.print("PmmPort #3: Failed to add the variable \"");
             Serial.print(variableName);
             Serial.print("\". Exceeds the maximum payload length (tried to be ");
@@ -271,7 +271,7 @@ uint8_t**    PmmModuleDataLog::getVariableAddressArray() { return mVariableAddre
 
 /* Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 
-#if PMM_DEBUG_SERIAL
+#if PMM_DEBUG
 // Note for the 2 functions below:
 // There are faster ways to print the debugs, but since it isn't something that is going to be used frequently,
 // I (HB :) ) will spend my precious time on other stuffs)

@@ -30,35 +30,35 @@
 // =======================================================================
 //  Debug
 // =======================================================================
-#define PMM_DEBUG_SERIAL                    1
-#define PMM_DEBUG_SERIAL_MORE               1 // Additional debug messages.
+#define PMM_DEBUG                    1 // Will enable debug messages via Serial. All error messages will be displayed with this, and some minor messages.
+#define PMM_DEBUG_MORE               1 // Additional debug messages, like "PmmImu [M]: MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
+// For this to work, PMM_DEBUG must be 1. Also, the main classes usually have another define like PMM_IMU_DEBUG_MORE, so you can activate the additional messages you want.
 
-#define PMM_DEBUG_SERIAL_TIMEOUT_ENABLED    1 // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
+#define PMM_DEBUG_TIMEOUT_ENABLED    1 // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
 // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
 // the code will proceed, without Serial debugging. Great case you forgot to disable the Debug before launching your rocket!
-#define PMM_DEBUG_SERIAL_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
+#define PMM_DEBUG_TIMEOUT_MILLIS     10000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
 
 // These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
-// The PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED is 1.
-#define PMM_DEBUG_SERIAL_WAIT_FOR_ANY_KEY_PRESSED   1
-#define PMM_DEBUG_SERIAL_WAIT_X_MILLIS_AFTER_INIT   5000
+// The PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
+#define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED   1
+#define PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT   5000
 
 
-#if PMM_DEBUG_SERIAL
+#if PMM_DEBUG
     #define PMM_DEBUG_PRINT(x) Serial.println(x)
 #else
     #define PMM_DEBUG_PRINT(x) do {} while (0)
 #endif
 
 
-#if PMM_DEBUG_SERIAL_MORE
+#define PMM_CANCEL_MACRO(x) do {} while (0)
+
+#if PMM_DEBUG_MORE
     #define PMM_DEBUG_PRINT_MORE(x) Serial.println(x)
 #else
-    #define PMM_DEBUG_PRINT_MORE(x) do {} while (0)
+    #define PMM_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
 #endif
-
-
-#define PMM_DEBUG_PRINT_IMU_MORE            0 // Prints "barometer updated!" etc
 
 
 
@@ -80,7 +80,7 @@
 //  Telemetry
 // =======================================================================
 #define PMM_USE_TELEMETRY       1
-
+#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H   1   // This system address. Two systems MUST NOT have the same address. Control them.
 
 
 // =======================================================================

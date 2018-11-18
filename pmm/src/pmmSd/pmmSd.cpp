@@ -13,6 +13,24 @@
 
 
 
+uint16_t kibibytesToBlocksAmount(uint16_t kibibytes) // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
+{
+    uint32_t tempValue = kibibytes * (1024 / PMM_SD_BLOCK_SIZE);
+    if (tempValue > 0xFFFF)
+        tempValue = 0xFFFF; // Avoid overflow of the uint16_t
+    return tempValue; 
+}
+
+uint16_t mebibytesToBlocksAmount(uint8_t mebibytes) // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
+{
+    uint32_t tempValue = mebibytes * (1048576 / PMM_SD_BLOCK_SIZE); // 1048576 bytes is 1 MiB
+    if (tempValue > 0xFFFF)
+        tempValue = 0xFFFF; // Avoid overflow of the uint16_t
+    return tempValue; 
+}
+
+
+
 PmmSd::PmmSd()
 {
 }
@@ -37,7 +55,7 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
 
 
 
-    PMM_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully!");
+    PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
     return 0;
 }
 
@@ -105,44 +123,40 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
 
 
 // Allocates a file part with a length of X blocks.
-// Returns the address of the first block.
-// If any error found, will return 0.
+// If no problems found, return 0.
 // The filenameExtension shouldn't have the '.'.
-uint32_t PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filepart, uint16_t blocksToAllocateInThisPart)
+int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t blocksToAllocateInThisPart, uint32_t* beginBlock, uint32_t* endBlock)
 {
-    static char newFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
-
-    uint32_t bgnBlock, endBlock;
-
+    
 
     // 1) How will be called the new part file?
-    snprintf(newFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s_%02u.%s", baseFilename, filePartId, filenameExtension);
+    snprintf(mTempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s/part%u.%s", dirFullRelativePath, filePart, filenameExtension);
 
 
     // 2) Allocate the new file!
-    if (!mAllocationFile.createContiguous(newFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
+    if (!mAllocationFile.createContiguous(mTempFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 4 - Error at createContiguous()");
+        PMM_DEBUG_PRINT("PmmSd: ERROR 4 - Error at createContiguous()!");
         return 1;
         // error("createContiguous failed");
     }
 
-    // 3) Get the address of the blocks of the new file on the SD.
-    if (!mAllocationFile.contiguousRange(&bgnBlock, &endBlock))
+    // 3) Get the address of the blocks of the new file on the SD. [beginBlock, endBlock].
+    if (!mAllocationFile.contiguousRange(beginBlock, endBlock))
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 5 - Error at contiguousRange()");
+        PMM_DEBUG_PRINT("PmmSd: ERROR 5 - Error at contiguousRange()!");
         return 1;
         // error("contiguousRange failed");
     }
 
-    if (!mSd.card()->erase(bgnBlock, endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    if (!mSd.card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 6 - Error at erase()");
+        PMM_DEBUG_PRINT("PmmSd: ERROR 6 - Error at erase()!");
         return 1;
         // error("erase failed");
     }
-
-    return bgnBlock;
+    PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] File allocation succeeded.");
+    return 0;
 }
 
 

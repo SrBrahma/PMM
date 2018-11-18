@@ -35,15 +35,20 @@
 
 #define PMM_SD_MAXIMUM_VARIABLE_LENTGTH     8 // Used in pmmSdLowLevel.cpp
 
-uint16_t kibibytesToBlocksAmount(uint16_t kibibytes); // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
-uint16_t mebibytesToBlocksAmount(uint16_t mebibytes); // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
 
+// Debug
+#define PMM_SD_DEBUG_MORE           1
 
 #if PMM_SD_DEBUG_MORE
     #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINT_MORE(x)
 #else
     #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
 #endif
+
+
+
+uint16_t kibibytesToBlocksAmount(uint16_t kibibytes); // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
+uint16_t mebibytesToBlocksAmount(uint8_t  mebibytes); // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
 
 
 class PmmSd
@@ -62,7 +67,7 @@ public:
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
-    uint32_t allocateFilePart(File* file, char baseFilename[], char filenameExtension[], uint8_t filepart, uint16_t blocksToAllocateInThisPart);
+    int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t blocksToAllocateInThisPart, uint32_t* beginBlock, uint32_t* endBlock);
 
     void getFilenameOwn(char destination[], uint8_t maxLength, char filename[]);
 
@@ -78,6 +83,8 @@ private:
 
     uint8_t mThisSessionId;
     char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
+
+    char mTempFilename[PMM_SD_FILENAME_INTERNAL_MAX_LENGTH];
 };
 
 #endif

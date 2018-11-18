@@ -1,0 +1,13 @@
+1) Radiohead library changed a lot, mostly on RH_RF95.
+
+2) u8g2 library:
+
+  u8x8_d_st7920.c (U8g2_ID942/src/clib)
+  FILE CHANGED BY HENRIQUE BRUNO FANTAUZZI DE ALMEIDA: THE HW MODE WASNT WORKING WITH TEENSY 3.6.
+  sck_clock_hz was 1000000, underclocking it to 920000 made it work properly.
+
+  static const u8x8_display_info_t u8x8_st7920_128x64_display_info =
+  {
+    /* sck_clock_hz = */ 920000UL,	/* since Arduino 1.6.0, the SPI bus speed in Hz. Should be  1000000000/sck_pulse_width_ns */
+
+    

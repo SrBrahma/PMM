@@ -1,0 +1,310 @@
+The guide to the PMM Telemetry Modules
+By Henrique Bruno Fantauzzi de Almeida - Minerva Rockets - UFRJ
+
+
+
+    Packet  = An array of bytes that is a part of a package.
+
+    Package = The union of packets. Sometimes, just one packet can make the package, if all the data can be sent on it.
+
+    CRC = Cyclic Redundancy Check, an error-detecting code.
+        https://en.wikipedia.org/wiki/Cyclic_redundancy_check
+
+
+
+
+Currently, the PMM telemetry system is connectionless, and composed by 3 layers:
+
+Layer 3 - Application Layer:
+    The data of the package. Its contents and functions are defined by the Port, carried by the Transport Layer.
+
+Layer 2 - Transport Layer: 
+    PMM Neo Protocol. Currently the only protocol present in the system, its function is to address the packet to the receiver, to inform who is sending the packet
+    and to determine the Port (the function of the Data being sent).
+    It is similar to UDP protocol.
+    
+    https://en.wikipedia.org/wiki/Datagram
+
+Layer 1 - Physical Layer:
+    What will send the packet. A LoRa module, a simple Serial connection, a RS-485 protocol...
+
+Useful links:
+https://en.wikipedia.org/wiki/Abstraction_layer
+https://en.wikipedia.org/wiki/OSI_model
+
+https://en.wikipedia.org/wiki/Transport_layer
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    1) PMM Neo Protocol
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        ------------ PMM Neo Protocol Header -------------
+        [Positions] : [Function] : [ Length in Bytes ]
+
+        a) [ 0 ] : [ Protocol Identifier .. ] : [ 1 ]
+        b) [ 1 ] : [ Packet Length ........ ] : [ 1 ]
+        c) [ 2 ] : [ Source Address ....... ] : [ 1 ]
+        d) [ 3 ] : [ Destination Address .. ] : [ 1 ]
+        e) [ 4 ] : [ Port ................. ] : [ 1 ]
+        f) [ 5 ] : [ Header CRC-8 ......... ] : [ 1 ]
+
+                            Total header length = 6 bytes.
+        --------------------------------------------------
+
+    b) Packet Length:
+        The Packet Length exists to ensure that the length was added by the microcontroller itself, and not by the connected telemetry module, as there may exist a module that adds
+        internally and automatically the length, and may not add an error detection to it, like a checksum or CRC. This way, if there was some failure in the communication
+        between the microcontroller and the module, the length could have a wrong value.
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    1) DataLog Package
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    A package to transmit Data Logs. Its contents are defined by the LogInfo Package.
+
+    Only packages with a valid CRC header are accepted. But, the payload is accepted even if its CRC is wrong, but when saved,
+    this package will be marked with a wrong CRC flag.
+
+    If a SD card is working, this received package will be saved on
+        "/Minerva Rockets/pmm/*systemName*_*Session*/received/IP_*IP*/Session_*SessionId*/Log_*LogInfoCRC*/logFile"
+        It may eventually change.
+
+    1.1) Header
+
+        --------------- DataLog Header 1.0 ---------------
+        [Positions] : [Function] : [ Length in Bytes ]
+
+        a) [ 0 ] : [ CRC 8 of this header . ] : [ 1 ]
+        b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
+        c) [2,3] : [ LogInfo related CRC 16 ] : [ 2 ]
+        d) [4,5] : [ CRC 16 of the Log .... ] : [ 2 ]
+
+                            Total header length = 6 bytes.
+        --------------------------------------------------
+
+
+        a) CRC 8 of this header:
+            The CRC 8 of the above fields, to know if we are receiving the right content.
+            If even with this you get a wrong header, contact me to change to CRC 16.
+
+
+        b) Session Identifier:
+            In which system session this package was generated.
+
+
+        c) LogInfo related CRC 16:
+            The CRC16 of the entire LogInfo package, to know where to store the received logs.
+
+
+        e) CRC 16 of the Payload:
+            To validate the Data Log. If it doesn't match, it will still be saved, but with a CRC Fail flag.
+
+
+
+    1.2) Payload
+
+        -------------- DataLog Payload 1.0 ---------------
+        [Positions] : [ Function ] : [ Length in Bytes ]
+
+        a) [6,+] : [ Data Log ] : [ LogLength ]
+        --------------------------------------------------
+
+
+        a) Data Log:
+            The log data, in little endian. The variables order and types are defined by the LogInfo package.
+            Its size is defined by the Log Length and by the Transmission Layer.
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    2) LogInfo Package
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    The Package that determines the order, the types and the variable names of a DataLog Package.
+
+    Only packets with valid CRC of the current packet are accepted, as this package is vital to the correct functioning
+      of the system.
+    
+    Since this package can/will be big (>256 bytes), as there are the variable strings, it can be divided into a few packets.
+
+    If a SD card is working, this received package will be saved on
+        "Minerva Rockets/pmm/*systemName*_*Session*/received/IP_*IP*/Session_*SessionId*/Log_*LogInfoCRC*/logInfo.txt"
+        It may eventually change.
+
+    2.1) Header:
+
+        --------------- LogInfo Header 1.0 ---------------
+        [Positions] : [ Function ] : [ Length in Bytes ]
+
+        a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
+        b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+        c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+        d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+        e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+
+                            Total header length = 7 bytes.
+        --------------------------------------------------
+
+
+        a) CRC 16 of the current Packet:
+            To validate the integrity of the current packet. Little endian.
+            crc = crc16(packetArray + 2, packetSize - 2);
+
+
+        b) Session Identifier
+            In which system session this package was generated.
+            It is in the header, and not on the payload, for keeping the CRC 16 of all Payload Parts to be
+              the same for multiple sessions, as an alternative way to get the LogInfo after the flight,
+              if it was unable to be received.
+
+
+        c) Packet X:
+            Identify the current packet. Like an array identifier, if it is 0, means it is the first packet.
+
+            Ex: 0000 0001
+                Is the packet 1, so it's the second packet!
+
+        c) Of Y Packets:
+            The total number of packets. Like an array length, if it is 2, means there are a total of 2 packets.
+
+            Ex: 0000 0011
+                There are 3 packets in total. So we can have the packet 0, 1 and 2.
+
+        d) CRC 16 of all Payloads Parts:
+            To know if the received packets belongs to the same package. Little endian.
+
+            The CRC16 is calculated this way:
+
+            for (actualPacket = 0, crcVar = CRC16_DEFAULT_VALUE; actualPacket < numberPackets ; actualPacket ++)
+                crcVar = crc16(packetsData[actualPacket], packetsLength[actualPacket], crcVar);
+
+
+    2.22) Payload:
+
+        -------------- LogInfo Payload 1.0 ---------------
+        [Positions] : [ Function ] : [ Length in Bytes ]
+
+        a) [ 7 ] : [ Number of Variables ] : [ 1 ]
+        b) [8,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
+        c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
+        
+        Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength
+        --------------------------------------------------
+
+
+        a) Number of Variables:
+            The number of variablese the DataLog package sends.
+            Having 0 to state 0 variables is good for eventual 0 variables LogInfo Package (a problematic LogInfo).
+
+            Ex: 0x03 = 3 Variables. 
+
+
+        b) Variable Types:
+            Each variable type uses 4 bits, the most significant 4 bits represents the type of the N variable.
+            The 4 least significant bits represents the N+1 variable.
+            If the number N of variables is an odd number, the N+1 isn't used.
+            The types/numbers are defined on the PmmModuleDataLog.h (ex #define PMM_EXTENSION_DATA_LOG_TYPE_INT8     1)
+
+            Ex: Using the previous exameple of 3 variables, we may receive these 2 bytes below as Variable Types:
+                [0xA3][0x17]
+                0xA = First variable is type 10.
+                0x3 = Second variable is type 3.
+                0x1 = Third variable is type 1.
+                0x7 = Is discarded, as there are only 3 variables.
+
+
+        c) Variable Names
+            Sequential strings of each variable. The strings are null-terminated, so they do end with a null character ('\0').
+
+            Ex: ["PackageId"]["AccelerometerX(m/s^2)"]["GyroscopeZ(d/s)"]
+
+            First string, for the first variable is "PackageId".
+            Second string, for the second variable is "AccelerometerX(m/s^2)".
+            Third string, for the third variable is "GyroscopeZ(d/s)". (d/s is degree per second!)
+
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    3) MessageLog Package:
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    Sends a general string. Can be any message, from error messages, to parachute activation.
+
+    The CRC header must be valid for the package to be accepted, but the CRC of the string doesn't need to be.
+    The string will be saved, but will be marked with a '?' in it's start.
+
+    If a SD card is working, the received string will be saved on
+        "Minerva Rockets/pmm/*systemName*_*Session*/received/IP_*IP*/Session_*SessionId*/messagesLog.txt"
+        It may eventually change.
+    A backup file will also be saved.
+
+    3.1) Header:
+
+        ------------- MessageLog Header 1.0 --------------
+        [Positions] : [ Function ] : [ Length in Bytes ]
+
+        a) [ 0 ] : [ CRC 8 of this Header ] : [ 1 ]
+        b) [ 1 ] : [ Session Identifier . ] : [ 1 ]
+        c) [ 2 ] : [ String X ........... ] : [ 1 ]
+        d) [ 3 ] : [ Of Y Strings ....... ] : [ 1 ]
+        e) [4,5] : [ CRC 16 of the String ] : [ 2 ]
+
+                            Total header length = 7 bytes.
+        --------------------------------------------------
+
+
+        a) CRC 8 of this header:
+            To know the integrity of the current package. Little endian.
+
+            packetCrc = crc16(packet + 7, packetLength - 7);
+
+
+        b) Session Identifier:
+            At which session this package was built.
+
+
+        c) String X:
+            As the Strings can be lost and resent, having the current String index and the current total number of Strings in the system is
+            a useful feature.
+                Ex: 0000 0000
+                0000 = String 0 (First string)
+
+
+        d) Of Y Strings:
+            The total amount of strings the system has transmitted on the actual session.
+            Currently, the maximum value of 255 strings is enough. On the future, may be changed.
+
+            Ex: 0000 0010 ( = 2)
+            Of 2 Strings. So, there is currently String 0 and String 1.
+
+
+        e) CRC 16 of the String
+            The CRC header must be valid for the package to be accepted, but the CRC of the string doesn't need to be.
+            The string will be saved, but will be marked with a '?' in it's start.
+
+
+
+    3.2) Payload:
+
+        ------------- MessageLog Payload 1.0 -------------
+        [Positions] : [ Function ] : [ Length in Bytes ]
+        a) [6,+] : [ String ] : [ String Length ]
+        --------------------------------------------------
+
+
+        a) String:
+            The string. It can be anything, but I made the following default pattern:
+            [mSID 0; DLID 12345; 1234.56s][ Parachutes deployed! ]
+
+            uSID : Minisession. As the system may reboot and the Data Log Identifier and the time variables will be reseted
+                due to this, this information help us to deal with this.
+
+            DLID : Data Log Identifier. At which Data Log Identifier this string was made. This DLID will also be sent on the DataLog
+                Package, so it's possible to correlate both packages to track down why/when/how this message was sent.
+
+            Time : At which millis() this message was made.
+
+            Message : What the transmitter wanted to inform us.
+

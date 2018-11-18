@@ -1,0 +1,21 @@
+GY-87 - TEENSY
+
+SCL   - 19
+SDA   - 18
+
+
+GPS   - TEENSY
+
+RX    - 1
+TX    - 0
+
+
+LORA  - TEENSY
+
+RST   - 38
+CS    - 9
+MOSI  - 11
+MISO  - 12
+SCK   - 13
+G0    - 5
+ 

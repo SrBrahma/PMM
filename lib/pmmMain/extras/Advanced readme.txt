@@ -1,0 +1,1 @@
+https://raspberrypi.stackexchange.com/questions/88921/using-the-hmc5883l-on-the-gy87

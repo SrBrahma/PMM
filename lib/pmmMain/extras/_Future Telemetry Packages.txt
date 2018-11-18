@@ -1,0 +1,44 @@
+
+
+
+
+FUTURE BELOW!!
+
+An update to the PMM Neo Protocol (or maybe a new protocol) that will allow automatic package splitting, and automatic packet requesting.
+Also, encrypted protocols.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    Custom Image Main Header:
+["MIMH"]   [CRC:2]   [Width1:4b | Width0:4b] [Width0:1]   [Height:4b | Height0:4b] [Height0:1]
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    Custom Image RGB Pallete:
+["MNIH"][CRC:2][rPallete:0~7][gPallete:0~7][bPallete:0~3]
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        Image type 00:
+    ["MI00"]   [CRC:1B]   [Line1:1B]   [Line2:2b | Column:6b]   [RGB:]
+
+        Image type 44:
+    ["MI44"]   [CRC:1B]   [Line1:1B]   [Line2:2b | Column:6b]   [RGB:]
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    Request:
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    ["MRQT"][CRC of the current packet][Package Type: 4B][Package Arguments: 1B]
+
+    The arguments, for now, is just 1 Byte. On the future, it may/will change.
+
+    Arguments by Package Type:
+
+    MLIN:
+        PMM_PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.
+
+
+    The arguments, for now, is just 1 Byte. On the future, it may/will change.
+
+    Arguments by Package Type:
+
+    MLIN:
+        PMM_PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.

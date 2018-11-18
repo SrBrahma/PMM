@@ -21,12 +21,16 @@ inline uint8_t LSB1(uint32_t value) { return value >> 8;  }
 inline uint8_t LSB2(uint32_t value) { return value >> 16; }
 inline uint8_t LSB3(uint32_t value) { return value >> 24; }
 
+
+
 inline bool getBit(unsigned value, unsigned bitPositionLsb)
 {
     return (value >> bitPositionLsb) & 1;
 }
 
-inline uint8_t setBit(uint8_t value, unsigned bitPositionLsb, bool bitValue)
+
+
+inline void setBit(uint8_t value, unsigned bitPositionLsb, bool bitValue)
 {
     if (bitValue)
         value |=  (1 << bitPositionLsb);
@@ -34,7 +38,7 @@ inline uint8_t setBit(uint8_t value, unsigned bitPositionLsb, bool bitValue)
         value &= ~(1 << bitPositionLsb);
 }
 
-inline uint8_t setBit(uint16_t value, unsigned bitPositionLsb, bool bitValue)
+inline void setBit(uint16_t value, unsigned bitPositionLsb, bool bitValue)
 {
     if (bitValue)
         value |=  (1 << bitPositionLsb);
@@ -42,7 +46,7 @@ inline uint8_t setBit(uint16_t value, unsigned bitPositionLsb, bool bitValue)
         value &= ~(1 << bitPositionLsb);
 }
 
-inline uint8_t setBit(uint32_t value, unsigned bitPositionLsb, bool bitValue)
+inline void setBit(uint32_t value, unsigned bitPositionLsb, bool bitValue)
 {
     if (bitValue)
         value |=  (1 << bitPositionLsb);

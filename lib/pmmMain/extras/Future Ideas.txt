@@ -1,0 +1,2 @@
+Telemetry Images:
+1) In unilateral RGB mode, send each color component individually, so we can get an idea of the image color even if losing some packets.

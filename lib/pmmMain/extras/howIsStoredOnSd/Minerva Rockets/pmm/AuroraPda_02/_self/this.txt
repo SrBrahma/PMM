@@ -1,0 +1,8 @@
+# By Henrique Bruno Fantauzzi de Almeida; Minerva Rockets - UFRJ; Brazil.
+# All these strings are defined in pmmSd.cpp.
+# The values are after one space after the equal sign.
+
+PMM version = "2.0"
+First GPS time = "2018-10-04 10:40:28"
+Millis on First GPS time = 1201
+Absolute Startup time = "2018-10-04 10:20:27"

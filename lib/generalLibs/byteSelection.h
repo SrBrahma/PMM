@@ -27,8 +27,8 @@ inline uint8_t LSB3(uint32_t value);
 
 inline bool    getBit(unsigned value, unsigned bitPositionLsb);
 
-inline uint8_t setBit(uint8_t value, unsigned bitPositionLsb, bool bitValue);
-inline uint8_t setBit(uint16_t value, unsigned bitPositionLsb, bool bitValue);
-inline uint8_t setBit(uint32_t value, unsigned bitPositionLsb, bool bitValue);
+inline void setBit(uint8_t value, unsigned bitPositionLsb, bool bitValue);
+inline void setBit(uint16_t value, unsigned bitPositionLsb, bool bitValue);
+inline void setBit(uint32_t value, unsigned bitPositionLsb, bool bitValue);
 
 #endif

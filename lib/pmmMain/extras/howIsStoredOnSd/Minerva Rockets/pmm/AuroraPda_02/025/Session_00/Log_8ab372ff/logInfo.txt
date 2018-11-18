@@ -1,0 +1,21 @@
+# Info Log file
+# Minerva Rockets - UFRJ
+# By Henrique Bruno
+#
+# This file is used to translate the binary logs into useful data.
+#
+# This file isn't intended to be changed.
+#
+# The variables types are defined in pmmPackages/dataLog.h
+#
+
+numberVariables = 5
+    
+# Variable name, variableType
+
+1) accelerometerX, 4
+2) accelerometerY, 4
+3) accelerometerZ, 6
+4) gpsLatitude,    2
+5) gpsLongitude,   2
+

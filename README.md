@@ -4,7 +4,7 @@ Open Source code of the PMM (Plataforma Multimissão, Multi-Mission Platform), a
 
 Still in heavy development. Its manual will be available after the first stable release.
 
-Needs PlatformIO. For adding it to your project, add the following lines to your platformio.ini:
+Needs PlatformIO. For adding it to your project, drop this repository in the root of your project and add the following lines to your platformio.ini:
 
 
 >[platformio]

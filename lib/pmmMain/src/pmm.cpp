@@ -173,7 +173,8 @@ void Pmm::update()
 
         // The Packages objects may/will automatically use the pmmSd and the pmmTelemetry objects.
         if(mPmmTelemetry.updateReception());
-            mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketStatusStructPtr());
+            
+            //mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketStatusStructPtr());
         //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
         if(mPmmTelemetry.updateTransmission());
     #endif

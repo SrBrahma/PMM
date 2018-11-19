@@ -10,7 +10,7 @@
 
 
 
-PmmSdFastLog::PmmSdFastLog(PmmSd* pmmSd, char baseFilename[], uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength)
+PmmSdFastLog::PmmSdFastLog(PmmSd *pmmSd, uint16_t dataLength, char dirFullRelativePath[], uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks)
 {
     // 1) Do some basic init stuff
     mCurrentNumberOfParts    = 0;
@@ -67,11 +67,11 @@ int PmmSdFastLog::flush()
         if (blocksToWriteNow > 0)
         {
             // 1.2) Write the blocks!
-            if (!mSd->card()->writeBlocks(mActualBlockAddress, mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE, blocksToWriteNow));
+            if (!mSdCard->writeBlocks(mActualBlockAddress, mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE, blocksToWriteNow))
                 return 1;
 
-            alreadyWrittenBlocks += blocksToWriteNow;
-            mActualBlockAddress += alreadyWrittenBlocks; // Increases the actual block by the number of blocks written, so in the next flush, we will write continuosly!
+            //alreadyWrittenBlocks += blocksToWriteNow;
+            //mActualBlockAddress += alreadyWrittenBlocks; // Increases the actual block by the number of blocks written, so in the next flush, we will write continuosly!
         }
 
 
@@ -108,7 +108,7 @@ int PmmSdFastLog::write(uint8_t dataArray[])
         // mBufferActualIndex = 0; Happens at flush()!
 
     // 2.2) Write it!
-    mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_START;
+    mBufferPointer[mBufferActualIndex] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
     mBufferActualIndex++;
 
 
@@ -158,7 +158,7 @@ int PmmSdFastLog::write(uint8_t dataArray[])
 
 
     // 4.2) Write it!
-    mBufferPointer[mBufferActualIndex] = PMM_SD_PLOG_MAGIC_NUMBER_END;
+    mBufferPointer[mBufferActualIndex] = PMM_SD_ALLOCATION_FLAG_GROUP_END;
     mBufferActualIndex++;
     return 0;
 }

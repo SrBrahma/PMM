@@ -29,11 +29,13 @@
 #define PMM_SD_MAXIMUM_BUFFER_LENTH_KIB     16
 
 
-#define PMM_SD_PLOG_MAGIC_NUMBER_START      'M' // Mine..
-#define PMM_SD_PLOG_MAGIC_NUMBER_END        'A' // rvA!!
+// These letters bellow are flags used in the SD blocks, in safeLog and fastLog writting modes.
+// They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
+#define PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN      'M' // Mine..
+#define PMM_SD_ALLOCATION_FLAG_GROUP_END        'A' // rvA!!
+#define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN    'R' // Rockets!
+#define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION   0 // Where it will be on the block.
 
-
-#define PMM_SD_MAXIMUM_VARIABLE_LENTGTH     8 // Used in pmmSdLowLevel.cpp
 
 
 // Debug
@@ -51,10 +53,24 @@ uint16_t kibibytesToBlocksAmount(uint16_t kibibytes); // Kibibyte is 1024 bytes!
 uint16_t mebibytesToBlocksAmount(uint8_t  mebibytes); // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
 
 
+
+typedef struct
+{
+    uint32_t currentBlock;               // At which block we currently are. If it is 0, it hasn't been allocated yet.
+    uint16_t freeBlocksAfterCurrent;     // The absoluteEndBlock is actualBlock + freeBlocks. Even if it is 0, there may still have free bytes on the actual block.
+    uint8_t  groupLength;                // Max group length is 255 bytes. On the future it may be extended. But not needed right now.
+    uint8_t  currentPart;                // Maximum of 255 parts. Just a quicker way to get the next part filename instead of reading each part's filename.
+    uint16_t blocksPerPart;              // Max of 65535 blocks, maximum allocation per part is 32 MiB (64KiB * 512B)
+    uint16_t currentPositionInBlock;     // There could be a bit field to 9, but currently, no actual need.
+} pmmSdAllocationStatusStructType;               // Total struct size is 12 bytes, with padding.
+
+
+
 class PmmSd
 {
 
 public:
+
     PmmSd();
     
     int init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId);
@@ -73,13 +89,16 @@ public:
 
     void getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[]);
 
+    SdFatSdio* getSdCard();
+
 private:
-    SdFatSdio mSd;
+
+    SdFatSdio mSdCard;
     
     File mFile;
     File mAllocationFile; // Just for the allocateFilePart() function.
 
-    PmmErrorsCentral *mPmmErrorsCentral;
+    PmmErrorsCentral* mPmmErrorsCentral;
 
     uint8_t mThisSessionId;
     char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string

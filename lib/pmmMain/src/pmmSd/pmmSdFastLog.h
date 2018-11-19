@@ -15,14 +15,12 @@ class PmmSdFastLog
 {
 
 public:
-    PmmSdFastLog(PmmSd *pmmSd, char baseFilename[], uint8_t sourceAddress, uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks, uint16_t dataLength);
+    PmmSdFastLog(PmmSd *pmmSd, uint16_t dataLength, char dirFullRelativePath[], uint16_t blocksAllocationPerPart, uint8_t bufferSizeInBlocks);
     int write(uint8_t data[]);
 
 
 private:
-    int allocateFilePart();
     int flush();
-
 
     // File informations
     char        mFilenameExtension[PMM_SD_FILENAME_SUFFIX_LENGTH] = ".flog";    // Must include the '.' (dot)! If no extensions is given, the file won't have one!

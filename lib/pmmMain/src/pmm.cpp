@@ -2,7 +2,7 @@
 
 // https://forum.pjrc.com/threads/39158-Using-SdFat-to-acces-Teensy-3-6-SD-internal-card-(-amp-with-audio-board)
 
-#include <pmm.h>
+#include "pmm.h"
 
 #include "pmmConsts.h"
 

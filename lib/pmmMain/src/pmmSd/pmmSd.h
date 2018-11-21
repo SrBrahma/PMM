@@ -107,11 +107,13 @@ public:
 
     void getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[]);
 
-    SdFatSdio* getSdCard();
+    SdFatSdio* getSdFat();
+
+    SdioCard* getCard();
 
 private:
 
-    SdFatSdio mSdCard;
+    SdFatSdio mSdFat;
     
     File mFile;
     File mAllocationFile; // Just for the allocateFilePart() function.

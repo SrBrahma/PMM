@@ -42,12 +42,18 @@ void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType * sta
 // The statusStruct must be initSafeLogStatusStruct() before.
 // The maximum groupLength is 255, and the code below is written with that in mind, and assuming the block size is 512 bytes.
 // On the future it can be improved. Not hard.
+
+// //https://stackoverflow.com/questions/31256206/c-memory-alignment
+// readBlock() and writeBlock() uses a local array of 512 bytes, and a memcpy() if it is requested.
+// When time is available for me, I will write a function in pmmSd for reading and writing without these slowers, and making sure the mBlockBuffer is aligned to 4.
 int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* statusStruct)
 {
     unsigned dataBytesRemaining = statusStruct->groupLength; // + 2; // + 2 from header and footer
     int32_t bytesAvailableInCurrentBlock;
 
     uint32_t endBlock;
+
+    unsigned hadWrittenGroupHeader = false;
 
     // 1) Is this the first time running for this statusStruct?
     if (statusStruct->currentBlock == 0)
@@ -61,9 +67,9 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     // 2) If there is something in the actual block, we must first copy it to add the new data.
     if (statusStruct->currentPositionInBlock > 0)
     {
-        if (mPmmSd->getSdCard()->card()->readBlock(statusStruct->currentBlock, mBlockBuffer));
+        if (mPmmSd->getCard()->readBlock(statusStruct->currentBlock, mBlockBuffer));
                 PMM_DEBUG_PRINT("PmmSdSafeLog: Error at readBlock(), in write()!");
-//https://stackoverflow.com/questions/31256206/c-memory-alignment
+
 
         bytesAvailableInCurrentBlock = PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock;
 
@@ -78,6 +84,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
             // 3.1) We first add the group header, which will always fit the current block (as the currentPositionInBlock goes from 0 to 511)
             mBlockBuffer[statusStruct->currentPositionInBlock] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
+            hadWrittenGroupHeader = true;
 
             statusStruct->currentPositionInBlock++;
             bytesAvailableInCurrentBlock--;
@@ -86,7 +93,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             if (bytesAvailableInCurrentBlock) // Avoids useless calls of memcpy -- if bytesAvailableInCurrentBlock == 0.
             {
                 memcpy(mBlockBuffer + statusStruct->currentPositionInBlock, data, bytesAvailableInCurrentBlock);
-                mPmmSd->getSdCard()
+                mPmmSd->getCard()->writeBlock(statusStruct->currentBlock, mBlockBuffer);
             }
 
             // 3.3) As we filled the current block, we need to move to the next one. However, we need to check if a new file part is needed.
@@ -100,26 +107,21 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     } // END of 2).
 
 
-    // 2.1) 
+    // 5) Write the block that fits entirely the block.
     if (statusStruct->currentPositionInBlock == 0)
-    {
-        mBlockBuffer[PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION] = PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN;
-        memcpy(mBlockBuffer + 1, 
-    }
-       
+        mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN;
+
+
+    if (!hadWrittenGroupHeader) // As this function is executed by the case 3) too
+        mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
+
+
+    memcpy(mBlockBuffer + currentPositionInBlock, data + (statusStruct->groupLength - dataBytesRemaining), dataBytesRemaining);
+
+    memset(buffer
         else
-        {
-            // 2.1) Read the current block.
-            
-            
-        }
 
-    // 3) Append the data to the buffer
 
-    } // End of bytesRemaining
-
-    //actualPart;
-    //blocksPerPart;
 
     // Allocate new file part
     statusStruct->currentPart++;

@@ -40,18 +40,18 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
     mPmmErrorsCentral = pmmErrorsCentral;
 
     // 1) Initialize the SD
-    if (!mSdCard.begin())
+    if (!mSdFat.begin())
     {
         PMM_DEBUG_PRINT("PmmSd: ERROR 1 - SD init failed!");
         mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
         return 1;
     }
     // 1.1) Make sdEx the current volume.
-    mSdCard.chvol();
+    mSdFat.chvol();
 
     // 2) Creates the directory tree.
-    mSdCard.mkdir(PMM_SD_BASE_DIRECTORY);
-    mSdCard.chdir(PMM_SD_BASE_DIRECTORY);
+    mSdFat.mkdir(PMM_SD_BASE_DIRECTORY);
+    mSdFat.chdir(PMM_SD_BASE_DIRECTORY);
 
 
 
@@ -157,7 +157,7 @@ int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[]
         // error("contiguousRange failed");
     }
 
-    if (!mSdCard.card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    if (!mSdFat.card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
         PMM_DEBUG_PRINT("PmmSd: ERROR 6 - Error at erase()!");
         return 1;
@@ -167,12 +167,17 @@ int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[]
     return 0;
 }
 
-SdFatSdio* PmmSd::getSdCard()
+SdioCard* PmmSd::getCard()
 {
-    return &mSdCard;
+    return mSdFat.card();
+}
+
+SdFatSdio* PmmSd::getSdFat()
+{
+    return &mSdFat;
 }
 
 bool PmmSd::getSdIsBusy()
 {
-    return mSdCard.card()->isBusy();
+    return mSdFat.card()->isBusy();
 }

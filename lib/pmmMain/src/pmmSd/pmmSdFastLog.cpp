@@ -67,7 +67,7 @@ int PmmSdFastLog::flush()
         if (blocksToWriteNow > 0)
         {
             // 1.2) Write the blocks!
-            if (!mSdCard->writeBlocks(mActualBlockAddress, mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE, blocksToWriteNow))
+            if (!mSdFat->writeBlocks(mActualBlockAddress, mBufferPointer + alreadyWrittenBlocks * PMM_SD_BLOCK_SIZE, blocksToWriteNow))
                 return 1;
 
             //alreadyWrittenBlocks += blocksToWriteNow;

@@ -21,8 +21,8 @@ public:
 
     PmmSdSafeLog(PmmSd *pmmSd, uint16_t defaulBlocksAllocationPerPart);
 
-    // If the blocksPerPart is 0, as is the default argument, the mDefaultBlocksAllocationPerPart variable value will be used.
-    void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t blocksPerPart = 0);
+    // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
+    void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
 
     int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct); // Know what you are doing!
 
@@ -30,7 +30,7 @@ private:
 
     PmmSd* mPmmSd;
     
-    uint16_t mDefaultBlocksAllocationPerPart;
+    uint16_t mDefaultKiBAllocationPerPart;
 
     uint8_t mBlockBuffer[PMM_SD_BLOCK_SIZE];
 

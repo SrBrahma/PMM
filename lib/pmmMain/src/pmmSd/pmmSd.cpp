@@ -119,22 +119,30 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
 }
 
 
-
-
+// Handles our pmmSdAllocationStatusStructType struct automatically.
+int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+{
+    uint32_t endBlock;
+    allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock);
+    statusStruct->currentPositionInBlock = 0;
+    statusStruct->freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock;
+    statusStruct->nextFilePart++;
+}
 
 // Allocates a file part with a length of X blocks.
 // If no problems found, return 0.
 // The filenameExtension shouldn't have the '.'.
-int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t blocksToAllocateInThisPart, uint32_t* beginBlock, uint32_t* endBlock)
+int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock)
 {
-    
+    if (kibibytesToAllocate > PMM_SD_MAX_PART_KIB)
+        kibibytesToAllocate = PMM_SD_MAX_PART_KIB; // Read the comments at pmmSdAllocationStatusStructType.
 
     // 1) How will be called the new part file?
     snprintf(mTempFilename, PMM_SD_FILENAME_INTERNAL_MAX_LENGTH, "%s/part%u.%s", dirFullRelativePath, filePart, filenameExtension);
 
 
     // 2) Allocate the new file!
-    if (!mAllocationFile.createContiguous(mTempFilename, PMM_SD_BLOCK_SIZE * blocksToAllocateInThisPart))
+    if (!mAllocationFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
     {
         PMM_DEBUG_PRINT("PmmSd: ERROR 4 - Error at createContiguous()!");
         return 1;

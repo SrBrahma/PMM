@@ -56,7 +56,7 @@ void Pmm::init()
         #endif
 
         if (Serial)
-            PMM_DEBUG_PRINT_MORE("Pmm [M]: Serial initialized!");
+            PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Serial initialized!");
     #endif
 
 
@@ -109,7 +109,7 @@ void Pmm::init()
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
 
 
-    PMM_DEBUG_PRINT("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
+    PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmModuleDataLog.debugPrintLogHeader();
 
     #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
@@ -142,14 +142,14 @@ void Pmm::update()
 
     #if PMM_USE_IMU
         mPmmImu.update();
-        //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Imu!");
+        //PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Updated Imu!");
     #endif
 
 
 
     #if PMM_USE_GPS
         mPmmGps.update();
-        //PMM_DEBUG_PRINT_MORE(Pmm [M]: Updated Gps!");
+        //PMM_DEBUG_PRINTLN_MORE(Pmm [M]: Updated Gps!");
     #endif
 
 
@@ -175,7 +175,7 @@ void Pmm::update()
         if(mPmmTelemetry.updateReception());
             
             //mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketStatusStructPtr());
-        //PMM_DEBUG_PRINT_MORE("Pmm [M]: Updated Telemetry!");
+        //PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Updated Telemetry!");
         if(mPmmTelemetry.updateTransmission());
     #endif
 

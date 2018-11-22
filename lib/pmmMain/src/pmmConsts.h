@@ -46,18 +46,18 @@
 
 
 #if PMM_DEBUG
-    #define PMM_DEBUG_PRINT(x) Serial.println(x)
+    #define PMM_DEBUG_PRINTLN(x) Serial.println(x)
 #else
-    #define PMM_DEBUG_PRINT(x) do {} while (0)
+    #define PMM_DEBUG_PRINTLN(x) do {} while (0)
 #endif
 
 
 #define PMM_CANCEL_MACRO(x) do {} while (0)
 
 #if PMM_DEBUG_MORE
-    #define PMM_DEBUG_PRINT_MORE(x) Serial.println(x)
+    #define PMM_DEBUG_PRINTLN_MORE(x) Serial.println(x)
 #else
-    #define PMM_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO(x)
 #endif
 
 

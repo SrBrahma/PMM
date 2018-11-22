@@ -50,12 +50,14 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 {
 
     // I didn't want to create this variable and keep changing it, and I didn't want to use (PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock),
-    // so I will use a define, which certainly I will regret on the future.
+    // so I will use a define, which certainly I will regret in the future, but now, is the best option I can think.
     #define remainingBytesInThisBlock_macro (PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock)
 
-    unsigned dataBytesRemaining = statusStruct->groupLength; // + 2; // + 2 from header and footer
+    unsigned dataBytesRemaining = statusStruct->groupLength;
 
     unsigned hadWrittenGroupHeader = false;
+
+
 
     // 1) Is this the first time running for this statusStruct?
     if (statusStruct->currentBlock == 0)
@@ -65,13 +67,12 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     }
 
 
-
     // 2) If there is something in the actual block, we must first copy it to add the new data.
     if (statusStruct->currentPositionInBlock > 0)
     {
         if (!mPmmSd->getCard()->readBlock(statusStruct->currentBlock, mBlockBuffer));
         {
-            PMM_DEBUG_PRINT("PmmSdSafeLog: Error at readBlock(), in write()!");
+            PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at readBlock(), in write()!");
             return 1;
         }
 
@@ -80,24 +81,23 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         //    5) If the new data fits the current block, entirely. -- Entire Data / Partial Final Data
 
         // 3) Now we will see if the data needs another block. If the conditional is true, we need another block!
-        if ((statusStruct->groupLength + 2) >= (PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock)) // +2 for header and footer
+        if ((statusStruct->groupLength + 2) >= remainingBytesInThisBlock_macro) // +2 for header and footer
         {
 
             // 3.1) We first add the group header, which will always fit the current block (as the currentPositionInBlock goes from 0 to 511)
-            mBlockBuffer[statusStruct->currentPositionInBlock] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
+            mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
             hadWrittenGroupHeader = true;
-
-            statusStruct->currentPositionInBlock++;
 
             // 3.2) Now we add the data to the current block, if there is available space.
             if (remainingBytesInThisBlock_macro) // Avoids useless calls of memcpy
             {
                 memcpy(mBlockBuffer + statusStruct->currentPositionInBlock, data, remainingBytesInThisBlock_macro);
+                dataBytesRemaining -= remainingBytesInThisBlock_macro;
 
                 // 3.3) Write the Partial Initial Data to the SD.
                 if(!mPmmSd->getCard()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
                 {
-                    PMM_DEBUG_PRINT("PmmSdSafeLog: Error at writeBlock() (Partial Initial Data), in write()!");
+                    PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Partial Initial Data), in write()!");
                     return 1;
                 }
             }
@@ -105,7 +105,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             // 3.4) As we filled the current block, we need to move to the next one.
             if (mPmmSd->nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
             {
-                PMM_DEBUG_PRINT("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Initial Data), in write()!");
+                PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Initial Data), in write()!");
                 return 1;
             }
                 
@@ -119,24 +119,39 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     if (statusStruct->currentPositionInBlock == 0)
         mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN;
 
-    // 4.2) Write the Group Begin Flag, if not done already by 3).
+    // 4.2) Write the Group Begin Flag, if not done already at 3.1).
     if (!hadWrittenGroupHeader)
         mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
 
-    // 4.3) Write the Entire Data, or the Partial Final Data.
-    memcpy(mBlockBuffer + statusStruct->currentPositionInBlock, data + (statusStruct->groupLength - dataBytesRemaining), dataBytesRemaining);
+    // 4.3) Write the Entire Data, or the Partial Final Data. We check if there is still dataBytesRemaining, as the 3)
+    // may only needs to write the Group End Flag.
+    if (dataBytesRemaining)
+    {
+        memcpy(mBlockBuffer + statusStruct->currentPositionInBlock, data + (statusStruct->groupLength - dataBytesRemaining), dataBytesRemaining);
 
-    statusStruct->currentPositionInBlock += dataBytesRemaining;
-    dataBytesRemaining = 0;
+        statusStruct->currentPositionInBlock += dataBytesRemaining;
+        dataBytesRemaining = 0;
+    }
 
-    // 4.4) Erase any previous garbage after the written data.
+    // 4.4) Write the Group End Flag.
+    mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_END;
+
+    // 4.5) Erase any previous garbage after the written data.
     if (remainingBytesInThisBlock_macro)
-        memset(mBlockBuffer + remainingBytesInThisBlock_macro, 0, remainingBytesInThisBlock_macro)
+        memset(mBlockBuffer + remainingBytesInThisBlock_macro, 0, remainingBytesInThisBlock_macro);
 
-    // 4.5) Write the Last Data Block to the SD.
+    // 4.6) Write the Last Data Block to the SD.
+    if(!mPmmSd->getCard()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
+    {
+        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Last Valid Block), in write()!");
+        return 1;
+    }
+
+    // We need two blocks for the Backup Block 0 and Backup Block 1.
+
     if (mPmmSd->nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
     {
-        PMM_DEBUG_PRINT("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
+        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
         return 1;
     }
 

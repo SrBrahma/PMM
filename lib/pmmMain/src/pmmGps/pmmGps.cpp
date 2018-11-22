@@ -72,10 +72,10 @@ int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
     #endif
 
     if (Serial1)
-        PMM_DEBUG_PRINT_MORE("PmmGps [M]: Initialized successfully!");
+        PMM_DEBUG_PRINTLN_MORE("PmmGps [M]: Initialized successfully!");
 
     else
-        PMM_DEBUG_PRINT("PmmGps #1: INIT FAILED!");
+        PMM_DEBUG_PRINTLN("PmmGps #1: INIT FAILED!");
 
     return 0;
 }

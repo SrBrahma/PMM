@@ -75,7 +75,7 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
         case PMM_MODULE_DATA_LOG_TYPE_DOUBLE:
             return 8;
         default:    // Maybe will avoid internal crashes?
-            PMM_DEBUG_PRINT("PmmPort #1: Invalid variable type to size!");
+            PMM_DEBUG_PRINTLN("PmmPort #1: Invalid variable type to size!");
             return 1;
     }
 }

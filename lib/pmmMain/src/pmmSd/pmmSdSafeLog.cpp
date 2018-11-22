@@ -57,6 +57,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
     unsigned hadWrittenGroupHeader = false;
 
+    uint32_t backupBlock0Address;
 
 
     // 1) Is this the first time running for this statusStruct?

@@ -100,6 +100,8 @@ public:
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
+    
+    int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 

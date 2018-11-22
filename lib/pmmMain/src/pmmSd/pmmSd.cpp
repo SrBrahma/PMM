@@ -119,6 +119,28 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
 }
 
 
+
+
+
+
+
+
+int PmmSd::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+{
+
+    // 1) Do we need a new part? No!
+    if (statusStruct->freeBlocksAfterCurrent)
+    {
+        statusStruct->freeBlocksAfterCurrent--; // We don't need a new part!
+        statusStruct->currentBlock++;
+    }
+    
+    // 2) YA
+    else
+        // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
+        return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
+}
+
 // Handles our pmmSdAllocationStatusStructType struct automatically.
 int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {

@@ -25,7 +25,7 @@ int PmmImu::initMpu()
     if(mMpu.testConnection())
     {
         mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
-        PMM_DEBUG_PRINT("PmmImu #1: MPU6050 INIT FAILED");
+        PMM_DEBUG_PRINTLN("PmmImu #1: MPU6050 INIT FAILED");
         return 1;
     }
     /*
@@ -33,7 +33,7 @@ int PmmImu::initMpu()
     mpu.setYGyroscopeOffset(76);
     mpu.setZGyroscopeOffset(-85);
     mpu.setZAccelerometerOffset(1788); // 1688 factory default for my test chip*/
-    PMM_DEBUG_PRINT_MORE("PmmImu [M]: MPU6050 initialized successfully!");
+    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: MPU6050 initialized successfully!");
     return 0;
 
 }
@@ -46,11 +46,11 @@ int PmmImu::initMagnetometer()
 
     if (mMagnetometer.testConnection())
     {
-        PMM_DEBUG_PRINT("PmmImu #2: MAGNETOMETER INIT ERROR");
+        PMM_DEBUG_PRINTLN("PmmImu #2: MAGNETOMETER INIT ERROR");
         return 1;
     }
     //mMagnetometer.setMode(HMC5883L_MODE_CONTINUOUS); // works without.
-    PMM_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer initialized successfully!");
+    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: Magnetometer initialized successfully!");
     return 0;
 }
 
@@ -61,10 +61,10 @@ int PmmImu::initBmp()  //BMP085 Setup
     mBarometer.initialize();
     if(!mBarometer.testConnection())
     {
-        PMM_DEBUG_PRINT("PmmImu #3: BAROMETER INIT ERROR");
+        PMM_DEBUG_PRINTLN("PmmImu #3: BAROMETER INIT ERROR");
         return 1;
     }
-    PMM_DEBUG_PRINT_MORE("PmmImu [M]: BMP initialized successfully!");
+    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: BMP initialized successfully!");
     return 0;
 }
 

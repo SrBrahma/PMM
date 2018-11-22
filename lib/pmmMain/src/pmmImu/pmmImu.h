@@ -14,7 +14,7 @@
 #define PMM_IMU_DEBUG_MORE  1 // For this to work, 
 
 #if PMM_IMU_DEBUG_MORE
-    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINT_MORE(x)
+    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINTLN_MORE(x)
 #else
     #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
 #endif

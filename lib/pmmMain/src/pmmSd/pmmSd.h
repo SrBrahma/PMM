@@ -38,7 +38,9 @@
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
 #define PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN      'M' // Mine..
 #define PMM_SD_ALLOCATION_FLAG_GROUP_END        'A' // rvA!!
+
 #define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN    'R' // Rockets!
+
 #define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION   0 // Where it will be on the block.
 
 
@@ -47,7 +49,7 @@
 #define PMM_SD_DEBUG_MORE           1
 
 #if PMM_SD_DEBUG_MORE
-    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINT_MORE(x)
+    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINTLN_MORE(x)
 #else
     #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
 #endif
@@ -100,6 +102,8 @@ public:
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
+    
+    int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 

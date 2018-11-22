@@ -42,7 +42,7 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
     // 1) Initialize the SD
     if (!mSdFat.begin())
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 1 - SD init failed!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 1 - SD init failed!");
         mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
         return 1;
     }
@@ -73,7 +73,7 @@ int PmmSd::println(char filename[], char string[], uint8_t sourceAddress, uint8_
     if (strlen(string) + 2 != mFile.println(string)) // + 2 as it will write the normal chars from the string, plus the '\r' and the '\n' (they are added in the file.println().
     {                                                // comparing to -1 the result is problematic, as the println function returns a sum of the write(string) + write("\r\n"),
                                                      // so it's possible to return a false negative.
-        PMM_DEBUG_PRINT("PmmSd: ERROR 2 - The string haven't been successfully written!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 2 - The string haven't been successfully written!");
         mFile.close();
         return 2;
     }
@@ -97,7 +97,7 @@ int PmmSd::write(char filename[], char arrayToWrite[], size_t length, uint8_t so
 
     if (mFile.write(arrayToWrite, length) == -1)
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 3 - The data haven't been successfully written!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 3 - The data haven't been successfully written!");
         mFile.close();
         return 2;
     }
@@ -118,6 +118,28 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
     snprintf(destination, maxLength, "%03u/%03u/%s", sourceAddress, sourceSession, filename);
 }
 
+
+
+
+
+
+
+
+int PmmSd::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+{
+
+    // 1) Do we need a new part? No!
+    if (statusStruct->freeBlocksAfterCurrent)
+    {
+        statusStruct->freeBlocksAfterCurrent--; // We don't need a new part!
+        statusStruct->currentBlock++;
+    }
+    
+    // 2) YA
+    else
+        // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
+        return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
+}
 
 // Handles our pmmSdAllocationStatusStructType struct automatically.
 int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
@@ -144,7 +166,7 @@ int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[]
     // 2) Allocate the new file!
     if (!mAllocationFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 4 - Error at createContiguous()!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 4 - Error at createContiguous()!");
         return 1;
         // error("createContiguous failed");
     }
@@ -152,14 +174,14 @@ int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[]
     // 3) Get the address of the blocks of the new file on the SD. [beginBlock, endBlock].
     if (!mAllocationFile.contiguousRange(beginBlock, endBlock))
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 5 - Error at contiguousRange()!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 5 - Error at contiguousRange()!");
         return 1;
         // error("contiguousRange failed");
     }
 
     if (!mSdFat.card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
-        PMM_DEBUG_PRINT("PmmSd: ERROR 6 - Error at erase()!");
+        PMM_DEBUG_PRINTLN("PmmSd: ERROR 6 - Error at erase()!");
         return 1;
         // error("erase failed");
     }

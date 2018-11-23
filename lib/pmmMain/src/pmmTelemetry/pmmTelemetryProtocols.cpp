@@ -72,6 +72,7 @@ uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructTyp
 
             return PMM_NEO_PROTOCOL_HEADER_LENGTH;
     }
+    return 0;
 }
 
 // This function checks the received telemetry packet:
@@ -100,6 +101,8 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
     {
         #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
             case PMM_NEO_PROTOCOL_ID:
+            { // Without brackets we were getting "jump to case label" warning.
+              // https://stackoverflow.com/questions/5685471/error-jump-to-case-label
 
                 // NEO, 3.1) Checks the length of the packet again, now based on the protocol.
                 if (packetLength < PMM_NEO_PROTOCOL_HEADER_LENGTH)
@@ -110,7 +113,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 2;
 
                 // NEO, 4) Checks the CRC.
-                uint16_t crcVar = crc16(packet, packetLength);
+                uint16_t crcVar = crc16(packet, packetLength); // This variable was giving the "jump to case label", without the brackets.
                 if ((LSB0(crcVar) != packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]) || (LSB1(crcVar) != packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]))
                     return 3;
 
@@ -130,7 +133,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 6;
 
                 return 0;   // Successful.
-
+            }
         #endif
 
         default:

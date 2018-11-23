@@ -2,6 +2,10 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+// Commented this code for a while.
+
+/*
+
 #include <stdint.h>
 #include <SdFat.h>
 #include "pmmSd/pmmSd.h"
@@ -51,3 +55,5 @@ private:
     PmmSd*      mPmmSd;
     File        mFile;
 };
+
+*/

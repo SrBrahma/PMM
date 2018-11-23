@@ -2,9 +2,13 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+// Commented this code for a while.
+
+/*
 #include <pmmConsts.h>
 
 #include "pmmSd/pmmSd.h"
+#include "pmmSd/pmmSdFastLog.h"
 #include "pmmErrorsCentral/pmmErrorsCentral.h"
 #include <SdFat.h>
 
@@ -19,12 +23,9 @@ PmmSdFastLog::PmmSdFastLog(PmmSd *pmmSd, uint16_t dataLength, char dirFullRelati
 
     // 2) Get the arguments
     mPmmSd = pmmSd;
-    snprintf(mBaseFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s", baseFilename);
-    mSourceAddress           = sourceAddress;
+    mDataLength              = dataLength;
     mBlocksAllocationPerPart = blocksAllocationPerPart;
     mBufferSizeInBlocks      = bufferSizeInBlocks;
-    mDataLength              = dataLength;
-
 
     // 3) Calculate the buffer size. If the given size is greater than the maximum, replace it! Sometimes, the user DOESN'T know what he is doing!
     mBufferTotalLength       = mBufferSizeInBlocks * PMM_SD_BLOCK_SIZE;
@@ -169,3 +170,4 @@ int PmmSdFastLog::write(uint8_t dataArray[])
 //if (!file.open("dir2/DIR3/NAME3.txt", O_WRITE | O_APPEND | O_CREAT)) {
  // error("dir2/DIR3/NAME3.txt");
 
+*/

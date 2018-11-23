@@ -3,7 +3,7 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <stdint.h>
-#include "byteSelection.h"
+#include <byteSelection.h>
 
 uint8_t MSB0(uint16_t value) { return value >> 8;  }
 uint8_t MSB1(uint16_t value) { return value;       }

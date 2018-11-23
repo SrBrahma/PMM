@@ -39,7 +39,7 @@ bool HMC5883L::begin()
 	return false;
     }
 
-    setAccelerometerRange(HMC5883L_RANGE_1_3GA);
+    setMagnetometerRange(HMC5883L_RANGE_1_3GA);
     setMeasurementMode(HMC5883L_CONTINOUS);
     setDataRate(HMC5883L_DATARATE_15HZ);
     setSamples(HMC5883L_SAMPLES_1);
@@ -58,7 +58,7 @@ Vector HMC5883L::readRaw(void)
     return v;
 }
 
-Vector HMC5883L::readNormalize(void)
+Vector HMC5883L::readNormalized(void)
 {
     v.XAxis = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
     v.YAxis = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
@@ -67,13 +67,20 @@ Vector HMC5883L::readNormalize(void)
     return v;
 }
 
+void HMC5883L::readNormalized(float magnetometerArray[3])
+{
+    magnetometerArray[0] = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
+    magnetometerArray[1] = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
+    magnetometerArray[2] = (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
+}
+
 void HMC5883L::setOffset(int xo, int yo)
 {
     xOffset = xo;
     yOffset = yo;
 }
 
-void HMC5883L::setAccelerometerRange(hmc5883l_range_t range)
+void HMC5883L::setMagnetometerRange(hmc5883l_range_t range)
 {
     switch(range)
     {
@@ -116,7 +123,7 @@ void HMC5883L::setAccelerometerRange(hmc5883l_range_t range)
     writeRegister8(HMC5883L_REG_CONFIG_B, range << 5);
 }
 
-hmc5883l_range_t HMC5883L::getAccelerometerRange(void)
+hmc5883l_range_t HMC5883L::getMagnetometerRange(void)
 {
     return (hmc5883l_range_t)((readRegister8(HMC5883L_REG_CONFIG_B) >> 5));
 }

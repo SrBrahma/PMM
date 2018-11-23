@@ -133,22 +133,25 @@ int PmmSd::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameEx
     {
         statusStruct->freeBlocksAfterCurrent--; // We don't need a new part!
         statusStruct->currentBlock++;
+        return 0;
     }
     
-    // 2) YA
-    else
-        // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
-        return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
+    // 2) YA, implicit else.
+    // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
+    return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
 }
 
 // Handles our pmmSdAllocationStatusStructType struct automatically.
 int PmmSd::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
     uint32_t endBlock;
-    allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock);
+    int returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock);
+    
     statusStruct->currentPositionInBlock = 0;
     statusStruct->freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock;
     statusStruct->nextFilePart++;
+
+    return returnValue;
 }
 
 // Allocates a file part with a length of X blocks.

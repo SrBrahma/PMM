@@ -172,10 +172,13 @@ public:
 
     Vector  readRawGyroscope(void);
     Vector  readNormalizedGyroscope(void);
+    void    readNormalizedGyroscope(float gyroscopeArray[3]);
 
     Vector  readRawAccelerometer(void);
-    Vector  readNormalizedAccelerometer(void);
     Vector  readScaledAccelerometer(void);
+    Vector  readNormalizedAccelerometer(void);
+    void    readNormalizedAccelerometer(float accelerometerArray[3]);
+    
 
     void    getPitchAndRoll(Vector normAccel, float *pitch, float *roll);
 

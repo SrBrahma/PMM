@@ -67,18 +67,6 @@ bmp085_oss_t BMP085::getOversampling(void)
     return oss;
 }
 
-// Set software oversampling value
-void BMP085::setSoftwareOversampling(bool softwareOversampling)
-{
-    soss = softwareOversampling;
-}
-
-// Get oversampling value
-bool BMP085::getSoftwareOversampling(void)
-{
-    return soss;
-}
-
 // Polynomials for Floating Point Pressure Calculation
 void BMP085::calculatePolynomials(void)
 {
@@ -164,18 +152,19 @@ uint32_t BMP085::readRawPressure(bool rawRegister)
 
     if (oss == BMP085_ULTRA_LOW_POWER)
     {
-	_delay_ms(5);
-    } else
-    if (oss == BMP085_STANDARD)
+        _delay_ms(5);
+    }
+    else if (oss == BMP085_STANDARD)
     {
-	_delay_ms(8);
-    } else
-    if (oss == BMP085_HIGH_RES)
+        _delay_ms(8);
+    }
+    else if (oss == BMP085_HIGH_RES)
     {
-	_delay_ms(14);
-    } else
+        _delay_ms(14);
+    }
+    else
     {
-	_delay_ms(26);
+        _delay_ms(26);
     }
 
     value = readRegister16(BMP085_REG_DATA);
@@ -184,7 +173,7 @@ uint32_t BMP085::readRawPressure(bool rawRegister)
 
     if (rawRegister)
     {
-	return value;
+        return value;
     }
 
     value >>= (8 - oss);
@@ -204,20 +193,7 @@ uint32_t BMP085::readPressure(void)
     // Read raw temperature & Pressure
     UT = readRawTemperature();
 
-    if (soss)
-    {
-	UP = 0;
-
-	for (int i = 0; i < 3; i++)
-	{
-	    UP += readRawPressure();
-	}
-
-	UP /= 3;
-    } else
-    {
-	UP = readRawPressure();
-    }
+    UP = readRawPressure();
 
     // Do calc
     X1 = (UT - (int32_t)ac6) * ((int32_t)ac5) / pow(2,15);
@@ -236,10 +212,10 @@ uint32_t BMP085::readPressure(void)
 
     if (B7 < 0x80000000)
     {
-	P = (B7 * 2) / B4;
+        P = (B7 * 2) / B4;
     } else 
     {
-	P = (B7 / B4) * 2;
+        P = (B7 / B4) * 2;
     }
 
     X1 = (P >> 8) * (P >> 8);
@@ -259,20 +235,7 @@ double BMP085::readFloatPressure(void)
 
     pt = readFloatTemperature();
 
-    if (soss)
-    {
-	pr = 0;
-
-	for (int i = 0; i < 3; i++)
-	{
-	    pr += readRawPressure(true);
-	}
-
-	pr /= 3;
-    } else
-    {
-	pr = readRawPressure(true);
-    }
+    pr = readRawPressure(true);
 
     pr0 = pr & 0xFF;
     pr1 = (pr >> 8) & 0xFF;
@@ -311,11 +274,11 @@ void BMP085::writeRegister8(uint8_t reg, uint8_t value)
 {
     Wire.beginTransmission(BMP085_ADDRESS);
     #if ARDUINO >= 100
-	Wire.write(reg);
-	Wire.write(value);
+        Wire.write(reg);
+        Wire.write(value);
     #else
-	Wire.send(reg);
-	Wire.send(value);
+        Wire.send(reg);
+        Wire.send(value);
     #endif
     Wire.endTransmission();
 }
@@ -327,18 +290,18 @@ uint8_t BMP085::fastRegister8(uint8_t reg)
 
     Wire.beginTransmission(BMP085_ADDRESS);
     #if ARDUINO >= 100
-	Wire.write(reg);
+        Wire.write(reg);
     #else
-	Wire.send(reg);
+        Wire.send(reg);
     #endif
     Wire.endTransmission();
 
     Wire.beginTransmission(BMP085_ADDRESS);
     Wire.requestFrom(BMP085_ADDRESS, 1);
     #if ARDUINO >= 100
-	value = Wire.read();
+        value = Wire.read();
     #else
-	value = Wire.receive();
+        value = Wire.receive();
     #endif
     Wire.endTransmission();
 
@@ -352,9 +315,9 @@ uint8_t BMP085::readRegister8(uint8_t reg)
 
     Wire.beginTransmission(BMP085_ADDRESS);
     #if ARDUINO >= 100
-	Wire.write(reg);
+        Wire.write(reg);
     #else
-	Wire.send(reg);
+        Wire.send(reg);
     #endif
     Wire.endTransmission();
 
@@ -362,9 +325,9 @@ uint8_t BMP085::readRegister8(uint8_t reg)
     Wire.requestFrom(BMP085_ADDRESS, 1);
     while(!Wire.available()) {};
     #if ARDUINO >= 100
-	value = Wire.read();
+        value = Wire.read();
     #else
-	value = Wire.receive();
+        value = Wire.receive();
     #endif
     Wire.endTransmission();
 

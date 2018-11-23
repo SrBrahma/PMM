@@ -274,6 +274,15 @@ Vector MPU6050::readNormalizedAccelerometer(void)
     return mNormalizedAccelerometer;
 }
 
+void MPU6050::readNormalizedAccelerometer(float accelerometerArray[3])
+{
+    readRawAccelerometer();
+
+    accelerometerArray[0] = mRawAccelerometer.XAxis * mRangePerDigit * GRAVITY_VALUE;
+    accelerometerArray[1] = mRawAccelerometer.YAxis * mRangePerDigit * GRAVITY_VALUE;
+    accelerometerArray[2] = mRawAccelerometer.ZAxis * mRangePerDigit * GRAVITY_VALUE;
+}
+
 Vector MPU6050::readScaledAccelerometer(void)
 {
     readRawAccelerometer();
@@ -345,6 +354,25 @@ Vector MPU6050::readNormalizedGyroscope(void)
     
 
     return mNormalizedGyroscope;
+}
+
+void MPU6050::readNormalizedGyroscope(float gyroscopeArray[3])
+{
+    readRawGyroscope();
+
+    if (mGyroscopeThreshold)
+    {
+        if (abs(mRawGyroscope.XAxis) < mGyroscopeThreshold)
+            mRawGyroscope.XAxis = 0;
+        if (abs(mRawGyroscope.YAxis) < mGyroscopeThreshold)
+            mRawGyroscope.YAxis = 0;
+        if (abs(mRawGyroscope.ZAxis) < mGyroscopeThreshold)
+            mRawGyroscope.ZAxis = 0;
+    }
+
+    gyroscopeArray[0] = mRawGyroscope.XAxis * mDegreesPerDigit;
+    gyroscopeArray[1] = mRawGyroscope.YAxis * mDegreesPerDigit;
+    gyroscopeArray[2] = mRawGyroscope.ZAxis * mDegreesPerDigit;
 }
 
 void MPU6050::setDHPFMode(mpu6050_dhpf_t dhpf)

@@ -63,55 +63,55 @@ typedef enum
 
 class BMP085
 {
-    public:
+    
+public:
 
-	bool begin(bmp085_oss_t oss = BMP085_HIGH_RES);
-	uint16_t getVersion(void);
+    bool begin(bmp085_oss_t oss = BMP085_HIGH_RES);
+    uint16_t getVersion(void);
 
-	void setOversampling(bmp085_oss_t oss);
-	bmp085_oss_t getOversampling(void);
+    void setOversampling(bmp085_oss_t oss);
+    bmp085_oss_t getOversampling(void);
 
-	void setSoftwareOversampling(bool softwareOversampling);
-	bool getSoftwareOversampling(void);
+    void setSoftwareOversampling(bool softwareOversampling);
+    bool getSoftwareOversampling(void);
 
-	uint16_t readRawTemperature(void);
-	uint32_t readRawPressure(bool rawRegister = false);
+    uint16_t readRawTemperature(void);
+    uint32_t readRawPressure(bool rawRegister = false);
 
-	double readTemperature(void);
-	double readFloatTemperature(void);
+    double readTemperature(void);
+    double readFloatTemperature(void);
 
-	uint32_t readPressure(void);
-	double readFloatPressure(void);
+    uint32_t readPressure(void);
+    double readFloatPressure(void);
 
-	double getAltitude(double pressure, double seaLevelPressure = 101325);
-	double getSeaLevel(double pressure, double altitude);
+    double getAltitude(double pressure, double seaLevelPressure = 101325);
+    double getSeaLevel(double pressure, double altitude);
 
     private:
 
-	// Calibration data
-	int16_t ac1, ac2, ac3;
-	uint16_t ac4, ac5, ac6;
-	int16_t b1, b2;
-	int16_t mb, mc, md;
+    // Calibration data
+    int16_t ac1, ac2, ac3;
+    uint16_t ac4, ac5, ac6;
+    int16_t b1, b2;
+    int16_t mb, mc, md;
 
-	// Polynomials for Floating Point Pressure Calculation
-	double fc5,fc6,fmc,fmd,fx0,fx1,fx2,fy0,fy1,fy2,fp0,fp1,fp2;
-	
-	// Oversample
-	bmp085_oss_t oss;
-	bool soss;
+    // Polynomials for Floating Point Pressure Calculation
+    double fc5,fc6,fmc,fmd,fx0,fx1,fx2,fy0,fy1,fy2,fp0,fp1,fp2;
 
-	// Read calibration data
-	void readCalibrationData(void);
+    // Oversample
+    bmp085_oss_t oss;
 
-	// Calculate Polynomials
-	void calculatePolynomials(void);
+    // Read calibration data
+    void readCalibrationData(void);
 
-	// Registers
-	void writeRegister8(uint8_t reg, uint8_t value);
-	uint8_t readRegister8(uint8_t reg);
-	uint8_t fastRegister8(uint8_t reg);
-	uint16_t readRegister16(uint8_t reg);
+    // Calculate Polynomials
+    void calculatePolynomials(void);
+
+    // Registers
+    void writeRegister8(uint8_t reg, uint8_t value);
+    uint8_t readRegister8(uint8_t reg);
+    uint8_t fastRegister8(uint8_t reg);
+    uint16_t readRegister16(uint8_t reg);
 };
 
 #endif

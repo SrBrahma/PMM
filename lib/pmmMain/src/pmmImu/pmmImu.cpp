@@ -3,8 +3,6 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#include <Wire.h>
-
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <BMP085.h>
@@ -20,19 +18,13 @@ PmmImu::PmmImu()
 
 int PmmImu::initMpu()
 {
-    mMpu.initialize();
-
-    if(mMpu.testConnection())
+    if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {
         mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
         PMM_DEBUG_PRINTLN("PmmImu #1: MPU6050 INIT FAILED");
         return 1;
     }
-    /*
-    mpu.setXGyroscopeOffset(220);
-    mpu.setYGyroscopeOffset(76);
-    mpu.setZGyroscopeOffset(-85);
-    mpu.setZAccelerometerOffset(1788); // 1688 factory default for my test chip*/
+
     PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: MPU6050 initialized successfully!");
     return 0;
 
@@ -42,14 +34,12 @@ int PmmImu::initMpu()
 
 int PmmImu::initMagnetometer()
 {
-    mMagnetometer.initialize();
-
-    if (mMagnetometer.testConnection())
+    if (!mMagnetometer.begin())
     {
         PMM_DEBUG_PRINTLN("PmmImu #2: MAGNETOMETER INIT ERROR");
         return 1;
     }
-    //mMagnetometer.setMode(HMC5883L_MODE_CONTINUOUS); // works without.
+
     PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: Magnetometer initialized successfully!");
     return 0;
 }
@@ -58,12 +48,15 @@ int PmmImu::initMagnetometer()
 
 int PmmImu::initBmp()  //BMP085 Setup
 {
-    mBarometer.initialize();
-    if(!mBarometer.testConnection())
+    if (!mBarometer.begin(BMP085_ULTRA_LOW_POWER))  // This is actually beter, as we will lose less time on delay(), and we do the filtering ourselves.
+                                                    // Read the datasheet.
     {
         PMM_DEBUG_PRINTLN("PmmImu #3: BAROMETER INIT ERROR");
         return 1;
     }
+
+    mReferencePressure = mBarometer.readPressure();
+
     PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: BMP initialized successfully!");
     return 0;
 }
@@ -78,8 +71,6 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
     mPmmErrorsCentral = pmmErrorsCentral;
     mMagnetometerDeclinationRad = 369.4 / 1000; // https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
 
-    Wire.begin(); // as seen in the sensors example!
-
     int foundError = 0;
 
     if (initBmp())
@@ -92,18 +83,16 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
     {
         mPmmErrorsCentral->reportErrorByCode(ERROR_ACCELEROMETER_INIT);
         mPmmErrorsCentral->reportErrorByCode(ERROR_GYROSCOPE_INIT);
-        foundError = 1;
+        foundError = 2;
     }
 
     if (initMagnetometer())
     {
         mPmmErrorsCentral->reportErrorByCode(ERROR_MAGNETOMETER_INIT);
-        foundError = 1;
+        foundError = 3;
     }
 
-    updateScales();
-
-    return foundError? 1: 0;
+    return foundError;
 }
 
 
@@ -112,15 +101,9 @@ int PmmImu::init(PmmErrorsCentral *pmmErrorsCentral)
 
 int PmmImu::updateMpu()
 {
-    mMpu.getMotion6(&mAccelerometerRaw[0], &mAccelerometerRaw[1], &mAccelerometerRaw[2], &mGyroscopeRaw[0], &mGyroscopeRaw[1], &mGyroscopeRaw[2]);
-
-    mPmmImuStruct.accelerometerArray[0] = mAccelerometerRaw[0] / mAccelerometerScale;
-    mPmmImuStruct.accelerometerArray[1] = mAccelerometerRaw[1] / mAccelerometerScale;
-    mPmmImuStruct.accelerometerArray[2] = mAccelerometerRaw[2] / mAccelerometerScale;
-
-    mPmmImuStruct.gyroscopeArray[0] = mGyroscopeRaw[0] / mGyroscopeScale;
-    mPmmImuStruct.gyroscopeArray[1] = mGyroscopeRaw[1] / mGyroscopeScale;
-    mPmmImuStruct.gyroscopeArray[2] = mGyroscopeRaw[2] / mGyroscopeScale;
+    mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
+    mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
+    mPmmImuStruct.temperature = mMpu.readTemperature();
 
     return 0;
 }
@@ -129,19 +112,8 @@ int PmmImu::updateMpu()
 
 int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
 {
-    mMagnetometer.getHeading(&mMagnetometerRaw[0], &mMagnetometerRaw[1], &mMagnetometerRaw[2]);
+    mMagnetometer.readNormalized(mPmmImuStruct.magnetometerArray);
 
-    mPmmImuStruct.magnetometerArray[0] = mMagnetometerRaw[0] * mMagnetometerScale;
-    mPmmImuStruct.magnetometerArray[1] = mMagnetometerRaw[1] * mMagnetometerScale;
-    mPmmImuStruct.magnetometerArray[2] = mMagnetometerRaw[2] * mMagnetometerScale;
-
-    mPmmImuStruct.headingRadian = atan2(mMagnetometerRaw[1], mMagnetometerRaw[0]); // argument is (mY, mX).
-
-    mPmmImuStruct.headingRadian += mMagnetometerDeclinationRad; // Adds the declination
-
-    if(mPmmImuStruct.headingRadian < 0)
-        mPmmImuStruct.headingRadian += 2 * M_PI;
-    mPmmImuStruct.headingDegree = mPmmImuStruct.headingRadian * 180/M_PI;
     return 0;
 }
 
@@ -149,21 +121,12 @@ int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/
 
 int PmmImu::updateBmp()
 {
-    mBarometer.setControl(BMP085_MODE_TEMPERATURE);
-
-    // read calibrated temperature value in degrees Celsius
-    mPmmImuStruct.temperature = mBarometer.getTemperatureC();
-
-    // request pressure (3x oversampling mode, high detail, 23.5ms delay)
-    mBarometer.setControl(BMP085_MODE_PRESSURE_3);
-
+    // Add a filter later!
+    
     // read calibrated pressure value in Pascals (Pa)
-    mPmmImuStruct.pressure = mBarometer.getPressure();
+    mPmmImuStruct.pressure = mBarometer.readPressure();
+    mPmmImuStruct.altitudePressure = mBarometer.getAltitude(mPmmImuStruct.pressure, mReferencePressure);
 
-    // calculate absolute altitude in meters based on known pressure
-    // (may pass a second "sea level pressure" parameter here,
-    // otherwise uses the standard value of 101325 Pa)
-    mPmmImuStruct.altitudePressure = mBarometer.getAltitude(mPmmImuStruct.pressure);
     return 0;
 }
 

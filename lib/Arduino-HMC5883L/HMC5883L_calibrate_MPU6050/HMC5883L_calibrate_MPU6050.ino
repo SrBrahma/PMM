@@ -42,7 +42,7 @@ void setup()
   }
 
   // Set measurement range
-  compass.setAccelerometerRange(HMC5883L_RANGE_1_3GA);
+  compass.setMagnetometerRange(HMC5883L_RANGE_1_3GA);
 
   // Set measurement mode
   compass.setMeasurementMode(HMC5883L_CONTINOUS);

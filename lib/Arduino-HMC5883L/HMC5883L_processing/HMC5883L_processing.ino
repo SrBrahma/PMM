@@ -24,7 +24,7 @@ void setup()
   }
 
   // Set measurement range
-  compass.setAccelerometerRange(HMC5883L_RANGE_1_3GA);
+  compass.setMagnetometerRange(HMC5883L_RANGE_1_3GA);
 
   // Set measurement mode
   compass.setMeasurementMode(HMC5883L_CONTINOUS);
@@ -42,7 +42,7 @@ void setup()
 void loop()
 {
   long x = micros();
-  Vector norm = compass.readNormalize();
+  Vector norm = compass.readNormalized();
 
   // Calculate heading
   float heading = atan2(norm.YAxis, norm.XAxis);

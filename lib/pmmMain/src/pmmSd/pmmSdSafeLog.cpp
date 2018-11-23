@@ -1,5 +1,5 @@
 #include <string.h>
-#include <pmmConsts.h>
+#include "pmmConsts.h"
 
 #include "pmmSd/pmmSd.h"
 #include "pmmSd/pmmSdSafeLog.h"
@@ -155,5 +155,5 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
         return 1;
     }
-
+    return 0;
 }

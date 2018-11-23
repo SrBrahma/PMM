@@ -48,8 +48,8 @@ void setup()
 
 void loop()
 {
-  Vector acc = accelerometer.readNormalize();
-  Vector gyr = gyroscope.readNormalize();
+  Vector acc = accelerometer.readNormalized();
+  Vector gyr = gyroscope.readNormalized();
 
   // Calculate Pitch & Roll from accelerometer (deg)
   accPitch = -(atan2(acc.XAxis, sqrt(acc.YAxis*acc.YAxis + acc.ZAxis*acc.ZAxis))*180.0)/M_PI;

@@ -97,12 +97,13 @@ class HMC5883L
 	bool begin(void);
 
 	Vector readRaw(void);
-	Vector readNormalize(void);
+	Vector readNormalized(void);
+    void   readNormalized(float magnetometerArray[3]);
 
 	void  setOffset(int xo, int yo);
 
-	void  setAccelerometerRange(hmc5883l_range_t range);
-	hmc5883l_range_t getAccelerometerRange(void);
+	void  setMagnetometerRange(hmc5883l_range_t range);
+	hmc5883l_range_t getMagnetometerRange(void);
 
 	void  setMeasurementMode(hmc5883l_mode_t mode);
 	hmc5883l_mode_t getMeasurementMode(void);

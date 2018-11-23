@@ -32,7 +32,7 @@ void setup()
   // +/- 4.70 Ga: HMC5883L_RANGE_4_7GA
   // +/- 5.60 Ga: HMC5883L_RANGE_5_6GA
   // +/- 8.10 Ga: HMC5883L_RANGE_8_1GA
-  compass.setAccelerometerRange(HMC5883L_RANGE_1_3GA);
+  compass.setMagnetometerRange(HMC5883L_RANGE_1_3GA);
 
   // Set measurement mode
   // Idle mode:              HMC5883L_IDLE
@@ -65,7 +65,7 @@ void checkSettings()
 {
   Serial.print("Selected range: ");
   
-  switch (compass.getAccelerometerRange())
+  switch (compass.getMagnetometerRange())
   {
     case HMC5883L_RANGE_0_88GA: Serial.println("0.88 Ga"); break;
     case HMC5883L_RANGE_1_3GA:  Serial.println("1.3 Ga"); break;
@@ -115,7 +115,7 @@ void checkSettings()
 void loop()
 {
   Vector raw = compass.readRaw();
-  Vector norm = compass.readNormalize();
+  Vector norm = compass.readNormalized();
 
   Serial.print(" Xraw = ");
   Serial.print(raw.XAxis);

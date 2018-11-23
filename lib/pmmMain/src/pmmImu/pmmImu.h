@@ -22,18 +22,17 @@
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <BMP085.h>
-#include <Wire.h>
 
-#include <pmmConsts.h>
+#include "pmmConsts.h"
 #include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 typedef struct
 {
-    float accelerometerArray[3];    // Accelerations in x,y,z
-    float magnetometerArray[3];     // Magnetic fields in x,y,z
-    float gyroscopeArray[3];        // Angular velocity in x,y,z
+    float accelerometerArray[3];    // Accelerations    of x,y,z, in m/s^2
+    float magnetometerArray[3];     // Magnetic fields  of x,y,z, in ..
+    float gyroscopeArray[3];        // Angular velocity of x,y,z, in degrees/sec
     float pressure;
-    float altitudePressure;
+    float altitudePressure;         // Relative altitude, to the starting altitude.
     float temperature;
     float headingDegree;
     float headingRadian;
@@ -41,34 +40,7 @@ typedef struct
 
 class PmmImu
 {
-private:
-    BMP085 mBarometer;
-    MPU6050 mMpu;
-    HMC5883L mMagnetometer;
 
-    int16_t mMagnetometerRaw[3];
-    int16_t mAccelerometerRaw[3];
-    int16_t mGyroscopeRaw[3];
-
-    float mAccelerometerScale;
-    float mGyroscopeScale;
-    float mMagnetometerScale;
-
-    float mMagnetometerDeclinationRad;
-
-    unsigned long mNextMillisBarometer;
-    PmmErrorsCentral *mPmmErrorsCentral;
-    pmmImuStructType mPmmImuStruct;
-
-    int initMpu();
-    int initMagnetometer();
-    int initBmp();
-
-    int updateMpu();
-    int updateMagnetometer();
-    int updateBmp();
-
-    int updateScales();
 public:
     PmmImu();
     /*
@@ -96,6 +68,30 @@ public:
     float* getAltitudeBarometerPtr();
     float* getTemperaturePtr();
     pmmImuStructType* getImuStructPtr();
+
+private:
+    BMP085 mBarometer;
+    MPU6050 mMpu;
+    HMC5883L mMagnetometer;
+
+    PmmErrorsCentral *mPmmErrorsCentral;
+
+    pmmImuStructType mPmmImuStruct;
+
+    float mMagnetometerDeclinationRad;
+
+    unsigned long mNextMillisBarometer;
+
+    double mReferencePressure;
+
+    int initMpu();
+    int initMagnetometer();
+    int initBmp();
+
+    int updateMpu();
+    int updateMagnetometer();
+    int updateBmp();
+
 };
 
 

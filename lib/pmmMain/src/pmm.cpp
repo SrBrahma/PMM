@@ -48,7 +48,7 @@ void Pmm::init()
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         
         #if PMM_DEBUG_TIMEOUT_ENABLED
-            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));        // wait for serial port to connect. Needed for native USB port only
+            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));
         
         #else
             while (!Serial);

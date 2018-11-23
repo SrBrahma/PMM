@@ -2,6 +2,10 @@
 #include <pmmSd/pmmSdAllocation.h>
 
 
+PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
+{
+    mSdFat = sdFat;
+}
 
 int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
@@ -19,6 +23,8 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char 
     return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
 }
 
+
+
 // Handles our pmmSdAllocationStatusStructType struct automatically.
 int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
@@ -32,13 +38,15 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameE
     return returnValue;
 }
 
+
+
 // Allocates a file part with a length of X blocks.
 // If no problems found, return 0.
 // The filenameExtension shouldn't have the '.'.
 int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock)
 {
-    if (kibibytesToAllocate > PMM_SD_MAX_PART_KIB)
-        kibibytesToAllocate = PMM_SD_MAX_PART_KIB; // Read the comments at pmmSdAllocationStatusStructType.
+    if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_KIB)
+        kibibytesToAllocate = PMM_SD_ALLOCATION_PART_KIB; // Read the comments at pmmSdAllocationStatusStructType.
 
     // 1) How will be called the new part file?
     snprintf(mTempFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s/part%u.%s", dirFullRelativePath, filePart, filenameExtension);
@@ -60,7 +68,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameE
         // error("contiguousRange failed");
     }
 
-    if (!mSdFat.card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    if (!mSdFat->card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
         PMM_DEBUG_PRINTLN("PmmSd: ERROR 6 - Error at erase()!");
         return 1;

@@ -111,17 +111,11 @@ void PmmSd::getFilenameOwn(char destination[], uint8_t maxLength, char filename[
     snprintf(destination, maxLength, "_self/%s", filename);
 }
 
+
 void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[])
 {
     snprintf(destination, maxLength, "%03u/%03u/%s", sourceAddress, sourceSession, filename);
 }
-
-
-
-
-
-
-
 
 
 

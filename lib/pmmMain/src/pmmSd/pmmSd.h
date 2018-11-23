@@ -14,20 +14,16 @@
 
 
 #define PMM_SD_BASE_DIRECTORY               "/Minerva Rockets/pmm"
-#define PMM_SD_BACKUP_SUFFIX                "_backup"
 
-#define PMM_SD_MAX_SESSIONS_ID              255
 
-#define PMM_SD_FILENAME_MAX_LENGTH          64
+#define PMM_SD_FILENAME_MAX_LENGTH          128
 
 
 #define PMM_SD_BLOCK_SIZE                   512
 
 
-#define PMM_SD_MAXIMUM_BUFFER_LENTH_KIB     16
-
-
-
+#define KIBIBYTE_IN_BYTES                   1024
+#define MEBIBYTE_IN_BYTES                   1048576
 
 
 

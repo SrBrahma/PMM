@@ -2,6 +2,7 @@
 #include "pmmConsts.h"
 
 #include "pmmSd/pmmSd.h"
+#include "pmmSd/pmmSdAllocation.h"
 #include "pmmSd/pmmSdSafeLog.h"
 
 // These are files which are:
@@ -16,14 +17,15 @@
 // By having the backup blocks always ahead of the current block instead of a fixed place for them, we distribute the SD
 
 
-PmmSdSafeLog::PmmSdSafeLog(PmmSd *pmmSd, uint16_t defaulBlocksAllocationPerPart) // To use multiple buffers
+PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat, uint16_t defaulBlocksAllocationPerPart)
+    : mPmmSdAllocation(mSdFat)
 {
-    mPmmSd = pmmSd;
+    mSdFat = sdFat;
     mDefaultKiBAllocationPerPart = defaulBlocksAllocationPerPart;
 }
 
 
-void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType * statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
+void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
 {
     statusStruct->currentBlock           = 0;
     statusStruct->freeBlocksAfterCurrent = 0;
@@ -34,6 +36,7 @@ void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType * sta
 
     if (KiBPerPart == 0)
         statusStruct->KiBPerPart      = mDefaultKiBAllocationPerPart;
+
     else
         statusStruct->KiBPerPart      = KiBPerPart;
 }

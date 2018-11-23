@@ -10,6 +10,7 @@
 #include <SdFat.h>
 #include "pmmSd/pmmSd.h"
 
+#define PMM_SD_MAXIMUM_BUFFER_LENTH_KIB     16
 
 // System made to work with data of persistent length. Later I will explain it more.
 // This need a deconstructor!

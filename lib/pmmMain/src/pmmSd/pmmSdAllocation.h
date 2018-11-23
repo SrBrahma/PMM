@@ -2,9 +2,10 @@
 #define PMM_SD_ALLOCATION_h
 
 #include <stdint.h>     // For uintx_t types
+#include <SdFat.h>
 #include "pmmSd/pmmSd.h"
 
-#define PMM_SD_MAX_PART_KIB                 16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
+#define PMM_SD_ALLOCATION_PART_KIB              16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
 
 // These letters bellow are flags used in the SD blocks, in safeLog and fastLog writting modes.
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
@@ -15,15 +16,13 @@
 
 #define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION   0 // Where it will be on the block.
 
-
-#define KIBIBYTE_IN_BYTES                   1024
-#define MEBIBYTE_IN_BYTES                   1048576
-
 // These ifndef allows using this file without PMM.
 
 #ifndef PMM_DEBUG_PRINTLN(x)
     #define PMM_DEBUG_PRINTLN(x) Serial.println(x)
 #endif
+
+
 
 class PmmSdAllocation
 {
@@ -53,13 +52,20 @@ public:
         uint16_t currentPositionInBlock;
     } pmmSdAllocationStatusStructType;      // Total struct size is 12 bytes, with padding.
 
+
+    PmmSdAllocation(SdFatSdio* sdFat);
+
+
     int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
     int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 
-private:
-    File mFile;
-    mTempFilename[
+protected:
+
+    SdFatSdio* mSdFat;
+    File mAllocationFile;
+    char mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include <string.h>                 // For snprintf
-#include <pmmSd/pmmSdAllocation.h>
+#include "pmmSd/pmmSdAllocation.h"
 
 
 PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
@@ -18,9 +18,10 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char 
         return 0;
     }
     
-    // 2) YA, implicit else.
+    // 2) YA
     // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
-    return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
+    else
+        return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
 }
 
 

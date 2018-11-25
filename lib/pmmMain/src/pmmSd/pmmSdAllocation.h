@@ -26,6 +26,7 @@
 
 class PmmSdAllocation
 {
+
 public:
 
     typedef struct
@@ -50,6 +51,7 @@ public:
 
         // There could be a bit field to 9, but currently, no actual need.
         uint16_t currentPositionInBlock;
+        
     } pmmSdAllocationStatusStructType;      // Total struct size is 12 bytes, with padding.
 
 

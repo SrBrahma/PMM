@@ -8,7 +8,9 @@
 
 class SafeLogTest
 {
+
 public:
+
     uint32_t groupLength;
     bool doQuit;
     SafeLogTest()

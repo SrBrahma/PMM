@@ -35,22 +35,14 @@
 
 
 
-uint16_t kibibytesToBlocksAmount(uint16_t kibibytes); // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
-uint16_t mebibytesToBlocksAmount(uint8_t  mebibytes); // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
-
-
-
-
 class PmmSd
 {
 
 public:
 
     PmmSd();
-
-    int init();
-    int init(uint8_t sessionId);
-    int init(char   fullPath[]);
+    PmmSd(uint8_t sessionId);
+    PmmSd(char   fullPath[]);
 
     int setPmmCurrentDirectory(uint8_t sessionId);
     int setCurrentDirectory   (char   fullPath[]);

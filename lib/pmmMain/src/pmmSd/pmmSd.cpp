@@ -10,47 +10,35 @@
 
 
 
-uint16_t kibibytesToBlocksAmount(uint16_t kibibytes) // Kibibyte is 1024 bytes! (kilobyte is 1000 bytes!) https://en.wikipedia.org/wiki/Kibibyte
-{
-    uint32_t tempValue = kibibytes * (1024 / PMM_SD_BLOCK_SIZE);
-    if (tempValue > 0xFFFF)
-        tempValue = 0xFFFF; // Avoid overflow of the uint16_t
-    return tempValue; 
-}
-
-uint16_t mebibytesToBlocksAmount(uint8_t mebibytes) // Mebibyte is 1024 kibibytes! (megabyte is 1000 kilobytes!) https://en.wikipedia.org/wiki/Mebibyte
-{
-    uint32_t tempValue = mebibytes * (1048576 / PMM_SD_BLOCK_SIZE); // 1048576 bytes is 1 MiB
-    if (tempValue > 0xFFFF)
-        tempValue = 0xFFFF; // Avoid overflow of the uint16_t
-    return tempValue; 
-}
-
-
-
 PmmSd::PmmSd()
-{
-}
-
-
-
-int PmmSd::init()
 {
     // 1) Initialize the SD
     if (!mSdFat.begin())
     {
         PMM_DEBUG_ADV_PRINTLN("Sd init failed!");
-        return 1;
     }
 
     PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
-    return 0;
 }
+
+PmmSd::PmmSd(uint8_t sessionId)
+{
+    PmmSd();
+    setPmmCurrentDirectory(sessionId);
+}
+
+PmmSd::PmmSd(char fullPath[])
+{
+    PmmSd();
+    setCurrentDirectory(fullPath);
+}
+
+
 
 int PmmSd::setPmmCurrentDirectory(uint8_t sessionId)
 {
     char fullPath[PMM_SD_FILENAME_MAX_LENGTH];
-    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s_%u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, sessionId);
+    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session_%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, sessionId);
 
     mSdFat.chdir(1);
     mSdFat.mkdir(fullPath);
@@ -69,19 +57,6 @@ int PmmSd::setCurrentDirectory(char fullPath[])
     return 0;
 }
 
-int PmmSd::init(uint8_t sessionId)
-{
-    init();
-    setPmmCurrentDirectory(sessionId);
-    return 0;
-}
-
-int PmmSd::init(char fullPath[])
-{
-    init();
-    setCurrentDirectory(fullPath);
-    return 0;
-}
 
 
 // sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
@@ -144,7 +119,7 @@ void PmmSd::getFilenameOwn(char destination[], uint8_t maxLength, char filename[
 
 void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[])
 {
-    snprintf(destination, maxLength, "%03u/%03u/%s", sourceAddress, sourceSession, filename);
+    snprintf(destination, maxLength, "%03u/%02u/%s", sourceAddress, sourceSession, filename);
 }
 
 

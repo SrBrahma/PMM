@@ -6,35 +6,31 @@
 #include <pmmSd/pmmSdSafeLog.h>
 
 
-class SafeLogTest
+class SafeLogTest   // Being a class allows us to have functions inside, instead of global functions.
 {
 
 public:
 
-    uint32_t groupLength;
-    bool doQuit;
+    PmmSdSafeLog pmmSdSafeLog;
     SdFatSdio sdFat;
     
     SafeLogTest()
-    :
-        groupLength(5),
-        doQuit(false)
     {
 
-        File file;
-        uint32_t bgnBlock, endBlock, currentBlock, currentPart, totalParts;
-        file.contiguousRange(&bgnBlock, &endBlock);
+        uint32_t  groupLength;
+        bool      doQuit = false;
+
+        PmmSd     pmmSd;
+
+        
+
+        uint32_t  bgnBlock, endBlock, currentBlock, currentPart, totalParts;
 
         Serial.println("SafeLogTest");
         Serial.println("Each file part will have the small size possible, according to the Cluster size");
         Serial.print  ("Group size is "); Serial.print(groupLength); Serial.println(" bytes.");
 
 
-        if (!sdFat.begin())
-        {
-            Serial.println("Error at sdFat.begin()!");
-        }
-        sdFat.chvol();
 
 
         while (!doQuit)
@@ -60,4 +56,5 @@ public:
 
 
 };
+
 #endif

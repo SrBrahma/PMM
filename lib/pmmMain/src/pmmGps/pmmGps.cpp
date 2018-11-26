@@ -36,7 +36,7 @@
 #include <Arduino.h>
 #include <NMEAGPS.h>
 #include "pmmConsts.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
+
 #include "pmmGps/pmmGps.h"
 
 //-------------------------------------------------------------------------
@@ -62,9 +62,9 @@
 
 PmmGps::PmmGps(){}
 
-int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
+int PmmGps::init()
 {
-    mPmmErrorsCentral = pmmErrorsCentral;
+    
     Serial1.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
@@ -72,17 +72,23 @@ int PmmGps::init(PmmErrorsCentral *pmmErrorsCentral)
     #endif
 
     if (Serial1)
+    {
         PMM_DEBUG_PRINTLN_MORE("PmmGps [M]: Initialized successfully!");
+        mGpsIsWorking = 1;
+    }
 
     else
+    {
         PMM_DEBUG_PRINTLN("PmmGps #1: INIT FAILED!");
+        mGpsIsWorking = 0;
+    }
 
     return 0;
 }
 
 int PmmGps::update()
 {
-    if (mPmmErrorsCentral->getGpsIsWorking())
+    if (mGpsIsWorking)
     {
         int hadUpdate = 0;
         while (mGps.available(gpsPort))

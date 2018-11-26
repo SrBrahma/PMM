@@ -17,7 +17,7 @@ PmmHealthSignals::PmmHealthSignals()
 // Initializer
 int PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
 {
-    mPmmErrorsCentral = pmmErrorsCentral;
+    
     mErrorsStructArray = mPmmErrorsCentral->getErrorsStructArray();
     mMillisNextSignalState = 0;
 

@@ -65,26 +65,26 @@ void Pmm::init()
 
   // Telemetry ====================================================================================
     #if PMM_USE_TELEMETRY
-        mPmmTelemetry.init(&mPmmErrorsCentral);
+        mPmmTelemetry.init();
     #endif
 
 
   // SD ===========================================================================================
     #if PMM_USE_SD
-        mPmmSd.init(&mPmmErrorsCentral, mSessionId);
+        mPmmSd.init(mSessionId);
     #endif
 
 
   // GPS ==========================================================================================
     #if PMM_USE_GPS
-        mPmmGps.init(&mPmmErrorsCentral);
+        mPmmGps.init();
         mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
   // IMU ==========================================================================================
     #if PMM_USE_IMU
-        mPmmImu.init(&mPmmErrorsCentral);
+        mPmmImu.init();
         mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 

@@ -10,16 +10,6 @@
 
 
 
-// =======================================================================
-// Macros
-// =======================================================================
-// https://stackoverflow.com/questions/5966594/how-can-i-use-pragma-message-so-that-the-message-points-to-the-filelineno
-// https://stackoverflow.com/questions/3030099/pragma-in-define-macro/3030312#3030312
-#define STR(value)          #value
-#define STR2(value)         STR(value)
-#define DO_PRAGMA(arguments)    _Pragma(#arguments)
-#define REMINDER(string)     DO_PRAGMA(message(string))
-
 
 
 // =======================================================================
@@ -59,34 +49,50 @@
 #define PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT   5000
 
 
-#define PMM_ERROR_MESSAGE(string, returnValue)
+// https://stackoverflow.com/questions/5966594/how-can-i-use-pragma-message-so-that-the-message-points-to-the-filelineno
+// https://stackoverflow.com/questions/3030099/pragma-in-define-macro/3030312#3030312
+#define STR(value)            #value
+#define STR2(value)           STR(value)
+#define DO_PRAGMA(arguments)  _Pragma(#arguments)
+#define REMINDER(string)      DO_PRAGMA(message(string))
 
+#define PMM_CANCEL_MACRO(x) do {} while (0)
+
+// Get only the filename from a __FILE__
 #define FILENAME (__builtin_strrchr("/" __FILE__, '/') + 1)
+
 
 #if PMM_DEBUG
 
-    #define PMM_DEBUG_ADV_PRINTLN(string) { \
-        Serial.print(FILENAME); \
-        Serial.print(" ("); \
-        Serial.print(__func__); \
-        Serial.print(", ln " STR2(__LINE__) ") : "); \
-        Serial.println(string); } // https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
+    #define PMM_DEBUG_ADV_PRINT(string) {           \
+        Serial.print(FILENAME)                     ;\
+        Serial.print(" (")                         ;\
+        Serial.print(__func__)                     ;\
+        Serial.print(", ln " STR2(__LINE__) ") : ");\
+        Serial.print(string)                       ;} // https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 
-    #define PMM_DEBUG_PRINTLN(string) Serial.println(string)
+    #define PMM_DEBUG_ADV_PRINTLN(string) { \
+        PMM_DEBUG_ADV_PRINT(string)         \
+        Serial.println()                   ;}
+
+    #define PMM_DEBUG_PRINT(string)   Serial.print(string)  ;
+
+    #define PMM_DEBUG_PRINTLN(string) Serial.println(string);
 
 #else
-    #define PMM_DEBUG_ADV_PRINTLN(x) do {} while (0)
-    #define PMM_DEBUG_PRINTLN(x) do {} while (0)
+    #define PMM_DEBUG_ADV_PRINT(x)   PMM_CANCEL_MACRO
+    #define PMM_DEBUG_ADV_PRINTLN(x) PMM_CANCEL_MACRO
+    #define PMM_DEBUG_PRINT(x)       PMM_CANCEL_MACRO
+    #define PMM_DEBUG_PRINTLN(x)     PMM_CANCEL_MACRO
+
 
 #endif
 
 
-#define PMM_CANCEL_MACRO(x) do {} while (0)
-
 #if PMM_DEBUG_MORE
     #define PMM_DEBUG_PRINTLN_MORE(x) Serial.println(x)
 #else
-    #define PMM_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO
 #endif
 
 

@@ -11,7 +11,7 @@
 
 #include <RH_RF95.h>                            // Our current RF module!
 
-#include "pmmErrorsCentral/pmmErrorsCentral.h"  // For errors reporting and health status
+  // For errors reporting and health status
 
 #include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
 
@@ -52,7 +52,7 @@ public:
 
     PmmTelemetry();
 
-    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int init();
 
     int updateReception();
     int updateTransmission();
@@ -78,8 +78,8 @@ private:
     receivedPacketAllInfoStructType* mReceivedPacketAllInfoStructPtr;
     receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
 
-    PmmErrorsCentral *mPmmErrorsCentral;
     RH_RF95 mRf95;
+    unsigned mTelemetryIsWorking;
     uint32_t mPreviousPackageLogTransmissionMillis;
     uint32_t mPackageLogDelayMillis;
 

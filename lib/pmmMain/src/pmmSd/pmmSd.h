@@ -6,10 +6,7 @@
 #define PMM_SD_h
 
 #include <SdFat.h>
-
 #include "pmmConsts.h"
-
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 
 
@@ -51,13 +48,17 @@ public:
 
     PmmSd();
 
-    int init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId);
+    int init();
+    int init(uint8_t sessionId);
+    int init(char   fullPath[]);
+
+    int setPmmCurrentDirectory(uint8_t sessionId);
+    int setCurrentDirectory   (char   fullPath[]);
 
     int println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
 
     int write(char filename[], char arrayToWrite[], size_t length, uint8_t sourceAddress, uint8_t sourceSession = 0);
 
-    bool getSdIsBusy();
 
     int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
 
@@ -65,23 +66,20 @@ public:
 
     void getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[]);
 
-    SdFatSdio* getSdFat();
+    bool getSdIsBusy();
 
-    SdioCard* getCard();
+    SdFatSdio* getSdFatPtr();
+
+    SdioCard* getCardPtr();
 
 private:
 
     SdFatSdio mSdFat;
     
     File mFile;
-    File mAllocationFile; // Just for the allocateFilePart() function.
-
-    PmmErrorsCentral* mPmmErrorsCentral;
 
     uint8_t mThisSessionId;
-    char mThisSessionName[PMM_SD_FILENAME_MAX_LENGTH]; // The full "systemName_Id" string
 
-    char mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
 };
 
 #endif

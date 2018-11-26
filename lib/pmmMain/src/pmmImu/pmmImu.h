@@ -24,7 +24,7 @@
 #include <BMP085.h>
 
 #include "pmmConsts.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
+
 
 typedef struct
 {
@@ -47,7 +47,7 @@ public:
     int initAccelerometer();
     int initGyroscope(); */
 
-    int init(PmmErrorsCentral *pmmErrorsCentral); // Must be executed, so the object is passed. Also, inits everything.
+    int init(); // Must be executed, so the object is passed. Also, inits everything.
 
     int update(); // Gets all the sensors
 
@@ -74,13 +74,13 @@ private:
     MPU6050 mMpu;
     HMC5883L mMagnetometer;
 
-    PmmErrorsCentral *mPmmErrorsCentral;
+    unsigned mMpuIsWorking;
+    unsigned mBarometerIsWorking;
+    unsigned mMagnetometerIsWorking;
 
     pmmImuStructType mPmmImuStruct;
 
     float mMagnetometerDeclinationRad;
-
-    unsigned long mNextMillisBarometer;
 
     double mReferencePressure;
 

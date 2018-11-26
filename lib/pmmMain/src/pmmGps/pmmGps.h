@@ -8,7 +8,7 @@
 #include <NMEAGPS.h>
 
 #include "pmmConsts.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
+
 
 // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
 
@@ -46,13 +46,15 @@ class PmmGps
 
 public:
     PmmGps();
-    int init(PmmErrorsCentral *pmmErrorsCentral);
+    int init();
     int update();
     pmmGpsStructType* getGpsStructPtr();
     pmmGpsStructType getGpsStruct();
     //void doSomeWork();
 
 private:
+    unsigned mGpsIsWorking;
+    
     NMEAGPS mGps; // This object parses received characters into the gps.fix() data structure
 
     #if (defined GPS_FIX_SPEED && defined GPS_FIX_ALTITUDE) // https://stackoverflow.com/a/38474505
@@ -65,7 +67,7 @@ private:
     //  an RMC sentence.  It can be used anywhere in your sketch.
     gps_fix mFix;
     pmmGpsStructType mPmmGpsStruct;
-    PmmErrorsCentral *mPmmErrorsCentral;
+    
 
 };
 

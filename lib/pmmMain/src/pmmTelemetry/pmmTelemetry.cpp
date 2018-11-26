@@ -11,12 +11,12 @@ PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
     mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)
 {}
 
-int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
+int PmmTelemetry::init()
 {
     int initCounter = 0;
     mPreviousPackageLogTransmissionMillis = mPackageLogDelayMillis = 0;
 
-    mPmmErrorsCentral = pmmErrorsCentral;
+    
 
     // Reset the priority queues
     mHighPriorityQueueStruct.actualIndex = 0;
@@ -28,23 +28,24 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     mDefaultPriorityQueueStruct.actualIndex = 0;
     mDefaultPriorityQueueStruct.remainingItemsOnQueue = 0;
 
-    pinMode(PMM_PIN_RFM95_RST, OUTPUT);
+    pinMode(PMM_PIN_RFM95_RST, OUTPUT);     // (does this make the pin floating?)
     delay(15);                              // Reset pin should be left floating for >10ms, according to "7.2.1. POR" in SX1272 manual.
     digitalWrite(PMM_PIN_RFM95_RST, LOW);
     delay(1);                               // > 100uS, according to "7.2.2. Manual Reset" in SX1272 manual.
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
-    delay(6);                               // >5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
+    delay(10);                               // >5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
 
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
     {
-        #if PMM_DEBUG
-            Serial.print("PmmTelemetry: LoRa didn't initialized, attempt number "); Serial.println(initCounter);
-        #endif
-        if (++initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
+        initCounter++;
+        PMM_DEBUG_ADV_PRINT("Fail at initialize, attempt ") PMM_DEBUG_PRINT(initCounter) PMM_DEBUG_PRINT(" of ")
+        PMM_DEBUG_PRINT(PMM_RF_INIT_MAX_TRIES) PMM_DEBUG_PRINTLN(".")
+
+        if (initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
         {
-            mPmmErrorsCentral->reportErrorByCode(ERROR_RF_INIT);
-            PMM_DEBUG_PRINTLN("PmmTelemetry #1: LoRa didn't initialized after all these attempts.");
+            mTelemetryIsWorking = 0;
+            PMM_DEBUG_ADV_PRINT("Max attempts reached, LoRa didn't initialize.");
             return 1;
         }
     }
@@ -52,6 +53,8 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
     // So it initialized!
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
     mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
+
+    mTelemetryIsWorking = 1;
     PMM_DEBUG_PRINTLN_MORE("PmmTelemetry [M]: LoRa initialized successfully!");
 
     return 0;
@@ -61,26 +64,17 @@ int PmmTelemetry::init(PmmErrorsCentral *pmmErrorsCentral)
 
 int PmmTelemetry::updateTransmission()
 {
-    // uint32_t tempMillis;
     pmmTelemetryQueueStructType* queueStructPtr;
 
-    // 1) Is there any packet being sent?
+    // 1) Is the telemetry working?
+    if (!mTelemetryIsWorking)
+        return 1;
+
+ 
+    // 2) Is there any packet being sent?
     if (mRf95.isAnyPacketBeingSent())
-        return 1;
+        return 2;
 
-    /* tempMillis = millis();
-    #if PMM_DEBUG_MORE
-        Serial.print("PmmTelemetry [M]: Time taken waiting previous package to be sent = ");
-        Serial.print(millis() - tempMillis);
-        Serial.println("ms.");
-        Serial.print("PmmTelemetry [M]: Delay is = ");
-        Serial.print(mPackageLogDelayMillis);
-        Serial.println("ms.");
-    #endif  */
-
-    // 2) Is the telemetry working?
-    if (!mPmmErrorsCentral->getTelemetryIsWorking())
-        return 1;
 
     // 3) Check the queues, following the priorities. What should the PMM send now?
     if (mHighPriorityQueueStruct.remainingItemsOnQueue)
@@ -94,7 +88,8 @@ int PmmTelemetry::updateTransmission()
     else
         return 0; // Nothing to send!
 
-    // 4) Send it! On the future other options of telemetry may be added. This a little problem to who will work with my code on the future. 'Boa sorte', little fella.
+
+    // 4) Send it!
     mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex], queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]);
 
 

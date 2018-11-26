@@ -24,6 +24,7 @@ Layer 2 - Transport Layer:
     It is similar to UDP protocol.
     
     https://en.wikipedia.org/wiki/Datagram
+    https://en.wikipedia.org/wiki/Transport_layer
 
 Layer 1 - Physical Layer:
     What will send the packet. A LoRa module, a simple Serial connection, a RS-485 protocol...
@@ -32,7 +33,7 @@ Useful links:
 https://en.wikipedia.org/wiki/Abstraction_layer
 https://en.wikipedia.org/wiki/OSI_model
 
-https://en.wikipedia.org/wiki/Transport_layer
+
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     1) PMM Neo Protocol
@@ -78,10 +79,10 @@ https://en.wikipedia.org/wiki/Transport_layer
 
         a) [ 0 ] : [ CRC 8 of this header . ] : [ 1 ]
         b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
-        c) [2,3] : [ LogInfo related CRC 16 ] : [ 2 ]
-        d) [4,5] : [ CRC 16 of the Log .... ] : [ 2 ]
+        c) [ 2 ] : [ LogInfo Identifier ... ] : [ 1 ]
+        d) [3,4] : [ CRC 16 of the Log .... ] : [ 2 ]
 
-                            Total header length = 6 bytes.
+                            Total header length = 5 bytes.
         --------------------------------------------------
 
 
@@ -94,8 +95,8 @@ https://en.wikipedia.org/wiki/Transport_layer
             In which system session this package was generated.
 
 
-        c) LogInfo related CRC 16:
-            The CRC16 of the entire LogInfo package, to know where to store the received logs.
+        c) LogInfo Identifier:
+            To which LogInfo Package are we relating to?
 
 
         e) CRC 16 of the Payload:
@@ -108,7 +109,7 @@ https://en.wikipedia.org/wiki/Transport_layer
         -------------- DataLog Payload 1.0 ---------------
         [Positions] : [ Function ] : [ Length in Bytes ]
 
-        a) [6,+] : [ Data Log ] : [ LogLength ]
+        a) [5,+] : [ Data Log ] : [ LogLength ]
         --------------------------------------------------
 
 
@@ -142,9 +143,9 @@ https://en.wikipedia.org/wiki/Transport_layer
         b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
         c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
         d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
-        e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
+        e) [ 5 ] : [ LogInfo Identifier ......... ] : [ 1 ]
 
-                            Total header length = 7 bytes.
+                            Total header length = 6 bytes.
         --------------------------------------------------
 
 
@@ -172,13 +173,9 @@ https://en.wikipedia.org/wiki/Transport_layer
             Ex: 0000 0011
                 There are 3 packets in total. So we can have the packet 0, 1 and 2.
 
-        d) CRC 16 of all Payloads Parts:
-            To know if the received packets belongs to the same package. Little endian.
+        d) LogInfo Identifier:
+            This allows to have multiple data groups to be sent.
 
-            The CRC16 is calculated this way:
-
-            for (actualPacket = 0, crcVar = CRC16_DEFAULT_VALUE; actualPacket < numberPackets ; actualPacket ++)
-                crcVar = crc16(packetsData[actualPacket], packetsLength[actualPacket], crcVar);
 
 
     2.22) Payload:
@@ -186,8 +183,8 @@ https://en.wikipedia.org/wiki/Transport_layer
         -------------- LogInfo Payload 1.0 ---------------
         [Positions] : [ Function ] : [ Length in Bytes ]
 
-        a) [ 7 ] : [ Number of Variables ] : [ 1 ]
-        b) [8,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
+        a) [ 6 ] : [ Number of Variables ] : [ 1 ]
+        b) [7,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
         c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
         
         Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength

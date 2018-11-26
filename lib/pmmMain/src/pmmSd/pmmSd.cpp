@@ -4,12 +4,9 @@
 
 #include <SdFat.h>
 
-#include "pmmConsts.h"
+#include "pmmConsts.h"  // For this system name
 
 #include "pmmSd/pmmSd.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
-
-#include "pmmTelemetry/pmmTelemetryProtocols.h" // For PMM_TELEMETRY_ADDRESS_SELF define
 
 
 
@@ -37,28 +34,54 @@ PmmSd::PmmSd()
 
 
 
-int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
+int PmmSd::init()
 {
-    mPmmErrorsCentral = pmmErrorsCentral;
-
     // 1) Initialize the SD
     if (!mSdFat.begin())
     {
-        PMM_DEBUG_PRINTLN("PmmSd: ERROR 1 - SD init failed!");
-        mPmmErrorsCentral->reportErrorByCode(ERROR_SD);
+        PMM_DEBUG_ADV_PRINTLN("Sd init failed!");
         return 1;
     }
-    // 1.1) Make sdEx the current volume.
-    mSdFat.chvol();
-
-    // 2) Creates the directory tree.
-    mSdFat.mkdir(PMM_SD_BASE_DIRECTORY);
-    mSdFat.chdir(PMM_SD_BASE_DIRECTORY);
 
     PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
     return 0;
 }
 
+int PmmSd::setPmmCurrentDirectory(uint8_t sessionId)
+{
+    char fullPath[PMM_SD_FILENAME_MAX_LENGTH];
+    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s_%u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, sessionId);
+
+    mSdFat.chdir(1);
+    mSdFat.mkdir(fullPath);
+    mSdFat.chdir(fullPath, 1);
+    return 0;
+}
+
+int PmmSd::setCurrentDirectory(char fullPath[])
+{
+    if (!fullPath)  // Null address
+        return 1;
+
+    mSdFat.chdir(1);
+    mSdFat.mkdir(fullPath);
+    mSdFat.chdir(fullPath, 1);
+    return 0;
+}
+
+int PmmSd::init(uint8_t sessionId)
+{
+    init();
+    setPmmCurrentDirectory(sessionId);
+    return 0;
+}
+
+int PmmSd::init(char fullPath[])
+{
+    init();
+    setCurrentDirectory(fullPath);
+    return 0;
+}
 
 
 // sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
@@ -126,12 +149,12 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
 
 
 
-SdioCard* PmmSd::getCard()
+SdioCard* PmmSd::getCardPtr()
 {
     return mSdFat.card();
 }
 
-SdFatSdio* PmmSd::getSdFat()
+SdFatSdio* PmmSd::getSdFatPtr()
 {
     return &mSdFat;
 }

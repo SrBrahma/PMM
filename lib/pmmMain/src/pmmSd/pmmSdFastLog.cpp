@@ -9,7 +9,7 @@
 
 #include "pmmSd/pmmSd.h"
 #include "pmmSd/pmmSdFastLog.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
+
 #include <SdFat.h>
 
 

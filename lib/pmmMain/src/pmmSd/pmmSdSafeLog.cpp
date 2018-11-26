@@ -46,7 +46,7 @@ void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* stat
 // The maximum groupLength is 255, and the code below is written with that in mind, and assuming the block size is 512 bytes.
 // On the future it can be improved. Not hard.
 
-// //https://stackoverflow.com/questions/31256206/c-memory-alignment
+// https://stackoverflow.com/questions/31256206/c-memory-alignment
 // readBlock() and writeBlock() uses a local array of 512 bytes, and a memcpy() if it is requested.
 // When time is available for me, I will write a function in pmmSd for reading and writing without these slowers, and making sure the mBlockBuffer is aligned to 4.
 int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* statusStruct)
@@ -57,12 +57,8 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     #define remainingBytesInThisBlock_macro (PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock)
 
     unsigned dataBytesRemaining = statusStruct->groupLength;
-
     unsigned hadWrittenGroupHeader = false;
 
-    uint32_t backupBlock0Address;
-
-    uint32_t tempCurrentBlock, tempFreeBlocks, tempNextPart;
 
 
     // 1) Is this the first time running for this statusStruct?
@@ -71,6 +67,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // The function below will also change some struct member values. Read the corresponding function definition.
         allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct);
     }
+
 
     // 2) Is the current block full?
     //  The behavior of the (statusStruct->currentPositionInBlock > PMM_SD_BLOCK_SIZE) case is probably horrible. It normally won't happen.
@@ -93,6 +90,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             return 1;
         }
 
+
         // We have two possible cases:
         //    4) If the new data needs another block. -- Partial Initial Data
         //    5) If the new data fits the current block, entirely. -- Entire Data / Partial Final Data
@@ -106,11 +104,13 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
             hadWrittenGroupHeader = true;
 
+
             // 4.2) Now we add the data to the current block, if there is available space.
             if (remainingBytesInThisBlock_macro) // Avoids useless calls of memcpy
             {
                 memcpy(mBlockBuffer + statusStruct->currentPositionInBlock, data, remainingBytesInThisBlock_macro);
                 dataBytesRemaining -= remainingBytesInThisBlock_macro;
+
 
                 // 4.3) Write the Partial Initial Data to the SD.
                 if(!mSdFat->card()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
@@ -127,8 +127,9 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
                 return 1;
             }
                 
-        } // END of 4).
-    } // END of 3).
+        } // End of 4).
+    } // End of 3).
+
 
     // 5) Write the block that fits entirely the block / Write the Partial Final Data.
 
@@ -136,9 +137,11 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     if (statusStruct->currentPositionInBlock == 0)
         mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN;
 
+
     // 5.2) Write the Group Begin Flag, if not done already at 3.1).
     if (!hadWrittenGroupHeader)
         mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
+
 
     // 5.3) Write the Entire Data, or the Partial Final Data. We check if there is still dataBytesRemaining, as the 3)
     // may only needs to write the Group End Flag.
@@ -150,63 +153,104 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         dataBytesRemaining = 0;
     }
 
+
     // 5.4) Write the Group End Flag.
     mBlockBuffer[statusStruct->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_END;
+
 
     // 5.5) Erase any previous garbage after the written data.
     if (remainingBytesInThisBlock_macro)
         memset(mBlockBuffer + remainingBytesInThisBlock_macro, 0, remainingBytesInThisBlock_macro);
 
-    // 5.6) Write the Last Data Block to the SD.
-    if(!mSdFat->card()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
+
+    // 5.6) Write the Last Valid Block to the SD.
+    if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
     {
-        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Last Valid Block), in write()!");
+        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Last Valid Block)!");
         return 1;
     }
+    statusStruct->freeBlocksAfterCurrent--;
+
 
     // 6) We need two blocks for the Backup Block 0 and Backup Block 1. As in this system we first write in the Backup Block 1
     //  and only then on the Backup Block 0, and it's possible that the Backup Block 1 is on another file part,
     //  we will get the address of the Backup Block 0, write on the Backup Block 1, and then, on the Backup Block 0.
-    // It only happens when freeBlocksAfterCurrent < 2, 
     
-    // 6.1) Save current variables of statusStruct. This is necessary as if the part changed on the situation presented above, these
-    //  variables will also change.
-    tempCurrentBlock = statusStruct->currentBlock;
-    tempFreeBlocks   = statusStruct->freeBlocksAfterCurrent;
-    tempNextPart     = statusStruct->nextFilePart;
-
-    // 6.2) Go to the next block.
-    if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+    // 6.1) It only happens when freeBlocksAfterCurrent < 2.
+    if (statusStruct->freeBlocksAfterCurrent < 2)
     {
-        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
-        return 1;
-    }
+        // 6.1.1) Save current variables of statusStruct. This is necessary as if the part changed on the situation presented above, these
+        //  variables will also change.
+        uint32_t tempCurrentBlock = statusStruct->currentBlock;
+        uint32_t tempFreeBlocks   = statusStruct->freeBlocksAfterCurrent;
+        uint32_t tempNextPart     = statusStruct->nextFilePart;
 
-    // 6.3) Get the address of this block, the Backup Block 0, as the Backup Block 1 may be on another part.
-    backupBlock0Address = statusStruct->currentBlock;
 
-    // 6.4) Go to the next block.
-    if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        // 6.1.2) Go to the next block.
+        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 0)!");
+            return 1;
+        }
+
+
+        // 6.1.3) Get the address of this block, the Backup Block 0, as the Backup Block 1 may be on another part.
+        uint32_t backupBlock0Address = statusStruct->currentBlock;
+
+
+        // 6.1.4) Go to the next block.
+        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 1)!");
+            return 1;
+        }
+
+
+        // 6.1.5) Write the Backup Block 1.
+        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
+            return 1;
+        }
+        statusStruct->freeBlocksAfterCurrent--;
+
+
+        // 6.1.6) Write the Backup Block 0.
+        if(!mSdFat->card()->writeBlock(backupBlock0Address, mBlockBuffer))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
+            return 1;
+        }
+        statusStruct->freeBlocksAfterCurrent--;
+
+
+        // 6.1.7) Return the previous values
+        statusStruct->currentBlock           = tempCurrentBlock + 1;
+        statusStruct->freeBlocksAfterCurrent = tempFreeBlocks   - 1;
+        statusStruct->nextFilePart           = tempNextPart        ;
+
+    } // End of 6.1); if (statusStruct->freeBlocksAfterCurrent < 2)
+
+    // 6.2) If we still have plenty of free blocks in this part
+    else 
     {
-        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
-        return 1;
-    }
+         // 6.2.1) Write the Backup Block 1.
+        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
+            return 1;
+        }
+        statusStruct->freeBlocksAfterCurrent--;
 
-    // 6.5) Write the Backup Block 1.
-    if(!mSdFat->card()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
-    {
-        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Backup Block 1), in write()!");
-        return 1;
-    }
-    #ifdef __LINE__ 
-        4;
-    #endif
 
-    // 6.6) Write the Backup Block 0.
-    if(!mSdFat->card()->writeBlock(backupBlock0Address, mBlockBuffer))
-    {
-        PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Backup Block 0), in write()!");
-        return 1;
-    }
+        // 6.2.2) Write the Backup Block 0.
+        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
+            return 1;
+        }
+        statusStruct->freeBlocksAfterCurrent--;
+
+    } // End of 6.2)
     return 0;
 }

@@ -18,7 +18,7 @@
 
 // These ifndef allows using this file without PMM.
 
-#ifndef PMM_DEBUG_PRINTLN(x)
+#ifndef PMM_DEBUG_PRINTLN
     #define PMM_DEBUG_PRINTLN(x) Serial.println(x)
 #endif
 
@@ -58,9 +58,9 @@ public:
     PmmSdAllocation(SdFatSdio* sdFat);
 
 
-    int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
-    int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
-    int allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
+    int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+    int allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+    int allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 
 protected:
 

@@ -13,11 +13,18 @@
     #define PMM_WILL_EXTRA_CODE     1
 #endif
 
+
+
+
+
+
+
 //Pmm pmm;
 
 // Extra Codes are codes from Formatting the SD card to testing and calibrating sensors.
 void runExtraCodes()
 {
+
     #if PMM_WILL_EXTRA_CODE
 
         uint32_t serialDebugTimeout = millis();
@@ -26,7 +33,7 @@ void runExtraCodes()
 
         while (!Serial && ((millis() - serialDebugTimeout) < 5000));
 
-        Serial.println("### PMM EXTRA CODE INITIALIZED. YOU CAN DISABLE IT ON THE CODE. ####");
+        Serial.println("=-= PMM Extra Code initialized automatically. You can disable it at . =-=");
 
         #if PMM_SD_EXTRA_CODES
             PmmSdExtraCodes();

@@ -2,12 +2,15 @@
 #include "pmmSd/pmmSdAllocation.h"
 
 
+
 PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
 {
     mSdFat = sdFat;
 }
 
-int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+
+
+int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
 
     // 1) Do we need a new part? No!
@@ -27,7 +30,7 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], char 
 
 
 // Handles our pmmSdAllocationStatusStructType struct automatically.
-int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
     uint32_t endBlock;
     int returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock);
@@ -44,7 +47,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameE
 // Allocates a file part with a length of X blocks.
 // If no problems found, return 0.
 // The filenameExtension shouldn't have the '.'.
-int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock)
+int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock)
 {
     if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_KIB)
         kibibytesToAllocate = PMM_SD_ALLOCATION_PART_KIB; // Read the comments at pmmSdAllocationStatusStructType.
@@ -56,7 +59,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], char filenameE
     // 2) Allocate the new file!
     if (!mAllocationFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
     {
-        PMM_DEBUG_PRINTLN("PmmSd: ERROR 4 - Error at createContiguous()!");
+        PMM_DEBUG_ADV_PRINTLN("Error at createContiguous() (@ New File)!");
         return 1;
         // error("createContiguous failed");
     }

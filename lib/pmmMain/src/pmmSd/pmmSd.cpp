@@ -35,6 +35,8 @@ PmmSd::PmmSd()
 {
 }
 
+
+
 int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
 {
     mPmmErrorsCentral = pmmErrorsCentral;
@@ -56,6 +58,8 @@ int PmmSd::init(PmmErrorsCentral* pmmErrorsCentral, uint8_t sessionId)
     PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
     return 0;
 }
+
+
 
 // sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
 // sourceSession is from which session we did receive the message. This field is useless if the soureAddress is the
@@ -79,6 +83,8 @@ int PmmSd::println(char filename[], char string[], uint8_t sourceAddress, uint8_
     mFile.close();
     return 0;
 }
+
+
 
 // sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
 // sourceSession is from which session we did receive the message. This field is useless if the soureAddress is the
@@ -110,6 +116,7 @@ void PmmSd::getFilenameOwn(char destination[], uint8_t maxLength, char filename[
 {
     snprintf(destination, maxLength, "_self/%s", filename);
 }
+
 
 
 void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[])

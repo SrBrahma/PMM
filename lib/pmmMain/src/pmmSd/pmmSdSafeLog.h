@@ -9,7 +9,7 @@
 #include "pmmSd/pmmSdAllocation.h"
 
 #define PMM_SD_SAFE_LOG_EXTENSION       "slog" // The extension added to the file parts. The '.' is automatically added.
-
+#define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
 // System made to work with data of persistent length. Later I will explain it more.
 // This need a deconstructor!
@@ -21,7 +21,7 @@ class PmmSdSafeLog : public PmmSdAllocation
 
 public:
 
-    PmmSdSafeLog(SdFatSdio* sdFat, uint16_t defaulBlocksAllocationPerPart);
+    PmmSdSafeLog(PmmSd* pmmSd, unsigned defaultPartSize = PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB);
 
     // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
     void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
@@ -30,7 +30,7 @@ public:
 
 private:
 
-    SdFatSdio* mSdFat;
+    PmmSd* mPmmSd;
 
     uint16_t mDefaultKiBAllocationPerPart;
 

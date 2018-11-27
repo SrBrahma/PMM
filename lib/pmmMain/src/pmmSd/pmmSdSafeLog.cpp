@@ -17,10 +17,10 @@
 // By having the backup blocks always ahead of the current block instead of a fixed place for them, we distribute the SD
 
 
-PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat, uint16_t defaulBlocksAllocationPerPart)
-    : PmmSdAllocation(sdFat)
+PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
+    : PmmSdAllocation(pmmSd->getSdFatPtr())
 {
-    mSdFat = sdFat;
+    mPmmSd = pmmSd;
     mDefaultKiBAllocationPerPart = defaulBlocksAllocationPerPart;
 }
 

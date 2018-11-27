@@ -44,7 +44,7 @@ public:
     PmmSd(uint8_t sessionId);
     PmmSd(char   fullPath[]);
 
-    int setPmmCurrentDirectory(uint8_t sessionId);
+    int setPmmCurrentDirectory();
     int setCurrentDirectory   (char   fullPath[]);
 
     int println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
@@ -67,8 +67,12 @@ public:
 private:
 
     SdFatSdio mSdFat;
-    
+
     File mFile;
+
+    unsigned mSdIsWorking;
+
+    unsigned mHasCreatedThisSessionDirectory;
 
     uint8_t mThisSessionId;
 

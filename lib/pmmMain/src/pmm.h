@@ -34,33 +34,38 @@ class Pmm
 {
 
 public:
-    void init();
+
+    Pmm();
     void update();
 
 private:
+
     uint8_t mSessionId;
     uint32_t mMillis, mLoopId;
     
     PmmErrorsCentral mPmmErrorsCentral;
 
-    PmmImu mPmmImu;
+    #if PMM_USE_IMU
+        PmmImu mPmmImu;
+    #endif
 
     #if PMM_USE_TELEMETRY
-    PmmTelemetry mPmmTelemetry;
+        PmmTelemetry mPmmTelemetry;
     #endif
 
     #if PMM_USE_GPS
-    PmmGps mPmmGps;
+        PmmGps mPmmGps;
     #endif
 
     #if PMM_USE_SD
-    PmmSd mPmmSd;
+        PmmSd mPmmSd;
     #endif
 
         // Packages
     PmmModuleDataLog mPmmModuleDataLog;
     PmmModuleMessageLog mPmmModuleMessageLog;
     PmmPortsReception mPmmPortsReception;
+    
 };
 
 #endif

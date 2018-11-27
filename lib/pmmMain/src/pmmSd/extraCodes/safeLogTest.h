@@ -11,10 +11,12 @@ class SafeLogTest   // Being a class allows us to have functions inside, instead
 
 public:
 
+    PmmSd pmmSd; // sessionId = 0;
     PmmSdSafeLog pmmSdSafeLog;
-    SdFatSdio sdFat;
     
     SafeLogTest()
+        : pmmSd(0)
+
     {
 
         uint32_t  groupLength;

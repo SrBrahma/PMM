@@ -20,7 +20,11 @@
 PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
     : PmmSdAllocation(pmmSd->getSdFatPtr())
 {
+    // These 3 exists as I an confused of which option to use. This must be improved later.
     mPmmSd = pmmSd;
+    mSdFat = pmmSd->getSdFatPtr();
+    mSdioCard = pmmSd->getCardPtr();
+
     mDefaultKiBAllocationPerPart = defaulBlocksAllocationPerPart;
 }
 
@@ -84,7 +88,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     // 3) If there is something in the actual block, we must first copy it to add the new data.
     else if (statusStruct->currentPositionInBlock > 0)
     {
-        if (!mSdFat->card()->readBlock(statusStruct->currentBlock, mBlockBuffer));
+        if (!mSdioCard->readBlock(statusStruct->currentBlock, mBlockBuffer));
         {
             PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at readBlock(), in write()!");
             return 1;
@@ -113,7 +117,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
                 // 4.3) Write the Partial Initial Data to the SD.
-                if(!mSdFat->card()->writeBlock(statusStruct->currentBlock, mBlockBuffer))
+                if(!mSdioCard->writeBlock(statusStruct->currentBlock, mBlockBuffer))
                 {
                     PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Partial Initial Data), in write()!");
                     return 1;
@@ -164,7 +168,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
     // 5.6) Write the Last Valid Block to the SD.
-    if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+    if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
     {
         PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Last Valid Block)!");
         return 1;
@@ -207,7 +211,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
         // 6.1.5) Write the Backup Block 1.
-        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
             return 1;
@@ -216,7 +220,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
         // 6.1.6) Write the Backup Block 0.
-        if(!mSdFat->card()->writeBlock(backupBlock0Address, mBlockBuffer))
+        if(!mSdioCard->writeBlock(backupBlock0Address, mBlockBuffer))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
             return 1;
@@ -235,7 +239,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     else 
     {
          // 6.2.1) Write the Backup Block 1.
-        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
             return 1;
@@ -244,7 +248,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
         // 6.2.2) Write the Backup Block 0.
-        if(!mSdFat->card()->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
+        if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
             return 1;

@@ -31,6 +31,8 @@ public:
 private:
 
     PmmSd* mPmmSd;
+    SdFatSdio* mSdFat;
+    SdioCard* mSdioCard;
 
     uint16_t mDefaultKiBAllocationPerPart;
 

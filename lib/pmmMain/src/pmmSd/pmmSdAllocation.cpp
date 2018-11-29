@@ -1,3 +1,7 @@
+/* pmmSdAllocation.cpp
+ *
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+
 #include <string.h>                 // For snprintf
 #include "pmmSd/pmmSdAllocation.h"
 
@@ -6,6 +10,7 @@
 PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
 {
     mSdFat = sdFat;
+    mSdioCard = sdFat->card();
 }
 
 
@@ -72,7 +77,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
         // error("contiguousRange failed");
     }
 
-    if (!mSdFat->card()->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
+    if (!mSdioCard->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
     {
         PMM_DEBUG_PRINTLN("PmmSd: ERROR 6 - Error at erase()!");
         return 1;

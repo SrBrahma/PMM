@@ -12,33 +12,36 @@
 
 PmmSd::PmmSd()
 {
-    // 1) Initialize the SD
+}
+
+int PmmSd::init()
+{
+        // 1) Initialize the SD
     if (!mSdFat.begin())
     {
         mSdIsWorking = 0;
         PMM_DEBUG_ADV_PRINTLN("Sd init failed!");
+        return 1;
     }
 
     else
     {
         mSdIsWorking = 1;
         PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
+        return 0;
     }
     mHasCreatedThisSessionDirectory = 0;
 }
 
-PmmSd::PmmSd(uint8_t sessionId)
+int PmmSd::init(uint8_t sessionId)
 {
-    PmmSd();
+    if (init())
+        return 1;
     mThisSessionId = sessionId;
-    setPmmCurrentDirectory();
+    
+    return setPmmCurrentDirectory();
 }
 
-PmmSd::PmmSd(char fullPath[])
-{
-    PmmSd();
-    setCurrentDirectory(fullPath);
-}
 
 
 // Will rename, if exists, a previous Session with the same name, if this is the first time running this function in this Session.
@@ -48,7 +51,7 @@ int PmmSd::setPmmCurrentDirectory()
     char fullPathRenameOld[PMM_SD_FILENAME_MAX_LENGTH];
     unsigned oldCounter = 0;
 
-    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session_%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
+    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session-%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
 
     mSdFat.chdir(1);    // Make sure we are at root dir
 
@@ -58,7 +61,7 @@ int PmmSd::setPmmCurrentDirectory()
     {
         do 
         {
-            snprintf(fullPathRenameOld, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session_%02u_old_%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, oldCounter);
+            snprintf(fullPathRenameOld, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session-%02u-old-%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, oldCounter);
             oldCounter++;
         } while (mSdFat.exists(fullPathRenameOld));
 

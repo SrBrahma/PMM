@@ -30,9 +30,9 @@ public:
 
 private:
 
-    PmmSd* mPmmSd;
+    PmmSd*     mPmmSd;
     SdFatSdio* mSdFat;
-    SdioCard* mSdioCard;
+    SdioCard*  mSdioCard;
 
     uint16_t mDefaultKiBAllocationPerPart;
 

@@ -41,8 +41,9 @@ class PmmSd
 public:
 
     PmmSd();
-    PmmSd(uint8_t sessionId);
-    PmmSd(char   fullPath[]);
+
+    int init();
+    int init(uint8_t sessionId);
 
     int setPmmCurrentDirectory();
     int setCurrentDirectory   (char   fullPath[]);

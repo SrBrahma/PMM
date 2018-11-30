@@ -24,7 +24,6 @@ PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
     mPmmSd = pmmSd;
     mSdFat = pmmSd->getSdFatPtr();
     mSdioCard = pmmSd->getCardPtr();
-
     mDefaultKiBAllocationPerPart = defaulBlocksAllocationPerPart;
 }
 
@@ -69,7 +68,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     if (statusStruct->currentBlock == 0)
     {
         // The function below will also change some struct member values. Read the corresponding function definition.
-        allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct);
+        allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct);
     }
 
 
@@ -77,7 +76,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     //  The behavior of the (statusStruct->currentPositionInBlock > PMM_SD_BLOCK_SIZE) case is probably horrible. It normally won't happen.
     else if (statusStruct->currentPositionInBlock >= PMM_SD_BLOCK_SIZE)
     {
-        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
             PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
             return 1;
@@ -125,7 +124,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             }
 
             // 4.4) As we filled the current block, we need to move to the next one.
-            if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+            if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
             {
                 PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Initial Data), in write()!");
                 return 1;
@@ -191,7 +190,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
         // 6.1.2) Go to the next block.
-        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 0)!");
             return 1;
@@ -203,7 +202,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
 
         // 6.1.4) Go to the next block.
-        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_EXTENSION, statusStruct))
+        if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
             PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 1)!");
             return 1;
@@ -257,4 +256,9 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
 
     } // End of 6.2)
     return 0;
+}
+
+const char* PmmSdSafeLog::getFilenameExtension()
+{
+    return PMM_SD_SAFE_LOG_FILENAME_EXTENSION;
 }

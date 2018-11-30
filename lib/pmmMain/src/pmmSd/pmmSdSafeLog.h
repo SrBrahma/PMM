@@ -8,7 +8,6 @@
 #include "pmmSd/pmmSd.h"
 #include "pmmSd/pmmSdAllocation.h"
 
-#define PMM_SD_SAFE_LOG_EXTENSION       "slog" // The extension added to the file parts. The '.' is automatically added.
 #define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
 // System made to work with data of persistent length. Later I will explain it more.
@@ -28,14 +27,19 @@ public:
 
     int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct); // Know what you are doing!
 
+    const char* getFilenameExtension();
+    
 private:
 
     PmmSd*     mPmmSd;
     SdFatSdio* mSdFat;
     SdioCard*  mSdioCard;
 
+    static constexpr const char* PMM_SD_SAFE_LOG_FILENAME_EXTENSION = "slog"; // https://stackoverflow.com/a/25323360/10247962
+
     uint16_t mDefaultKiBAllocationPerPart;
 
     uint8_t mBlockBuffer[PMM_SD_BLOCK_SIZE];
+
 
 };

@@ -1,6 +1,6 @@
 /* pmmSdSafeLog.h
  *
- * Just a quick code to test the safeLog system. This isn't intended at the moment to look good.
+ * Just a quick code to test the SafeLog system. This isn't intended at the moment to look good.
  * 
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil
  * */
@@ -30,44 +30,53 @@ public:
     {
 
         PmmSd pmmSd;
+
+        PmmSdSafeLog pmmSdSafeLog(&pmmSd, 1); // 1 will create the file with the smallest cluster size possible.
+
+        pmmSdAllocationStatusStructType statusStruct;
+
+        statusStruct.groupLength = GROUP_LENGTH;
+
+
         uint8_t blockContent[512];
 
         uint8_t groupData[GROUP_LENGTH];
+        for (unsigned i; i < GROUP_LENGTH; i++) { groupData[i] = i; }   // Give the initial values of the group data, just for a better demonstration.
 
-        bool      doQuit = false;
-        uint32_t  bgnBlock, endBlock, currentBlock, currentPart, totalParts;
+        uint32_t bgnBlock, endBlock, currentBlockShowing, currentPartShowing, totalParts;
 
-        pmmSdAllocationStatusStructType statusStruct;
-        statusStruct.groupLength = GROUP_LENGTH;
-
+        bool doQuit = false;
         char path[128];
 
-        Serial.println("SafeLogTest");
-        
+
+
+        Serial.println("SafeLogTest, intializing...");
         
         if (pmmSd.init(0)); // sessionId = 0;
         {
-            Serial.println("Error at pmmSd.init(). Quitting this");
+            Serial.println("Error at pmmSd.init(). Quitting this.\n");
             delete this;
         }
 
         Serial.println("Initialized successfully.");
 
-        PmmSdSafeLog pmmSdSafeLog(&pmmSd, 1); // 1 is the smallest size possible.
-
         Serial.println("Each file part will have the smallest size possible, according to the Cluster size.");
         Serial.print  ("Each file part is = "); Serial.print(pmmSd.getSdFatPtr()->blocksPerCluster()); Serial.println(" bytes");
-        Serial.print  ("Group size is = "); Serial.print(statusStruct.groupLength); Serial.println(" bytes.");
+        Serial.print  ("Group size is = "); Serial.print(statusStruct.groupLength); Serial.println(" bytes, without the 2 bytes of Begin and End flags.");
 
+        // directory name
         snprintf(path, 128, "%s-%s-%u", DIR_BASE_NAME, DIR_SUFFIX, GROUP_LENGTH);
 
+        // Write the first group, so we can show something.
         pmmSdSafeLog.write(groupData, path, &statusStruct);
 
         while (!doQuit)
         {
-            Serial.print("Part "); Serial.print(currentPart); Serial.print(" from a total of "); Serial.print(totalParts); Serial.println("Parts.");
-            Serial.print("Relative Block ("); Serial.print(currentBlock - bgnBlock); Serial.print(") of Relative Block "); Serial.println(endBlock); Serial.println(".");
-            pmmSd.getCardPtr()->readBlock(currentBlock, blockContent);
+            pmmSdSafeLog.getNumberFileParts(path, pmmSdSafeLog.getFilenameExtension, &totalParts);
+            Serial.print("Part "); Serial.print(currentPartShowing); Serial.print(" from a total of "); Serial.print(totalParts); Serial.println("Parts.");
+
+            Serial.print("Relative Block ("); Serial.print(currentBlockShowing - bgnBlock); Serial.print(") of Relative Block "); Serial.println(endBlock); Serial.println(".");
+            pmmSd.getCardPtr()->readBlock(currentBlockShowing, blockContent);
             printBlock(blockContent);
             printControls();
 
@@ -77,12 +86,12 @@ public:
                     break;
 
                 case 'w':   // write a group with its backups
-                    pmmSdSafeLog.write(groupData, path, &statusStruct);
+                    writeGroup(&pmmSdSafeLog, groupData, path, &statusStruct);
                     break;
 
-                case 't':   // write until all the file parts are written
-                    while (statusStruct.nextFilePart < MAX_FILE_PARTS
-                        pmmSdSafeLog.write(groupData, path, &statusStruct);
+                case 't':   // write until actual file is filled
+                    while (statusStruct.freeBlocksAfterCurrent > 2)
+                        writeGroup(&pmmSdSafeLog, groupData, path, &statusStruct);
                     break;
 
                 case 'i':   // increase current file part
@@ -110,6 +119,14 @@ public:
 
     }
 
+    int writeGroup(PmmSdSafeLog* pmmSdSafeLog, uint8_t groupData[], char path[], pmmSdAllocationStatusStructType *statusStruct)
+    {
+        pmmSdSafeLog->write(groupData, path, statusStruct);
+        for (unsigned i = 0; i < GROUP_LENGTH; i++)
+        {
+            groupData[i]++;
+        }
+    }
 
     char waitUntilReadChar()
     {
@@ -131,7 +148,7 @@ public:
 
     void printControls()
     {
-        Serial.println("[e] erases the actual file; [w] writes a group (with backups); [t] writes until max file parts");
+        Serial.println("[e] erases the actual file; [w] writes a group (with backups); [t] writes until actual file is filled");
         Serial.println("[i/k] next/prev current file part; [j/l] next/prev current block; [q] to quit; [x] to remove file and quit");
     }
 

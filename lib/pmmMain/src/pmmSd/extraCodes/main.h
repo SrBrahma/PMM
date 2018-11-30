@@ -10,7 +10,7 @@ class PmmSdExtraCodes
         {
             Serial.println("=-= PmmSdExtraCodes =-=");
             Serial.println("Type 1 to run the Formatting tool");
-            Serial.println("Type 2 to run the safeLog test");
+            Serial.println("Type 2 to run the SafeLog test");
             Serial.println("Anything else to quit this test");
 
             while (!Serial.available())

@@ -7,7 +7,7 @@
 
 #define PMM_SD_ALLOCATION_PART_KIB              16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
 
-// These letters bellow are flags used in the SD blocks, in safeLog and fastLog writting modes.
+// These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
 #define PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN      'M' // Mine..
 #define PMM_SD_ALLOCATION_FLAG_GROUP_END        'A' // rvA!!
@@ -35,7 +35,7 @@ typedef struct
     uint8_t  groupLength;
 
     // Maximum of 255 parts. Just a quicker way to get the next part filename instead of reading each part's filename.
-    uint8_t  nextFilePart;               
+    uint8_t  nextFilePart;
 
     // The desired size for each part. Note that the actual allocated file may have a different value, due to the current card's cluster size.
     // Also, even being a uint16_bit (max 64MiB), I capped (on allocateFilePart()) the maximum size to be 16MiB, to avoid *big* mistakes.
@@ -57,18 +57,26 @@ public:
 
     PmmSdAllocation(SdFatSdio* sdFat);
 
-    int nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
-    int allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
-    int allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
-    
-    int readBlock(uint32_t blockAddress, uint8_t arrayToCopyTheContent[]);  // To be easily used by external classes, for debug etc
+    // Writing
+    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
+
+    int  nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+
+    // Reading
+    int  getNumberFileParts(char dirFullRelativePath[], const char filenameExtension[], uint8_t* fileParts);
+
+    void getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
+    int  getFileRange   (char fileFullRelativePath[], uint32_t *beginBlock, uint32_t *endBlock);
+
+    int  readBlock(uint32_t blockAddress, uint8_t arrayToCopyTheContent[]);  // To be easily used by external classes, for debug etc
 
 protected:
 
     SdFatSdio* mSdFat;
-    SdioCard* mSdioCard;
-    File mAllocationFile;
-    char mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+    SdioCard*  mSdioCard;
+    File       mFile;
+    char       mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
 
 };
 

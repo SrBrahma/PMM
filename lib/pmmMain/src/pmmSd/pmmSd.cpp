@@ -65,7 +65,7 @@ int PmmSd::setPmmCurrentDirectory()
     snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session-%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
 
     // 1) Make sure we are at root dir
-    if (!mSdFat.chdir(1))
+    if (!mSdFat.chdir())
     {
         PMM_DEBUG_ADV_PRINTLN("Error at chdir() to root!")
         return 1;
@@ -101,7 +101,7 @@ int PmmSd::setPmmCurrentDirectory()
     }
 
     // 4) Change to it
-    if (!mSdFat.chdir(fullPath, 1))
+    if (!mSdFat.chdir(fullPath))
     {
         PMM_DEBUG_ADV_PRINTLN("Error at chdir() to fullPath!")
         return 4;

@@ -15,7 +15,7 @@
 #include "pmmSd/pmmSdSafeLog.h"
 
 #define MAX_BYTES_PER_LINE      49
-#define GROUP_LENGTH            5
+#define GROUP_LENGTH            150
 #define MAX_FILE_PARTS          2
 
 #define DIR_BASE_NAME           "test"
@@ -27,7 +27,7 @@ class SafeLogTest   // Being a class allows us to have functions inside, instead
 public:
 
     SafeLogTest()
-    : mPmmSdSafeLog(&mPmmSd, 64) // 1 will create the file with the smallest cluster size possible.
+    : mPmmSdSafeLog(&mPmmSd, 63) // 1 will create the file with the smallest cluster size possible.
     {}
 
 
@@ -48,7 +48,6 @@ public:
             Serial.println("Fail at reset(), quitting.\n");
             return 2;
         }
-        Serial.println(mStatusStruct.groupLength);
 
         Serial.println("Initialized successfully.");
 
@@ -62,19 +61,21 @@ public:
             mPmmSdSafeLog.getNumberFileParts(mDirPath, &mTotalParts);
 
             mPmmSdSafeLog.getFileRange(mDirPath, mStatusStruct.nextFilePart - 1, &mBeginBlockWorking, &mEndBlockWorking);
-            Serial.println("Working:");
-            Serial.print("Part  ["); Serial.print(mStatusStruct.nextFilePart - 1); Serial.print("] of ["); Serial.print(mTotalParts - 1); Serial.println("].");
+            Serial.print("Working: ");
+            Serial.print("Part  ["); Serial.print(mStatusStruct.nextFilePart - 1); Serial.print("] of ["); Serial.print(mTotalParts - 1); Serial.print("]; ");
             Serial.print("Block ["); Serial.print(mStatusStruct.currentBlock - mBeginBlockWorking); Serial.print("] of ["); Serial.print(mEndBlockWorking - mBeginBlockWorking); Serial.println("].");
             
 
-            Serial.println("Showing:");
-            Serial.print("Part  ["); Serial.print(mCurrentPartShowing); Serial.print("] of ["); Serial.print(mTotalParts - 1); Serial.println("].");
+            Serial.print("Showing: ");
+            Serial.print("Part  ["); Serial.print(mCurrentPartShowing); Serial.print("] of ["); Serial.print(mTotalParts - 1); Serial.print("]; ");
             Serial.print("Block ["); Serial.print(mCurrentBlockShowing - mBeginBlockShowing); Serial.print("] of ["); Serial.print(mEndBlockShowing - mBeginBlockShowing); Serial.println("].");
             
             mPmmSd.getCardPtr()->readBlock(mCurrentBlockShowing, mBlockContent);
             printBlock(mBlockContent);
 
             printControls();
+            Serial.println();
+
             switch (waitUntilReadChar())
             {
                 case 'r':   // reset the program
@@ -86,18 +87,35 @@ public:
                     break;
 
                 case 't':   // write until actual file is filled
-                    while (mStatusStruct.freeBlocksAfterCurrent > 2)
+                {
+                    uint32_t mil = millis(), writeGroupCalls = 0;
+                    while (mStatusStruct.freeBlocksAfterCurrent)
+                    {
                         writeGroup();
+                        writeGroupCalls++;
+                    }
+
+                    Serial.print("Time passed / Write group calls = "); Serial.print(millis() - mil); Serial.print(" / "); Serial.print(writeGroupCalls);
+                    Serial.print(" = "); Serial.print((millis() - mil) / float(writeGroupCalls)); Serial.print(" ms per writeGroup call.");
                     break;
+                }
 
                 case 'i':   // increase current file part
-                    (mCurrentPartShowing >= mTotalParts - 1) ? (mCurrentPartShowing = 0) : mCurrentPartShowing++;
-                    mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                    if (mTotalParts > 1)
+                    {
+                        (mCurrentPartShowing >= mTotalParts - 1) ? (mCurrentPartShowing = 0) : mCurrentPartShowing++;
+                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mCurrentBlockShowing = mBeginBlockShowing;
+                    }
                     break;
 
                 case 'k':   // decrease current file part
-                    (mCurrentPartShowing == 0) ? (mCurrentPartShowing = mTotalParts - 1) : mCurrentPartShowing--;
-                    mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                    if (mTotalParts > 1)
+                    {
+                        (mCurrentPartShowing == 0) ? (mCurrentPartShowing = mTotalParts - 1) : mCurrentPartShowing--;
+                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mCurrentBlockShowing = mBeginBlockShowing;
+                    }
                     break;
 
                 case 'l':   // increase current block
@@ -143,6 +161,8 @@ public:
 
 
 private:
+    uint8_t mBlockContent[512];
+
     PmmSd mPmmSd;
 
     PmmSdSafeLog mPmmSdSafeLog;
@@ -154,7 +174,7 @@ private:
 
     uint8_t  mCurrentPartShowing, mTotalParts;
 
-    uint8_t mBlockContent[512];
+    
 
     uint8_t mGroupData[GROUP_LENGTH];
 
@@ -171,25 +191,24 @@ private:
         return mPmmSd.init(0); // sessionId = 0;
     }
 
+
     int reset()
     {
         for (unsigned i = 0; i < GROUP_LENGTH; i++) { mGroupData[i] = i; }   // Give the initial values of the group data, just for a better demonstration.
         
         mPmmSdSafeLog.initSafeLogStatusStruct(&mStatusStruct, GROUP_LENGTH);
-        Serial.print("2groupLenght is "); Serial.println(mStatusStruct.groupLength);
 
         // remove previous contents from the dir, if exists
         if (mPmmSd.getSdFatPtr()->exists(mDirPath))
         {
-            //if (mPmmSd.removeDirRecursively(mDirPath))
-                //return 1;
+            mPmmSd.removeDirRecursively(mDirPath);
         }
 
 
         // Write the first group, so we can show something.
-        if (mPmmSdSafeLog.write(mGroupData, mDirPath, &mStatusStruct))
+        if (writeGroup())
             return 2;
-        Serial.print("3groupLenght is "); Serial.println(mStatusStruct.groupLength);
+
         mBeginBlockShowing = mStatusStruct.currentBlock;
         mEndBlockShowing = mStatusStruct.currentBlock + mStatusStruct.freeBlocksAfterCurrent;
         
@@ -199,16 +218,20 @@ private:
         return 0;
     }
 
+
     int writeGroup()
     {
         if (mPmmSdSafeLog.write(mGroupData, mDirPath, &mStatusStruct))
             return 1;
+
+        uint8_t value = mGroupData[GROUP_LENGTH - 1];
+
         for (unsigned i = 0; i < GROUP_LENGTH; i++)
-        {
-            mGroupData[i]++;
-        }
+            mGroupData[i] = value + i;
+
         return 0;
     }
+
 
     char waitUntilReadChar()
     {
@@ -217,6 +240,7 @@ private:
 
         return Serial.read();
     }
+
 
     void printBlock(uint8_t mBlockContent[512])
     {
@@ -232,11 +256,13 @@ private:
         Serial.println();
     }
 
+
     void printControls()
     {
         Serial.println("[i/k] next/prev current file part; [j/l] next/prev current block; [w] writes a group (with backups);");
         Serial.println("[t] writes until actual file is filled; [r] reset the program; [q] to quit; [x] to remove file and quit");
     }
+
 };
 
 

@@ -99,7 +99,7 @@
  * updated.  This will increase the speed of the freeClusterCount() call
  * after the first call.  Extra flash will be required.
  */
-#define MAINTAIN_FREE_CLUSTER_COUNT 0
+#define MAINTAIN_FREE_CLUSTER_COUNT 1
 //------------------------------------------------------------------------------
 /**
  * To enable SD card CRC checking set USE_SD_CRC nonzero.

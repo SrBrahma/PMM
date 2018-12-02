@@ -24,7 +24,7 @@ public:
 
     PmmSdSafeLog(PmmSd* pmmSd, unsigned defaultPartSize = PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB);
 
-    int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct); // Know what you are doing!
+    int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
 
     const char* getFilenameExtension();
 

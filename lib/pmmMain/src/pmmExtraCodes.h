@@ -5,20 +5,15 @@
 #ifndef PMM_EXTRA_CODES_h
 #define PMM_EXTRA_CODES_h
 
-#include "pmmConsts.h"
+#include "pmmConsts.h"  // For the defines
 
 #if PMM_EXTRA_CODES_ENABLE
 
-    #define PMM_SD_EXTRA_CODES                       1
+
 
     #if PMM_SD_EXTRA_CODES
         #include "pmmSd/extraCodes/main.h"
     #endif
-
-
-    #define PMM_GPS_EXTRA_CODES                      1
-    #define PMM_IMU_EXTRA_CODES                      1
-    #define PMM_TELEMETRY_EXTRA_CODES   0
 
 
 

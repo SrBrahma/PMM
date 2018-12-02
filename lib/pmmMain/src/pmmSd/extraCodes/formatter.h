@@ -606,18 +606,16 @@ class Formatter
         }
 
         cout << F(
-            "\n"
+            "=-= Sd Formatter =-=\n"
             "This program can erase and/or format SD/SDHC cards.\n"
             "\n"
-            "Erase uses the card's fast flash erase command.\n"
-            "Flash erase sets all data to 0X00 for most cards\n"
+            "Erase uses the card's fast flash erase command. ""Flash erase sets all data to 0X00 for most cards\n"
             "and 0XFF for a few vendor's cards.\n"
             "\n"
-            "Cards larger than 2 GB will be formatted FAT32 and\n"
-            "smaller cards will be formatted FAT16.\n"
+            "Cards larger than 2 GB will be formatted FAT32 and ""smaller cards will be formatted FAT16.\n"
             "\n"
             "Warning, all data on the card will be erased.\n"
-            "Enter 'Y' to continue: ");
+            "Enter 'Y' to continue:\n");
         while (!Serial.available())
         {
             SysCall::yield();

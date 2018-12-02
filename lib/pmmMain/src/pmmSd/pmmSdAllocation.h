@@ -10,10 +10,12 @@
 
 // These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
-#define PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN      'M' // Mine..
-#define PMM_SD_ALLOCATION_FLAG_GROUP_END        'A' // rvA!!
+#define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN    'M' // Minerva! ( = 0x4D)
 
-#define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN    'R' // Rockets!
+#define PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN      'R' // Rock..   ( = 0x52)
+#define PMM_SD_ALLOCATION_FLAG_GROUP_END        'S' // etS!!    ( = 0x53)
+
+
 
 #define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION   0 // Where it will be on the block.
 
@@ -73,6 +75,8 @@ public:
     void getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
     int  getFileRange   (char fileFullRelativePath[], uint32_t *beginBlock, uint32_t *endBlock);
 
+    int readBlock(uint32_t blockAddress, uint8_t* destinationArray);
+    
 protected:
 
     SdFatSdio* mSdFat;

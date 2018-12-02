@@ -1,27 +1,45 @@
-#include "pmmSd/pmmSd.h"
-#include "pmmSd/pmmSdSafeLog.h"
-
 #include "pmmSd/extraCodes/formatter.h"
+#include "pmmSd/extraCodes/safeLogTest.h"
 
 class PmmSdExtraCodes
 {
     public:
         PmmSdExtraCodes()
         {
-            Serial.println("=-= PmmSdExtraCodes =-=");
-            Serial.println("Type 1 to run the Formatting tool");
-            Serial.println("Type 2 to run the SafeLog test");
-            Serial.println("Anything else to quit this test");
+            int doQuit = 0;
 
-            while (!Serial.available())
-                delay(50);
-
-            switch(Serial.read())
+            while (!doQuit)
             {
-                case '1':
-                    Formatter formatter;
-                    formatter.setup();
+                Serial.println("=-= PmmSdExtraCodes =-=");
+                Serial.println("Type 1 to run the Formatting tool");
+                Serial.println("Type 2 to run the SafeLog test");
+                Serial.println("Anything else to quit\n");
+
+                while (!Serial.available())
+                    delay(50);
+
+                switch(Serial.read())
+                {
+                    case '1':
+                    {
+                        Formatter* formatter = new Formatter;
+                        formatter->setup();
+                        delete formatter;
+                        break;
+                    }
+                    case '2':
+                    {
+                        SafeLogTest* safeLogTest = new SafeLogTest;
+                        safeLogTest->main();
+                        delete safeLogTest;
+                        break;
+                    }
+                    default:
+                        doQuit = 1;
+                        break;
+                }
             }
+            Serial.println("=-= Finished PmmSdExtraCodes =-=\n");
             delete this;
         }
 };

@@ -5,9 +5,7 @@
 #ifndef PMM_EXTRA_CODES_h
 #define PMM_EXTRA_CODES_h
 
-
-#define PMM_EXTRA_CODES_ENABLE      1   // Quickly enables / disables this system.
-
+#include "pmmConsts.h"
 
 #if PMM_EXTRA_CODES_ENABLE
 
@@ -34,9 +32,9 @@
 
             Serial.begin(9600);
 
-            while (!Serial && ((millis() - serialDebugTimeout) < 5000));
+            while (!Serial && ((millis() - serialDebugTimeout) < 10000));
 
-            Serial.println("=-= PMM Extra Code initialized automatically. You can disable it at . =-=");
+            Serial.println("=-= PMM Extra Code initialized automatically. You can disable it at pmmConsts.h. =-=\n");
 
             #if PMM_SD_EXTRA_CODES
                 PmmSdExtraCodes();

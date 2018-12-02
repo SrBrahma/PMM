@@ -36,6 +36,7 @@ class Pmm
 public:
 
     Pmm();
+    int init();
     void update();
 
 private:

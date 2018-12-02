@@ -7,10 +7,36 @@
 
 
 
-PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
+PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat, uint16_t defaultKiBAllocationPerPart)
 {
     mSdFat = sdFat;
     mSdioCard = sdFat->card();
+    mDefaultKiBAllocationPerPart = defaultKiBAllocationPerPart;
+}
+
+
+void PmmSdAllocation::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
+{
+    statusStruct->currentBlock           = 0;
+    statusStruct->freeBlocksAfterCurrent = 0;
+    statusStruct->groupLength            = groupLength;
+    Serial.print("1groupLenght is "); Serial.println(statusStruct->groupLength);
+    statusStruct->nextFilePart           = 0;
+    
+    statusStruct->currentPositionInBlock = 0;
+
+    if (KiBPerPart == 0)
+        statusStruct->KiBPerPart      = mDefaultKiBAllocationPerPart;
+
+    else
+        statusStruct->KiBPerPart      = KiBPerPart;
+}
+
+
+void PmmSdAllocation::getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[])
+{
+    snprintf(destinationArray, PMM_SD_FILENAME_MAX_LENGTH, "%s/part-%u.%s", dirFullRelativePath, filePart, filenameExtension);
+    Serial.println(destinationArray);
 }
 
 // Returns by reference the number of actual file parts.
@@ -23,20 +49,16 @@ int PmmSdAllocation::getNumberFileParts(char dirFullRelativePath[], const char f
         return 1;
 
     do
+    {
         getFilePartName(mTempFilename, dirFullRelativePath, actualPart++, filenameExtension);
-    while (mFile.exists(mTempFilename));
+        Serial.print("sdAloc:getNumber: "); Serial.print(mTempFilename); Serial.println(" exists!");
+    }
+    while (mSdFat->exists(mTempFilename));
 
-    *fileParts = actualPart - 1;
+    *fileParts = actualPart;
 
     return 0;
 }
-
-void PmmSdAllocation::getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[])
-{
-    snprintf(destinationArray, PMM_SD_FILENAME_MAX_LENGTH, "%s/part%u.%s", dirFullRelativePath, filePart, filenameExtension);
-}
-
-
 
 
 int PmmSdAllocation::getFileRange(char filePath[], uint32_t *beginBlock, uint32_t *endBlock)
@@ -47,11 +69,6 @@ int PmmSdAllocation::getFileRange(char filePath[], uint32_t *beginBlock, uint32_
     return 0;
 }
 
-int PmmSdAllocation::readBlock(uint32_t blockAddress, uint8_t arrayToCopyTheContent[])
-{
-    mSdioCard->readBlock(blockAddress, arrayToCopyTheContent);
-    return 0;
-}
 
 int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
@@ -76,11 +93,14 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const
 int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
 {
     uint32_t endBlock;
-    int returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock);
-    
-    statusStruct->currentPositionInBlock = 0;
-    statusStruct->freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock;
-    statusStruct->nextFilePart++;
+    int returnValue;
+
+    if (!(returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock)))
+    {
+        statusStruct->currentPositionInBlock = 0;
+        statusStruct->freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock;
+        statusStruct->nextFilePart++;
+    }
 
     return returnValue;
 }
@@ -96,18 +116,27 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
     // 1) How will be called the new part file?
     getFilePartName(mTempFilename, dirFullRelativePath, filePart, filenameExtension);
 
+    // Create directory if missing
+    if (!mSdFat->exists(dirFullRelativePath))
+    {
+        if (!mSdFat->mkdir(dirFullRelativePath));
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at mkdir()!");
+            return 1;
+        }
+    }
     // 2) The SafeLog will save its backups blocks on the next file part when the Last Data Block is in the 2 last addresses of the current part,
     //    so we need to check if the filepart already exists.
     if(!mSdFat->exists(mTempFilename))
     {
 
-        if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_KIB)
-            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_KIB; // Read the comments at pmmSdAllocationStatusStructType.
+        if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_MAX_KIB)
+            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at pmmSdAllocationStatusStructType.
 
         // 2) Allocate the new file!
         if (!mFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at createContiguous() (@ New File)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at createContiguous()!");
             return 1;
             // error("createContiguous failed");
         }
@@ -115,15 +144,15 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
         // 3) Get the address of the blocks of the new file on the SD. [beginBlock, endBlock].
         if (!mFile.contiguousRange(beginBlock, endBlock))
         {
-            PMM_DEBUG_PRINTLN("PmmSd: ERROR 5 - Error at contiguousRange()!");
-            return 1;
+            PMM_DEBUG_ADV_PRINTLN("Error at contiguousRange()!");
+            return 2;
             // error("contiguousRange failed");
         }
 
         if (!mSdioCard->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
         {
-            PMM_DEBUG_PRINTLN("PmmSd: ERROR 6 - Error at erase()!");
-            return 1;
+            PMM_DEBUG_ADV_PRINTLN("Error at erase()!");
+            return 3;
             // error("erase failed");
         }
 

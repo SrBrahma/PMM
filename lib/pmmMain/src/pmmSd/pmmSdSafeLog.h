@@ -10,6 +10,8 @@
 
 #define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
+// typedef pmmSdAllocationStatusStructType pmmSdAllocationStatusStructType;
+
 // System made to work with data of persistent length. Later I will explain it more.
 // This need a deconstructor!
 // The maximum buffer length is defined by PMM_SD_MAXIMUM_BUFFER_LENTH_KIB! If the given value is greater than this, will be replaced by this maximum!
@@ -22,13 +24,13 @@ public:
 
     PmmSdSafeLog(PmmSd* pmmSd, unsigned defaultPartSize = PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB);
 
-    // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
-    void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
-
     int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct); // Know what you are doing!
 
     const char* getFilenameExtension();
-    
+
+    int getNumberFileParts(char dirFullRelativePath[], uint8_t* fileParts);
+    int getFileRange(char dirFullRelativePath[], uint8_t filePart, uint32_t *beginBlock, uint32_t *endBlock);
+
 private:
 
     PmmSd*     mPmmSd;
@@ -36,8 +38,6 @@ private:
     SdioCard*  mSdioCard;
 
     static constexpr const char* PMM_SD_SAFE_LOG_FILENAME_EXTENSION = "slog"; // https://stackoverflow.com/a/25323360/10247962
-
-    uint16_t mDefaultKiBAllocationPerPart;
 
     uint8_t mBlockBuffer[PMM_SD_BLOCK_SIZE];
 

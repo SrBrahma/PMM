@@ -18,31 +18,14 @@
 
 
 PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
-    : PmmSdAllocation(pmmSd->getSdFatPtr())
+    : PmmSdAllocation(pmmSd->getSdFatPtr(), defaulBlocksAllocationPerPart)
 {
     // These 3 exists as I an confused of which option to use. This must be improved later.
     mPmmSd = pmmSd;
     mSdFat = pmmSd->getSdFatPtr();
     mSdioCard = pmmSd->getCardPtr();
-    mDefaultKiBAllocationPerPart = defaulBlocksAllocationPerPart;
 }
 
-
-void PmmSdSafeLog::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
-{
-    statusStruct->currentBlock           = 0;
-    statusStruct->freeBlocksAfterCurrent = 0;
-    statusStruct->groupLength            = groupLength;
-    statusStruct->nextFilePart           = 0;
-    
-    statusStruct->currentPositionInBlock = 0;
-
-    if (KiBPerPart == 0)
-        statusStruct->KiBPerPart      = mDefaultKiBAllocationPerPart;
-
-    else
-        statusStruct->KiBPerPart      = KiBPerPart;
-}
 
 
 // READ: The statusStruct must be initSafeLogStatusStruct() before.
@@ -62,13 +45,15 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     unsigned dataBytesRemaining = statusStruct->groupLength;
     unsigned hadWrittenGroupHeader = false;
 
-
-
     // 1) Is this the first time running for this statusStruct?
     if (statusStruct->currentBlock == 0)
     {
         // The function below will also change some struct member values. Read the corresponding function definition.
-        allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct);
+        if (allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
+        {
+            PMM_DEBUG_ADV_PRINTLN("Error at allocateFilePart(), at First Time!");
+            return 1;
+        }
     }
 
 
@@ -78,8 +63,8 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     {
         if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
-            PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Final Data), in write()!");
-            return 1;
+            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Partial Final Data!");
+            return 2;
         }
         statusStruct->currentPositionInBlock = 0;
     }
@@ -89,8 +74,8 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     {
         if (!mSdioCard->readBlock(statusStruct->currentBlock, mBlockBuffer));
         {
-            PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at readBlock(), in write()!");
-            return 1;
+            PMM_DEBUG_ADV_PRINTLN("Error at readBlock()!");
+            return 3;
         }
 
 
@@ -118,7 +103,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
                 // 4.3) Write the Partial Initial Data to the SD.
                 if(!mSdioCard->writeBlock(statusStruct->currentBlock, mBlockBuffer))
                 {
-                    PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at writeBlock() (Partial Initial Data), in write()!");
+                    PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Partial Initial Data!");
                     return 1;
                 }
             }
@@ -126,7 +111,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
             // 4.4) As we filled the current block, we need to move to the next one.
             if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
             {
-                PMM_DEBUG_PRINTLN("PmmSdSafeLog: Error at nextBlockAndAllocIfNeeded() (Partial Initial Data), in write()!");
+                PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Partial Initial Data!");
                 return 1;
             }
                 
@@ -169,7 +154,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     // 5.6) Write the Last Valid Block to the SD.
     if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Last Valid Block)!");
+        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Last Valid Block!");
         return 1;
     }
     statusStruct->freeBlocksAfterCurrent--;
@@ -192,7 +177,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // 6.1.2) Go to the next block.
         if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 0)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Backup Block 0!");
             return 1;
         }
 
@@ -204,7 +189,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // 6.1.4) Go to the next block.
         if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, statusStruct))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded() (@ Backup Block 1)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Backup Block 1!");
             return 1;
         }
 
@@ -212,7 +197,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // 6.1.5) Write the Backup Block 1.
         if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 1!");
             return 1;
         }
         statusStruct->freeBlocksAfterCurrent--;
@@ -221,7 +206,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // 6.1.6) Write the Backup Block 0.
         if(!mSdioCard->writeBlock(backupBlock0Address, mBlockBuffer))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 0!");
             return 1;
         }
         statusStruct->freeBlocksAfterCurrent--;
@@ -240,7 +225,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
          // 6.2.1) Write the Backup Block 1.
         if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 1)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 1!");
             return 1;
         }
         statusStruct->freeBlocksAfterCurrent--;
@@ -249,7 +234,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
         // 6.2.2) Write the Backup Block 0.
         if(!mSdioCard->writeBlock(statusStruct->currentBlock++, mBlockBuffer))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock() (@ Backup Block 0)!");
+            PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 0)!");
             return 1;
         }
         statusStruct->freeBlocksAfterCurrent--;
@@ -257,6 +242,22 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocat
     } // End of 6.2)
     return 0;
 }
+
+
+// Returns by reference the number of actual file parts.
+// Returns 0 if no error.
+int PmmSdSafeLog::getNumberFileParts(char dirFullRelativePath[], uint8_t* fileParts)
+{
+    return PmmSdAllocation::getNumberFileParts(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, fileParts);
+}
+
+int PmmSdSafeLog::getFileRange(char dirFullRelativePath[], uint8_t filePart, uint32_t *beginBlock, uint32_t *endBlock)
+{
+    getFilePartName(mTempFilename, dirFullRelativePath, filePart, PMM_SD_SAFE_LOG_FILENAME_EXTENSION);
+    return PmmSdAllocation::getFileRange(mTempFilename, beginBlock, endBlock);
+}
+
+
 
 const char* PmmSdSafeLog::getFilenameExtension()
 {

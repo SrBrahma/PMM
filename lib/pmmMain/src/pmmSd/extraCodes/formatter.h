@@ -591,7 +591,7 @@ class Formatter
             debugPrint();
         #endif // DEBUG_PRINT
 
-        cout << F("Format done\n");
+        cout << F("Format done\n\n");
     }
     //------------------------------------------------------------------------------
 
@@ -605,17 +605,6 @@ class Formatter
             SysCall::yield();
         }
 
-        cout << F("Type any character to start\n");
-        while (!Serial.available())
-        {
-            SysCall::yield();
-        }
-
-        // Discard any extra characters.
-        do
-        {
-            delay(10);
-        } while (Serial.available() && Serial.read() >= 0);
         cout << F(
             "\n"
             "This program can erase and/or format SD/SDHC cards.\n"

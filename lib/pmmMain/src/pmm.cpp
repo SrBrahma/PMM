@@ -36,14 +36,10 @@
 
 
 
-Pmm::Pmm()
-    :
-    // SD ===========================================================================================
-    #if PMM_USE_SD
-        mPmmSd(mSessionId)
-    #endif
-{
+Pmm::Pmm() {}
 
+int Pmm::init()
+{
     mMillis = 0;
     mLoopId = 0;
 
@@ -68,30 +64,32 @@ Pmm::Pmm()
     mPmmErrorsCentral.init(&mLoopId);
 
 
-  // Telemetry ====================================================================================
+    // Telemetry ====================================================================================
     #if PMM_USE_TELEMETRY
         mPmmTelemetry.init();
     #endif
 
 
+    // SD ===========================================================================================
+    #if PMM_USE_SD
+        mPmmSd.init(mSessionId);
+    #endif
 
 
-
-  // GPS ==========================================================================================
+    // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init();
         mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
-  // IMU ==========================================================================================
+    // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init();
         mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
 
-  // Packages =====================================================================================
 
     // PmmModuleDataLog
     mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, &mSessionId, &mLoopId, &mMillis);
@@ -129,6 +127,8 @@ Pmm::Pmm()
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
     #endif
+    
+    return 0;
 }
 
 

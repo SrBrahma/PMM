@@ -17,6 +17,8 @@
 // =======================================================================
 #define PMM_THIS_NAME_DEFINE            "Aurora" // Used in pmmPackageString.cpp.
 
+#define PMM_EXTRA_CODES_ENABLE          1
+
 #define PMM_IS_PDA                      0
 
 #define PMM_USE_BUZZER                  0

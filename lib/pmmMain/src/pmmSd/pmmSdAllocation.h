@@ -5,7 +5,8 @@
 #include <SdFat.h>
 #include "pmmSd/pmmSd.h"
 
-#define PMM_SD_ALLOCATION_PART_KIB              16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
+#define PMM_SD_ALLOCATION_PART_DEFAULT_KIB  1024
+#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
 
 // These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
@@ -55,7 +56,10 @@ class PmmSdAllocation
 
 public:
 
-    PmmSdAllocation(SdFatSdio* sdFat);
+    PmmSdAllocation(SdFatSdio* sdFat, uint16_t defaultKiBAllocationPerPart = PMM_SD_ALLOCATION_PART_DEFAULT_KIB);
+
+    // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
+    void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
 
     // Writing
     int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
@@ -69,14 +73,14 @@ public:
     void getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
     int  getFileRange   (char fileFullRelativePath[], uint32_t *beginBlock, uint32_t *endBlock);
 
-    int  readBlock(uint32_t blockAddress, uint8_t arrayToCopyTheContent[]);  // To be easily used by external classes, for debug etc
-
 protected:
 
     SdFatSdio* mSdFat;
     SdioCard*  mSdioCard;
     File       mFile;
     char       mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+
+    uint16_t   mDefaultKiBAllocationPerPart;
 
 };
 

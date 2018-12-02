@@ -46,7 +46,7 @@ public:
     int init(uint8_t sessionId);
 
     int setPmmCurrentDirectory();
-    int setCurrentDirectory   (char   fullPath[]);
+    int setCurrentDirectory   (char fullPath[]);
 
     int println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
 
@@ -61,6 +61,8 @@ public:
 
     bool getSdIsBusy();
 
+    int removeDirRecursively(char relativePath[]);
+    
     SdFatSdio* getSdFatPtr();
 
     SdioCard* getCardPtr();

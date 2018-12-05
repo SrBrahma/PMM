@@ -38,7 +38,7 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* sy
     
     mPackageLogSizeInBytes = 0;
     mLogNumberOfVariables = 0;
-    mPackageLogInfoNumberOfPackets = 0; // For receptor.
+    mDataLogInfoPackets = 0; // For receptor.
 
     mSystemSessionPtr = systemSessionPtr;
 

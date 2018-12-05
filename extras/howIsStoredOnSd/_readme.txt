@@ -1,16 +1,16 @@
 $thisIsAVariable
 
- Minerva Rockets - PMM
+ Minerva-Rockets-PMM
  |
  | -> $systemName
       |
-      | -> Session_$sessionId
+      | -> Session $sessionId
            |
-           | -> _self
+           | -> _Self
            |
            | -> $sourceAddress
                 |
-                | -> Session_$sessionId
+                | -> Session $sessionId
 
 
 Detailed (this got pretty ugly):
@@ -34,15 +34,15 @@ Detailed (this got pretty ugly):
            | sessionId is at which system's session the data were generated/received.                               |
            | The $sessionId ss represented in decimal format. Will have at least 2 digits.                          |
            |                                                                                                        |
-           | Ex: Session_03                                                                                         |
+           | Ex: Session 03                                                                                         |
            | ========================================================================================================
            |
            |
-           | -> _self:
+           | -> _Self:
            |    | ===================================================================================================
            |    | Inside it will be stored the data produced by the system itself.                                  |
            |    | The _ before makes finding this directory easier, as in crescent ordering this will appear first. |
-           |    | Having it under Session_$sessionId make us able to know at which (this system) session the        |
+           |    | Having it under Session $sessionId make us able to know at which (this system) session the        |
            |    | telemetry data was received.                                                                      |
            |    | ===================================================================================================
            |
@@ -56,7 +56,7 @@ Detailed (this got pretty ugly):
                 | ===================================================================================================
                 |
                 |
-                | -> Session_$sessionId
+                | -> Session $sessionId
                     | ==============================================================================================
                     | As the emissor of the data may change his current session while your receiver is on, and we  |
                     | don't want to mix them.                                                                      |

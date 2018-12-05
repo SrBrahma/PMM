@@ -11,7 +11,7 @@
 // Received Package Log Info Package
 void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
-    //    --------------- LogInfo Header 1.0 ---------------
+    //    --------------- DataLogInfo Header 1.0 ---------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
     //
     //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
@@ -40,11 +40,11 @@ void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetIn
 
 
 // 3) If changed the CRC16 of the entire package, or is the first packet ever received
-    if (tempPackageCrc != mLogInfoPackageCrc || !mPackageLogInfoNumberOfPackets)
+    if (tempPackageCrc != mLogInfoPackageCrc || !mDataLogInfoPackets)
     {
-        memset(mPackageLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
+        memset(mDataLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
         mLogInfoPackageCrc = tempPackageCrc;
-        mPackageLogInfoNumberOfPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS]); // Only get the 4 least significant bits, and sum 1!
+        mDataLogInfoPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS]); // Only get the 4 least significant bits, and sum 1!
         // If is the first packet or if changed the entirePackageCrc, reset some parameters
     }
 
@@ -52,13 +52,13 @@ void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetIn
     packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X];
 
     // Copies the received array
-    memcpy(mPackageLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
+    memcpy(mDataLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
 
-    mPackageLogInfoTelemetryArrayLengths[packetId] = packetInfo->payloadLength;
+    mDataLogInfoTelemetryArrayLengths[packetId] = packetInfo->payloadLength;
 
-    for (packetId = 0; packetId < mPackageLogInfoNumberOfPackets; packetId ++)
+    for (packetId = 0; packetId < mDataLogInfoPackets; packetId ++)
     {
-        if (mPackageLogInfoTelemetryArrayLengths == 0) // Test if any length is 0. If it is, a packet haven't been adquired yet.
+        if (mDataLogInfoTelemetryArrayLengths == 0) // Test if any length is 0. If it is, a packet haven't been adquired yet.
             return; //  Leave the function. It has done it's job for now!
     }
 
@@ -79,12 +79,12 @@ void PmmModuleDataLog::unitePackageInfoPackets()
     mLogInfoRawPayloadArrayLength = 0;
 
 // 1) Copies all the packets into the big raw array
-    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter ++)
+    for (packetCounter = 0; packetCounter < mDataLogInfoPackets; packetCounter ++)
     {
-        payloadLength = mPackageLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
+        payloadLength = mDataLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
         memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength,
-               mPackageLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
+               mDataLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
                payloadLength);
 
         // Increases the raw array length by the copied telemetry array length.

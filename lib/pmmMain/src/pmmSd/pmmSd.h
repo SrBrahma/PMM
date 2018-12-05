@@ -10,7 +10,7 @@
 
 
 
-#define PMM_SD_BASE_DIRECTORY               "/Minerva Rockets/pmm"
+#define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
 
 
 #define PMM_SD_FILENAME_MAX_LENGTH          128

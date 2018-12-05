@@ -33,7 +33,7 @@
 
 
 
-// DataLog AND LogInfo Defines (Which I will call as DATA_LOG)
+// DataLog AND DataLogInfo Defines (Which I will call as DATA_LOG)
 
     #define PMM_MODULE_DATA_LOG_MAX_VARIABLES              50  // This must be the same value for the transmitter and the receptor.
     
@@ -55,8 +55,8 @@
 
 
 
-// LogInfo Defines
-    //    --------------- LogInfo Header 1.0 ---------------
+// DataLogInfo Defines
+    //    --------------- DataLogInfo Header 1.0 ---------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
     //
     //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
@@ -79,7 +79,7 @@
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 7
 
 
-    //    -------------- LogInfo Payload 1.0 ---------------
+    //    -------------- DataLogInfo Payload 1.0 ---------------
     //    [Positions] : [ Function ] : [ Length in Bytes ]
     //
     //    a) [ 7 ] : [ Number of Variables ] : [ 1 ]
@@ -117,7 +117,7 @@ public:
     int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
     // Transmission
-    void updateLogInfoCombinedPayload(); // Updates the LogInfo
+    void updateLogInfoCombinedPayload(); // Updates the DataLogInfo
     int  sendDataLog();
 
 
@@ -200,9 +200,9 @@ private:
     uint16_t mLogInfoRawPayloadArrayLength;
 
 
-    uint8_t  mPackageLogInfoNumberOfPackets;
-    uint8_t  mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH];
-    uint8_t  mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
+    uint8_t  mDataLogInfoPackets;
+    uint8_t  mDataLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH];
+    uint8_t  mDataLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
 
 
 

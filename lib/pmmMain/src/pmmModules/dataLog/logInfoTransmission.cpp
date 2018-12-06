@@ -15,8 +15,8 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
 
 // 1) Add the "Number of variables"
-    mPackageLogInfoRawArray[0] = mLogNumberOfVariables;
-    mLogInfoRawPayloadArrayLength ++;
+    mDataLogInfoTelemetryRawArray[0] = mLogNumberOfVariables;
+    mLogInfoRawPayloadArrayLength++;
 
 
 // 2) Add the "Variable types"
@@ -25,10 +25,11 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
     {
         if (!variableCounter % 2) // If the counter is even (rest of division by 2 is 0)
-            mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] = (mVariableTypeArray[variableCounter] << 4);
+            mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] = (mVariableTypeArray[variableCounter] << 4);
+
         else // Else, the number is odd (rest of division by 2 is 1)
         {
-            mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] |= mVariableTypeArray[variableCounter];
+            mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] |= mVariableTypeArray[variableCounter];
             mLogInfoRawPayloadArrayLength++;
         }
     }
@@ -42,14 +43,14 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
     {
         // As I couldn't find a way to use strnlen, made it!
-        // Again, the stringLength doesn't include the '\0'.
+        // Again, the stringLength doesn't include the '\0'. The '\0' is manually added in the next lines.
         for (stringLength = 0;
              ((stringLength < (PMM_MODULE_DATA_LOG_MAX_STRING_LENGTH - 1)) && mVariableNameArray[variableCounter][stringLength]); // - 1 as the MAX_STRING_LENGTH includes the '\0'.
              stringLength++); 
             
-        memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
+        memcpy(mDataLogInfoTelemetryRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
         mLogInfoRawPayloadArrayLength += stringLength;
-        mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] = '\0'; // Manually write the null terminating char, in case the string was broken.
+        mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] = '\0'; // Manually write the null terminating char, in case the string was broken.
         mLogInfoRawPayloadArrayLength ++;
     }
 
@@ -61,30 +62,29 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
 
 
-void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
+void PmmModuleDataLog::updateLogInfoInTelemetryFormat(unsigned requestedPacket)
 {
     uint16_t packetLength = 0; // The Package Header default length.
     uint16_t crc16ThisPacket;
     uint16_t payloadBytesInThisPacket;
-    uint8_t packetCounter;
 
 // 1) Copies the raw array content and the package header into the packets
     packetLength = PMM_PORT_LOG_INFO_HEADER_LENGTH; // The initial length is the default header length
 
     // This packet size is the total raw size minus the (current packet * packetPayloadLength).
     // If it is > maximum payload length, it will be equal to the payload length.
-    payloadBytesInThisPacket = mLogInfoRawPayloadArrayLength - (packetCounter * PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
+    payloadBytesInThisPacket = mLogInfoRawPayloadArrayLength - (requestedPacket * PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
     if (payloadBytesInThisPacket > PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
         payloadBytesInThisPacket = PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH;
 
     packetLength += payloadBytesInThisPacket;
 
     // Adds the requested packet and the total number of packets.
-    mDataLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X] = packetCounter;
+    mDataLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X]     = packetCounter;
     mDataLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS] = mDataLogInfoPackets;
 
     // Now adds the data, which was built on updatePackageLogInfoRaw(). + skips the packet header.
-    memcpy(mDataLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH, mPackageLogInfoRawArray, payloadBytesInThisPacket);
+    memcpy(mDataLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH, mDataLogInfoTelemetryRawArray, payloadBytesInThisPacket);
 
     // Set the CRC16 of this packet fields as 0 (to calculate the entire packet CRC16 without caring about positions and changes in headers, etc)
     mDataLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = 0;

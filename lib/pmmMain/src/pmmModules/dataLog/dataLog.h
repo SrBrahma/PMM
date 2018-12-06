@@ -55,18 +55,7 @@
 
 
 
-// DataLogInfo Defines
-    //    --------------- DataLogInfo Header 1.0 ---------------
-    //    [Positions] : [ Function ] : [ Length in Bytes ]
-    //
-    //    a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
-    //    b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
-    //    c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
-    //    d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
-    //    e) [5,6] : [ CRC 16 of all Payloads Parts ] : [ 2 ]
-    //
-    //                        Total header length = 7 bytes.
-    //    --------------------------------------------------
+
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB          0
     #define PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB          1
     #define PMM_PORT_LOG_INFO_INDEX_SESSION_ID              2
@@ -77,17 +66,6 @@
     
     // Total header length is equal to...
     #define PMM_PORT_LOG_INFO_HEADER_LENGTH                 7
-
-
-    //    -------------- DataLogInfo Payload 1.0 ---------------
-    //    [Positions] : [ Function ] : [ Length in Bytes ]
-    //
-    //    a) [ 7 ] : [ Number of Variables ] : [ 1 ]
-    //    b) [8,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
-    //    c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
-    //    
-    //    Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength
-    //    --------------------------------------------------
 
     // The maximum payload length per packet.
     #define PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_PORT_LOG_INFO_HEADER_LENGTH)
@@ -147,9 +125,9 @@ public:
     uint8_t getPackageLogSizeInBytes();
 
     const char** getVariableNameArray();
-    uint8_t* getVariableTypeArray();
-    uint8_t* getVariableSizeArray();
-    uint8_t** getVariableAddressArray();
+    uint8_t*     getVariableTypeArray();
+    uint8_t*     getVariableSizeArray();
+    uint8_t**    getVariableAddressArray();
 
 
     // Debug!
@@ -182,7 +160,7 @@ private:
     PmmSd* mPmmSd;
 
     // Default variables added in every DataLog package:
-    uint8_t*  mSystemSessionPtr;
+    uint8_t* mSystemSessionPtr;
 
     // Transmission
     char*    mVariableNameArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
@@ -191,12 +169,11 @@ private:
     uint8_t* mVariableAddressArray[PMM_MODULE_DATA_LOG_MAX_VARIABLES];
 
 
-    uint16_t mLogInfoPackageCrc;
     uint8_t  mLogNumberOfVariables;
     uint8_t  mPackageLogSizeInBytes;
 
 
-    uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
+    uint8_t  mDataLogInfoTelemetryRawArray[PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
     uint16_t mLogInfoRawPayloadArrayLength;
 
 

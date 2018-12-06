@@ -27,7 +27,7 @@ void PmmModuleDataLog::receivedDataLog(receivedPacketAllInfoStructType* packetIn
     //        --------------------------------------------------
 
     // 1) First, check the CRC 8 of this header, as there are important data in the header.
-    if (crc8(packetInfo->payload + 1, PMM_PORT_DATA_LOG_HEADER_LENGTH - 1) != packetInfo->payload[PMM_PORT_DATA_LOG_INDEX_CRC_8_HEADER])
+    if (crc8(packetInfo->payload + 1, PORT_DATA_LOG_HEADER_LENGTH - 1) != packetInfo->payload[PORT_DATA_LOG_INDEX_CRC_8_HEADER])
     {
         return; // For now the package will just be ignored. On the future it can be more treated.
     }

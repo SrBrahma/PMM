@@ -15,21 +15,19 @@ void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetIn
     unsigned packetId;
 
 // 1) If the packet size is smaller than the packet header length, it's invalid
-    if (packetInfo->payloadLength < PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    if (packetInfo->payloadLength < PORT_LOG_INFO_HEADER_LENGTH)
         return;
 
 
 // 2) Test the CRC, to see if the packet is valid.
-    if (((packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
-                                  != crc16(packetInfo->payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetInfo->payloadLength - 2))
+    if (((packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
+                              != crc16(packetInfo->payload + PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetInfo->payloadLength - 2))
         return;
-
-    tempPackageCrc = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] << 8) | packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB];
 
 
 
 // 4) Get the packetId from the received packet
-    packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X];
+    packetId = packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
 
     // Copies the received array
     memcpy(mDataLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
@@ -61,10 +59,10 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 // 1) Copies all the packets into the big raw array
     for (packetCounter = 0; packetCounter < mDataLogInfoPackets; packetCounter ++)
     {
-        payloadLength = mDataLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
+        payloadLength = mDataLogInfoTelemetryArrayLengths[packetCounter] - PORT_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
         memcpy(mDataLogInfoTelemetryRawArray + mLogInfoRawPayloadArrayLength,
-               mDataLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
+               mDataLogInfoTelemetryArray[packetCounter] + PORT_LOG_INFO_HEADER_LENGTH,
                payloadLength);
 
         // Increases the raw array length by the copied telemetry array length.

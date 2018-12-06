@@ -4,7 +4,7 @@
         "PLATFORMIO_CALLER": "vscode"
     },
     "terminal.integrated.env.linux": {
-        "PATH": "/home/rockets/.platformio/penv/bin:/home/rockets/.platformio/penv:/home/rockets/bin:/home/rockets/.local/bin:/home/rockets/bin:/home/rockets/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
+        "PATH": "/home/minerva/.platformio/penv/bin:/home/minerva/.platformio/penv:/home/minerva/bin:/home/minerva/.local/bin:/home/minerva/bin:/home/minerva/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
         "PLATFORMIO_CALLER": "vscode"
     }
 }

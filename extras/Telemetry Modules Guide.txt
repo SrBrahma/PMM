@@ -79,7 +79,7 @@ https://en.wikipedia.org/wiki/OSI_model
 
         a) [ 0 ] : [ CRC 8 of this header . ] : [ 1 ]
         b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
-        c) [ 2 ] : [ DataLogInfo Identifier ... ] : [ 1 ]
+        c) [ 2 ] : [ DataLogInfo Identifier ] : [ 1 ]
         d) [3,4] : [ CRC 16 of the Log .... ] : [ 2 ]
 
                             Total header length = 5 bytes.
@@ -136,17 +136,17 @@ https://en.wikipedia.org/wiki/OSI_model
 
     2.1) Header:
 
-        --------------- DataLogInfo Header 1.0 ---------------
+        ------------- DataLogInfo Header 1.0 --------------
         [Positions] : [ Function ] : [ Length in Bytes ]
 
         a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
-        b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+        b) [ 2 ] : [ System Session ............. ] : [ 1 ]
         c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
         d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
-        e) [ 5 ] : [ DataLogInfo Identifier ......... ] : [ 1 ]
+        e) [ 5 ] : [ DataLogInfo Identifier ..... ] : [ 1 ]
 
                             Total header length = 6 bytes.
-        --------------------------------------------------
+        ---------------------------------------------------
 
 
         a) CRC 16 of the current Packet:

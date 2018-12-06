@@ -11,11 +11,12 @@
 
 numberVariables = 5
     
-# Variable name, variableType
+# VariableName : variableType
 
-1) accelerometerX, 4
-2) accelerometerY, 4
-3) accelerometerZ, 6
-4) gpsLatitude,    2
-5) gpsLongitude,   2
+0) AccelerometerX(m/s^2) : float
+1) accelerometerY : float
+2) accelerometerZ : float
+3) numberSatellites : uint8_t
+4) gpsLatitude : float
+5) gpsLongitude : float
 

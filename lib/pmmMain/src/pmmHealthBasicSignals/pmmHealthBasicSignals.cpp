@@ -7,7 +7,6 @@
 #include <Arduino.h> // For PROGMEM. Also includes uint32_t type, so no stdint.h include needed.
 
 #include <pmmConsts.h>
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
 
 PmmHealthSignals::PmmHealthSignals()
@@ -15,10 +14,8 @@ PmmHealthSignals::PmmHealthSignals()
 }
 
 // Initializer
-int PmmHealthSignals::init(PmmErrorsCentral* pmmErrorsCentral)
+int PmmHealthSignals::init()
 {
-    
-    mErrorsStructArray = mPmmErrorsCentral->getErrorsStructArray();
     mMillisNextSignalState = 0;
 
     pinMode(PMM_PIN_LED_RECOVERY, OUTPUT);
@@ -124,7 +121,7 @@ int PmmHealthSignals::update()
                     }
                     else // If the signal starter is now 0, start the error code signal.
                     {
-                        mSignalActualErrorCounter = mErrorsStructArray[mSignalActualErrorIndex].code; // Short beeps are over, load the next error
+                        //mSignalActualErrorCounter = mErrorsStructArray[mSignalActualErrorIndex].code; // Short beeps are over, load the next error
                         mMillisNextSignalState = millis() + 500;
                     }
                 }

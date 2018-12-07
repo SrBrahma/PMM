@@ -63,7 +63,7 @@ https://en.wikipedia.org/wiki/OSI_model
     1) DataLog Package
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    A package to transmit Data Logs. Its contents are defined by the LogInfo Package.
+    A package to transmit Data Logs. Its contents are defined by the DataLogInfo Package.
 
     Only packages with a valid CRC header are accepted. But, the payload is accepted even if its CRC is wrong, but when saved,
     this package will be marked with a wrong CRC flag.
@@ -79,7 +79,7 @@ https://en.wikipedia.org/wiki/OSI_model
 
         a) [ 0 ] : [ CRC 8 of this header . ] : [ 1 ]
         b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
-        c) [ 2 ] : [ LogInfo Identifier ... ] : [ 1 ]
+        c) [ 2 ] : [ DataLogInfo Identifier ] : [ 1 ]
         d) [3,4] : [ CRC 16 of the Log .... ] : [ 2 ]
 
                             Total header length = 5 bytes.
@@ -95,8 +95,8 @@ https://en.wikipedia.org/wiki/OSI_model
             In which system session this package was generated.
 
 
-        c) LogInfo Identifier:
-            To which LogInfo Package are we relating to?
+        c) DataLogInfo Identifier:
+            To which DataLogInfo Package are we relating to?
 
 
         e) CRC 16 of the Payload:
@@ -114,13 +114,13 @@ https://en.wikipedia.org/wiki/OSI_model
 
 
         a) Data Log:
-            The log data, in little endian. The variables order and types are defined by the LogInfo package.
+            The log data, in little endian. The variables order and types are defined by the DataLogInfo package.
             Its size is defined by the Log Length and by the Transmission Layer.
 
 
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    2) LogInfo Package
+    2) DataLogInfo Package
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     The Package that determines the order, the types and the variable names of a DataLog Package.
@@ -131,22 +131,22 @@ https://en.wikipedia.org/wiki/OSI_model
     Since this package can/will be big (>256 bytes), as there are the variable strings, it can be divided into a few packets.
 
     If a SD card is working, this received package will be saved on
-        "Minerva Rockets/pmm/*systemName*_*Session*/received/IP_*IP*/Session_*SessionId*/Log_*LogInfoCRC*/logInfo.txt"
+        "Minerva Rockets/PMM/*systemName*/Session-/received/IP_*IP*/Session_*SessionId*/Log_L53/DataLogInfo.txt"
         It may eventually change.
 
     2.1) Header:
 
-        --------------- LogInfo Header 1.0 ---------------
+        ------------- DataLogInfo Header 1.0 --------------
         [Positions] : [ Function ] : [ Length in Bytes ]
 
         a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
-        b) [ 2 ] : [ Session Identifier ......... ] : [ 1 ]
+        b) [ 2 ] : [ System Session ............. ] : [ 1 ]
         c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
         d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
-        e) [ 5 ] : [ LogInfo Identifier ......... ] : [ 1 ]
+        e) [ 5 ] : [ DataLogInfo Identifier ..... ] : [ 1 ]
 
                             Total header length = 6 bytes.
-        --------------------------------------------------
+        ---------------------------------------------------
 
 
         a) CRC 16 of the current Packet:
@@ -157,7 +157,7 @@ https://en.wikipedia.org/wiki/OSI_model
         b) Session Identifier
             In which system session this package was generated.
             It is in the header, and not on the payload, for keeping the CRC 16 of all Payload Parts to be
-              the same for multiple sessions, as an alternative way to get the LogInfo after the flight,
+              the same for multiple sessions, as an alternative way to get the DataLogInfo after the flight,
               if it was unable to be received.
 
 
@@ -173,14 +173,14 @@ https://en.wikipedia.org/wiki/OSI_model
             Ex: 0000 0011
                 There are 3 packets in total. So we can have the packet 0, 1 and 2.
 
-        d) LogInfo Identifier:
+        d) DataLogInfo Identifier:
             This allows to have multiple data groups to be sent.
 
 
 
     2.22) Payload:
 
-        -------------- LogInfo Payload 1.0 ---------------
+        -------------- DataLogInfo Payload 1.0 ---------------
         [Positions] : [ Function ] : [ Length in Bytes ]
 
         a) [ 6 ] : [ Number of Variables ] : [ 1 ]
@@ -193,7 +193,7 @@ https://en.wikipedia.org/wiki/OSI_model
 
         a) Number of Variables:
             The number of variablese the DataLog package sends.
-            Having 0 to state 0 variables is good for eventual 0 variables LogInfo Package (a problematic LogInfo).
+            Having 0 to state 0 variables is good for eventual 0 variables DataLogInfo Package (a problematic DataLogInfo).
 
             Ex: 0x03 = 3 Variables. 
 

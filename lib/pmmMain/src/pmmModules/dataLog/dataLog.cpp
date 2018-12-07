@@ -30,15 +30,15 @@ PmmModuleDataLog::PmmModuleDataLog()
 
 
 
-int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
     mPmmTelemetry = pmmTelemetry;
-    mPmmSd = pmmSd;
+    mPmmSd        = pmmSd;
     
-    mLogSize         = 0;
-    mLogNumberVariables          = 0;
-    mLogInfoTelemetryNumberPackets = 0; // For receptor.
+    mDataLogSize          = 0;
+    mLogNumberOfVariables = 0;
+    mDataLogInfoPackets   = 0; // For receptor.
 
     mSystemSession = systemSession;
 
@@ -54,25 +54,25 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
     {
-        case PMM_MODULE_DATA_LOG_TYPE_UINT8:
+        case MODULE_DATA_LOG_TYPE_UINT8:
             return 1;
-        case PMM_MODULE_DATA_LOG_TYPE_INT8:
+        case MODULE_DATA_LOG_TYPE_INT8:
             return 1;
-        case PMM_MODULE_DATA_LOG_TYPE_UINT16:
+        case MODULE_DATA_LOG_TYPE_UINT16:
             return 2;
-        case PMM_MODULE_DATA_LOG_TYPE_INT16:
+        case MODULE_DATA_LOG_TYPE_INT16:
             return 2;
-        case PMM_MODULE_DATA_LOG_TYPE_UINT32:
+        case MODULE_DATA_LOG_TYPE_UINT32:
             return 4;
-        case PMM_MODULE_DATA_LOG_TYPE_INT32:
+        case MODULE_DATA_LOG_TYPE_INT32:
             return 4;
-        case PMM_MODULE_DATA_LOG_TYPE_FLOAT:
+        case MODULE_DATA_LOG_TYPE_FLOAT:
             return 4;
-        case PMM_MODULE_DATA_LOG_TYPE_UINT64:
+        case MODULE_DATA_LOG_TYPE_UINT64:
             return 8;
-        case PMM_MODULE_DATA_LOG_TYPE_INT64:
+        case MODULE_DATA_LOG_TYPE_INT64:
             return 8;
-        case PMM_MODULE_DATA_LOG_TYPE_DOUBLE:
+        case MODULE_DATA_LOG_TYPE_DOUBLE:
             return 8;
         default:    // Maybe will avoid internal crashes?
             PMM_DEBUG_ADV_PRINT("Invalid variable type to size!");
@@ -85,7 +85,7 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);
-    if (mLogNumberVariables >= PMM_MODULE_DATA_LOG_MAX_VARS)
+    if (mLogNumberOfVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName)
@@ -126,8 +126,8 @@ void PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t 
 
 void PmmModuleDataLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,           PMM_MODULE_DATA_LOG_TYPE_UINT32, packageIdPtr);
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING,         PMM_MODULE_DATA_LOG_TYPE_UINT32, packageTimeMsPtr);
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,           MODULE_DATA_LOG_TYPE_UINT32, packageIdPtr);
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING,         MODULE_DATA_LOG_TYPE_UINT32, packageTimeMsPtr);
 }
 
 
@@ -135,7 +135,7 @@ void PmmModuleDataLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* pac
 void PmmModuleDataLog::addMagnetometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"magnetometerX(uT)", "magnetometerY(uT)", "magnetometerZ(uT)"};
-    includeArrayInPackage(arrayString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 
@@ -143,7 +143,7 @@ void PmmModuleDataLog::addMagnetometer(void* array)
 void PmmModuleDataLog::addGyroscope(void* array)
 {
     const PROGMEM char* arrayString[3] = {"gyroscopeX(degree/s)", "gyroscopeY(degree/s)", "gyroscopeZ(degree/s)"};
-    includeArrayInPackage(arrayString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 
@@ -151,7 +151,7 @@ void PmmModuleDataLog::addGyroscope(void* array)
 void PmmModuleDataLog::addAccelerometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"accelerometerX(g)", "accelerometerY(g)", "accelerometerZ(g)"};
-    includeArrayInPackage(arrayString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 
@@ -159,14 +159,14 @@ void PmmModuleDataLog::addAccelerometer(void* array)
 void PmmModuleDataLog::addBarometer(void* barometer)
 {
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
-    includeVariableInPackage(barometerPressureString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, barometer);
+    includeVariableInPackage(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
 }
 
 
 
 void PmmModuleDataLog::addAltitudeBarometer(void* altitudePressure)
 {
-    includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, PMM_MODULE_DATA_LOG_TYPE_FLOAT, altitudePressure);
+    includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitudePressure);
 }
 
 
@@ -174,7 +174,7 @@ void PmmModuleDataLog::addAltitudeBarometer(void* altitudePressure)
 void PmmModuleDataLog::addThermometer(void* thermometerPtr)
 {
     const PROGMEM char* thermometerString = "temperature(C)";
-    includeVariableInPackage(thermometerString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, thermometerPtr);
+    includeVariableInPackage(thermometerString, MODULE_DATA_LOG_TYPE_FLOAT, thermometerPtr);
 }
 
 
@@ -195,18 +195,18 @@ void PmmModuleDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
 void PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
 {
     #ifdef GPS_FIX_LOCATION
-        includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->latitude));
-        includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->longitude));
+        includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->latitude));
+        includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->longitude));
     #endif
 
     #ifdef GPS_FIX_ALTITUDE
         const PROGMEM char* gpsAltitudeString = "gpsAltitude(m)";
-        includeVariableInPackage(gpsAltitudeString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->altitude));
+        includeVariableInPackage(gpsAltitudeString, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->altitude));
     #endif
 
     #ifdef GPS_FIX_SATELLITES
         const PROGMEM char* gpsSatellitesString = "gpsSatellites";
-        includeVariableInPackage(gpsSatellitesString, PMM_MODULE_DATA_LOG_TYPE_UINT8, &(pmmGpsStruct->satellites));
+        includeVariableInPackage(gpsSatellitesString, MODULE_DATA_LOG_TYPE_UINT8, &(pmmGpsStruct->satellites));
     #endif
     /*
     #ifdef GPS_FIX_SPEED
@@ -214,14 +214,14 @@ void PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
         const PROGMEM char* gpsNorthSpeedString = "gpsNorthSpeed(m/s)";
         const PROGMEM char* gpsEastSpeedString = "gpsEastSpeed(m/s)";
         const PROGMEM char* gpsHeadingDegreeString = "gpsHeadingDegree";
-        includeVariableInPackage(gpsHorizontalSpeedString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->horizontalSpeed));
-        includeVariableInPackage(gpsNorthSpeedString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->northSpeed));
-        includeVariableInPackage(gpsEastSpeedString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->eastSpeed));
-        includeVariableInPackage(gpsHeadingDegreeString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->headingDegree));
+        includeVariableInPackage(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->horizontalSpeed));
+        includeVariableInPackage(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->northSpeed));
+        includeVariableInPackage(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->eastSpeed));
+        includeVariableInPackage(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &(pmmGpsStruct->headingDegree));
 
         #ifdef GPS_FIX_ALTITUDE
             const PROGMEM char* gpsUpSpeedString = "gpsSpeedUp(m/s)";
-            includeVariableInPackage(gpsUpSpeedString, PMM_MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed);
+            includeVariableInPackage(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed);
         #endif
     #endif*/
 }
@@ -249,7 +249,7 @@ uint8_t PmmModuleDataLog::getNumberOfVariables()
 
 uint8_t PmmModuleDataLog::getLogSize()
 {
-    return mLogSize;
+    return mDataLogSize;
 }
 
 
@@ -257,7 +257,7 @@ uint8_t PmmModuleDataLog::getLogSize()
 const char** PmmModuleDataLog::getVariableNameArray()    { return (const char**) mVariableNameArray;}
 uint8_t*     PmmModuleDataLog::getVariableTypeArray()    { return mVariableTypeArray;}
 uint8_t*     PmmModuleDataLog::getVariableSizeArray()    { return mVariableSizeArray;}
-uint8_t**    PmmModuleDataLog::getVariableAddressArray() { return mVariableAddressArray;}
+uint8_t**    PmmModuleDataLog::getVariableAdrsArray()    { return mVariableAdrsArray;}
 
 
 
@@ -292,35 +292,35 @@ void PmmModuleDataLog::debugPrintLogContent()
     {
         switch(mVariableTypeArray[variableIndex])
         {
-            case PMM_MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%f, ",   buffer, *(float*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
+                snprintf(buffer, 512, "%s%f, ", buffer, *(float*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu, ",  buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_UINT32:
+                snprintf(buffer, 512, "%s%lu, ", buffer, *(uint32_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li, ",  buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_INT32:
+                snprintf(buffer, 512, "%s%li, ", buffer, *(int32_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u, ",   buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_UINT8:
+                snprintf(buffer, 512, "%s%u, ", buffer, *(uint8_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i, ",   buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_INT8:
+                snprintf(buffer, 512, "%s%i, ", buffer, *(int8_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u, ",   buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_UINT16:
+                snprintf(buffer, 512, "%s%u, ", buffer, *(uint16_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i, ",   buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_INT16:
+                snprintf(buffer, 512, "%s%i, ", buffer, *(int16_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_UINT64:
-                snprintf(buffer, 512, "%s%llu, ", buffer, *(uint64_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_UINT64:
+                snprintf(buffer, 512, "%s%llu, ", buffer, *(uint64_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_INT64:
-                snprintf(buffer, 512, "%s%lli, ", buffer, *(int64_t*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_INT64:
+                snprintf(buffer, 512, "%s%lli, ", buffer, *(int64_t*) (mVariableAdrsArray[variableIndex]));
                 break;
-            case PMM_MODULE_DATA_LOG_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%f, ",   buffer, *(double*) (mVariableAddressArray[variableIndex]));
+            case MODULE_DATA_LOG_TYPE_DOUBLE:
+                snprintf(buffer, 512, "%s%f, ", buffer, *(double*) (mVariableAdrsArray[variableIndex]));
                 break;
             default:    // If none above,
                 snprintf(buffer, 512, "%s%s, ",   buffer, ">TYPE ERROR HERE!<");

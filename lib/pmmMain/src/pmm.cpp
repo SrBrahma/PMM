@@ -6,7 +6,6 @@
 
 #include "pmmConsts.h"
 
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
 
 #include "pmmEeprom/pmmEeprom.h"
@@ -43,25 +42,21 @@ int Pmm::init()
     mMillis = 0;
     mLoopId = 0;
 
-  // Debug
+    // Debug
     #if PMM_DEBUG
         uint32_t serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         
         #if PMM_DEBUG_TIMEOUT_ENABLED
             while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));
-        
         #else
             while (!Serial);
-
         #endif
 
         if (Serial)
             PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Serial initialized!");
     #endif
 
-
-    mPmmErrorsCentral.init(&mLoopId);
 
 
     // Telemetry ====================================================================================
@@ -79,20 +74,18 @@ int Pmm::init()
     // GPS ==========================================================================================
     #if PMM_USE_GPS
         mPmmGps.init();
-        mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
     #endif
 
 
     // IMU ==========================================================================================
     #if PMM_USE_IMU
         mPmmImu.init();
-        mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
     #endif
 
 
 
     // PmmModuleDataLog
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, &mSessionId, &mLoopId, &mMillis);
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mLoopId, &mMillis);
 
         #if PMM_USE_GPS
             mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
@@ -118,6 +111,7 @@ int Pmm::init()
             Serial.print("\nPmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n");
             for (;!Serial.available();delay(10));
         }
+
     #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
         if (Serial)
         {
@@ -127,7 +121,9 @@ int Pmm::init()
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
     #endif
-    
+
+
+
     return 0;
 }
 
@@ -154,10 +150,6 @@ void Pmm::update()
         //PMM_DEBUG_PRINTLN_MORE(Pmm [M]: Updated Gps!");
     #endif
 
-
-
-    #if PMM_USE_SD
-    #endif
 
 
 

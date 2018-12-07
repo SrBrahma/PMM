@@ -39,7 +39,7 @@ Also, encrypted protocols.
     Arguments by Package Type:
 
     MLIN:
-        PMM_PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.
+        PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.
 
 
     The arguments, for now, is just 1 Byte. On the future, it may/will change.
@@ -47,4 +47,4 @@ Also, encrypted protocols.
     Arguments by Package Type:
 
     MLIN:
-        PMM_PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.
+        PORT_LOG_INFO_REQUEST_ID: Requests a MLIN packet by the given ID.

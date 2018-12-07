@@ -5,14 +5,19 @@
 #define PMM_h
 
 #include <pmmConsts.h>
-#include "pmmImu/pmmImu.h"
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
+
+
+
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
 
 
 
 #if PMM_USE_TELEMETRY
     #include "pmmTelemetry/pmmTelemetry.h"
+#endif
+
+#if PMM_USE_IMU
+    #include "pmmImu/pmmImu.h"
 #endif
 
 #if PMM_USE_GPS
@@ -43,8 +48,6 @@ private:
 
     uint8_t mSessionId;
     uint32_t mMillis, mLoopId;
-    
-    PmmErrorsCentral mPmmErrorsCentral;
 
     #if PMM_USE_IMU
         PmmImu mPmmImu;
@@ -63,9 +66,9 @@ private:
     #endif
 
         // Packages
-    PmmModuleDataLog mPmmModuleDataLog;
+    PmmModuleDataLog    mPmmModuleDataLog;
     PmmModuleMessageLog mPmmModuleMessageLog;
-    PmmPortsReception mPmmPortsReception;
+    PmmPortsReception   mPmmPortsReception;
     
 };
 

@@ -8,24 +8,23 @@
 #define PMM_HEALTH_SIGNALS_h
 
 #include <pmmConsts.h>
-#include "pmmErrorsCentral/pmmErrorsCentral.h"
 
 
 class PmmHealthSignals
 {
-private:
-    int mActualNumberOfErrors; // Total errors in the system number
-    unsigned long mMillisNextSignalState; // Used updateLedsAndBuzzer
-    uint8_t mSystemWasOk, mIsShortBeepOfSystemWasOk, mSignalIsOn, mSignalStarterCounter, mSignalActualErrorIndex, mSignalActualErrorCounter;
-    PmmErrorsCentral* mPmmErrorsCentral;
-    const pmmErrorStructType* mErrorsStructArray;
 
 public:
+
     PmmHealthSignals();
-    int init(PmmErrorsCentral* pmmErrorsCentral);
+    int init();
     int update();
     void blinkRfLED(int state);
 
+private:
+
+    int           mActualNumberOfErrors; // Total errors in the system number
+    unsigned long mMillisNextSignalState; // Used updateLedsAndBuzzer
+    uint8_t       mSystemWasOk, mIsShortBeepOfSystemWasOk, mSignalIsOn, mSignalStarterCounter, mSignalActualErrorIndex, mSignalActualErrorCounter;
 
 };
 

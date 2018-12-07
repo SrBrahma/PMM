@@ -22,35 +22,13 @@ int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInf
 
 // 2) Test the CRC, to see if the packet is valid.
     if (((packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
-                                  != crc16(packetInfo->payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetInfo->payloadLength - 2))
+                                  != crc16(packetInfo->payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB + 2, packetInfo->payloadLength - 2))
         return 2;
 
-    tempPackageCrc = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] << 8) | packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB];
+    packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
 
-
-// 3) If is the first packet ever received
-    if (!mLogInfoTelemetryNumberPackets)
-    {
-        memset(mLogInfoTelemetryArrayLengths, 0, PMM_PORT_LOG_INFO_MAX_PACKETS);
-        mLogInfoTelemetryNumberPackets = (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS]); // Only get the 4 least significant bits, and sum 1!
-        // If is the first packet or if changed the entirePackageCrc, reset some parameters
-    }
-
-// 4) Get the packetId from the received packet
-    packetId = packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_PACKET_X];
-
-    // Copies the received array
-    memcpy(mLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
-
-    mLogInfoTelemetryArrayLengths[packetId] = packetInfo->payloadLength;
-
-    for (packetId = 0; packetId < mLogInfoTelemetryNumberPackets; packetId ++)
-    {
-        if (mLogInfoTelemetryArrayLengths == 0) // Test if any length is 0. If it is, a packet haven't been adquired yet.
-            return; //  Leave the function. It has done it's job for now!
-    }
-
-    // If every packet has a length, all packets have been successfully been received.
+// 3) Save the received packet on the memory
+    mPmmSd->write
     unitePackageInfoPackets(); // Packets of the world, unite!
 }
 
@@ -67,12 +45,12 @@ void PmmModuleDataLog::unitePackageInfoPackets()
     mLogInfoRawPayloadArrayLength = 0;
 
 // 1) Copies all the packets into the big raw array
-    for (packetCounter = 0; packetCounter < mLogInfoTelemetryNumberPackets; packetCounter ++)
+    for (packetCounter = 0; packetCounter < mDataLogInfoPackets; packetCounter ++)
     {
-        payloadLength = mLogInfoTelemetryArrayLengths[packetCounter] - PMM_PORT_LOG_INFO_HEADER_LENGTH;
+        payloadLength = mDataLogInfoTelemetryArrayLengths[packetCounter] - PORT_LOG_INFO_HEADER_LENGTH;
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
-        memcpy(mPackageLogInfoRawArray + mLogInfoRawPayloadArrayLength,
-               mLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH,
+        memcpy(mDataLogInfoTelemetryRawArray + mLogInfoRawPayloadArrayLength,
+               mDataLogInfoTelemetryArray[packetCounter] + PORT_LOG_INFO_HEADER_LENGTH,
                payloadLength);
 
         // Increases the raw array length by the copied telemetry array length.
@@ -84,19 +62,19 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 // 2) Now extracts all the info from the raw array.
 
     // 2.1) First get the number of variables
-    mLogNumberVariables = mPackageLogInfoRawArray[0];
+    mLogNumberOfVariables = mDataLogInfoTelemetryRawArray[0];
     
     // 2.2) Get the variable types and sizes
     for (variableCounter = 0; variableCounter < mLogNumberVariables; variableCounter++)
     {
         if (variableCounter % 2) // If is odd (if rest is 1)
         {
-            mVariableTypeArray[variableCounter] = mPackageLogInfoRawArray[logInfoRawArrayIndex] & 0xF; // Get the 4 Least significant bits
+            mVariableTypeArray[variableCounter] = mDataLogInfoTelemetryRawArray[logInfoRawArrayIndex] & 0xF; // Get the 4 Least significant bits
         }
         else // Is even (if rest is 0). This will happen first
         {
             logInfoRawArrayIndex++;
-            mVariableTypeArray[variableCounter] = mPackageLogInfoRawArray[logInfoRawArrayIndex] >> 4; // Get the 4 Most significant bits
+            mVariableTypeArray[variableCounter] = mDataLogInfoTelemetryRawArray[logInfoRawArrayIndex] >> 4; // Get the 4 Most significant bits
         }
         mVariableSizeArray[variableCounter] = variableTypeToVariableSize(mVariableTypeArray[variableCounter]);
     }
@@ -105,8 +83,8 @@ void PmmModuleDataLog::unitePackageInfoPackets()
     logInfoRawArrayIndex++;
     for (variableCounter = 0; logInfoRawArrayIndex < mLogInfoRawPayloadArrayLength - 1; variableCounter++)
     {
-        stringSizeWithNullChar = strlen((char*)&mPackageLogInfoRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
-        memcpy(mVariableNameArray[variableCounter], &mPackageLogInfoRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);
+        stringSizeWithNullChar = strlen((char*)&mDataLogInfoTelemetryRawArray[logInfoRawArrayIndex]) + 1; // Includes '\0'.
+        memcpy(mVariableNameArray[variableCounter], &mDataLogInfoTelemetryRawArray[logInfoRawArrayIndex], stringSizeWithNullChar);
         logInfoRawArrayIndex += stringSizeWithNullChar;
     }
 

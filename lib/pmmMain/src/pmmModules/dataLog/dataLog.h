@@ -14,22 +14,22 @@
 
 
 // 000X 0-1 (1 byte)
-#define MODULE_DATA_LOG_TYPE_UINT8    0
-#define MODULE_DATA_LOG_TYPE_INT8     1
+#define MODULE_DATA_LOG_TYPE_UINT8      0
+#define MODULE_DATA_LOG_TYPE_INT8       1
 
 // 00X0 2-3 (2 bytes)
-#define MODULE_DATA_LOG_TYPE_UINT16   2
-#define MODULE_DATA_LOG_TYPE_INT16    3
+#define MODULE_DATA_LOG_TYPE_UINT16     2
+#define MODULE_DATA_LOG_TYPE_INT16      3
 
 // 0X00 4-8 (4 bytes)
-#define MODULE_DATA_LOG_TYPE_UINT32   4
-#define MODULE_DATA_LOG_TYPE_INT32    5
-#define MODULE_DATA_LOG_TYPE_FLOAT    6
+#define MODULE_DATA_LOG_TYPE_UINT32     4
+#define MODULE_DATA_LOG_TYPE_INT32      5
+#define MODULE_DATA_LOG_TYPE_FLOAT      6
 
 // X000 8-15 (8 bytes)
-#define MODULE_DATA_LOG_TYPE_INT64    8
-#define MODULE_DATA_LOG_TYPE_UINT64   9
-#define MODULE_DATA_LOG_TYPE_DOUBLE   10
+#define MODULE_DATA_LOG_TYPE_INT64      8
+#define MODULE_DATA_LOG_TYPE_UINT64     9
+#define MODULE_DATA_LOG_TYPE_DOUBLE     10
 
 
 
@@ -55,8 +55,8 @@
 
 
 
-    #define PORT_LOG_INFO_INDEX_CRC_PACKET_LSB          0
-    #define PORT_LOG_INFO_INDEX_CRC_PACKET_MSB          1
+    #define PORT_LOG_INFO_INDEX_CRC_LSB                 0
+    #define PORT_LOG_INFO_INDEX_CRC_MSB                 1
     #define PORT_LOG_INFO_INDEX_SESSION_ID              2
     #define PORT_LOG_INFO_INDEX_PACKET_X                3
     #define PORT_LOG_INFO_INDEX_OF_Y_PACKETS            4

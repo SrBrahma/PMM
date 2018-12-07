@@ -12,35 +12,20 @@
 void PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
 
-    unsigned packetId;
-
 // 1) If the packet size is smaller than the packet header length, it's invalid
     if (packetInfo->payloadLength < PORT_LOG_INFO_HEADER_LENGTH)
         return;
 
 
 // 2) Test the CRC, to see if the packet is valid.
-    if (((packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
-                              != crc16(packetInfo->payload + PORT_LOG_INFO_INDEX_CRC_PACKET_MSB + 1, packetInfo->payloadLength - 2))
+    if (((packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_MSB] << 8) | (packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_LSB]))
+                              != crc16(packetInfo->payload + PORT_LOG_INFO_INDEX_CRC_LSB + 2, packetInfo->payloadLength - 2))
         return;
 
+    packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
 
-
-// 4) Get the packetId from the received packet
-    packetId = packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
-
-    // Copies the received array
-    memcpy(mDataLogInfoTelemetryArray[packetId], packetInfo->payload, packetInfo->payloadLength);
-
-    mDataLogInfoTelemetryArrayLengths[packetId] = packetInfo->payloadLength;
-
-    for (packetId = 0; packetId < mDataLogInfoPackets; packetId ++)
-    {
-        if (mDataLogInfoTelemetryArrayLengths == 0) // Test if any length is 0. If it is, a packet haven't been adquired yet.
-            return; //  Leave the function. It has done it's job for now!
-    }
-
-    // If every packet has a length, all packets have been successfully been received.
+// 3) Save the received packet on the memory
+    mPmmSd->write
     unitePackageInfoPackets(); // Packets of the world, unite!
 }
 

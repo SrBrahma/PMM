@@ -100,8 +100,8 @@ int PmmModuleDataLog::updateLogInfoInTelemetryFormat(uint8_t requestedPacket, ui
 // 3) CRC16 of this packet:
     uint16_t crc16ThisPacket = crc16(arrayToCopyTo + 2, *packetLength - 2); // + 2 and - 2 skips the self CRC bytes.
 
-    arrayToCopyTo[PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = LSB0(crc16ThisPacket); // Little endian!
-    arrayToCopyTo[PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] = LSB1(crc16ThisPacket);
+    arrayToCopyTo[PORT_LOG_INFO_INDEX_CRC_LSB] = LSB0(crc16ThisPacket); // Little endian!
+    arrayToCopyTo[PORT_LOG_INFO_INDEX_CRC_MSB] = LSB1(crc16ThisPacket);
 
     return 0;
 }

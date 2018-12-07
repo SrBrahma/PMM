@@ -34,14 +34,14 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
 
 // 1) Add the "Number of variables"
-    mPackageLogInfoRawArray[0] = mLogNumberOfVariables;
+    mPackageLogInfoRawArray[0] = mLogNumberVariables;
     mLogInfoRawPayloadArrayLength ++;
 
 
 // 2) Add the "Variable types"
 
     // 2.1) Adds the variables types in groups of two, as the types are always <= 4 bits, the group makes 8 bits.
-    for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
+    for (variableCounter = 0; variableCounter < mLogNumberVariables; variableCounter ++)
     {
         if (!variableCounter % 2) // If the counter is even (rest of division by 2 is 0)
             mPackageLogInfoRawArray[mLogInfoRawPayloadArrayLength] = (mVariableTypeArray[variableCounter] << 4);
@@ -58,7 +58,7 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
 
 // 3) Add the Variable strings
-    for (variableCounter = 0; variableCounter < mLogNumberOfVariables; variableCounter ++)
+    for (variableCounter = 0; variableCounter < mLogNumberVariables; variableCounter ++)
     {
         // As I couldn't find a way to use strnlen, made it!
         // Again, the stringLength doesn't include the '\0'.
@@ -95,13 +95,13 @@ void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
     uint8_t packetCounter;
 
     // Calculate the total number of packets.
-    mPackageLogInfoNumberOfPackets = ceil(mLogInfoRawPayloadArrayLength / (float) PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
+    mLogInfoTelemetryNumberPackets = ceil(mLogInfoRawPayloadArrayLength / (float) PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
     // This is different to PMM_PORT_LOG_INFO_MAX_PACKETS, as the macro is the maximum number of packets, and this variable is the current maximum
     // number of packets. This one varies with the current contents in LogInfo Package.
 
 
 // 1) Copies the raw array content and the package header into the packets
-    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
+    for (packetCounter = 0; packetCounter < mLogInfoTelemetryNumberPackets; packetCounter++)
     {
         packetLength = PMM_PORT_LOG_INFO_HEADER_LENGTH; // The initial length is the default header length
 
@@ -114,39 +114,39 @@ void PmmModuleDataLog::updateLogInfoInTelemetryFormat()
         packetLength += payloadBytesInThisPacket;
 
         // Adds the requested packet and the total number of packets.
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X] = packetCounter;
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS] = mPackageLogInfoNumberOfPackets;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_PACKET_X] = packetCounter;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_OF_Y_PACKETS] = mLogInfoTelemetryNumberPackets;
 
         // Now adds the data, which was built on updatePackageLogInfoRaw(). + skips the packet header.
-        memcpy(mPackageLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH, mPackageLogInfoRawArray, payloadBytesInThisPacket);
+        memcpy(mLogInfoTelemetryArray[packetCounter] + PMM_PORT_LOG_INFO_HEADER_LENGTH, mPackageLogInfoRawArray, payloadBytesInThisPacket);
 
         // Set the CRC16 of this packet fields as 0 (to calculate the entire packet CRC16 without caring about positions and changes in headers, etc)
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = 0;
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] = 0;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = 0;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] = 0;
 
         // Set the CRC16 of the entire package to 0.
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB] = 0;
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] = 0;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB] = 0;
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] = 0;
 
-        mLogInfoPackageCrc = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength, mLogInfoPackageCrc); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
+        mLogInfoPackageCrc = crc16(mLogInfoTelemetryArray[packetCounter], packetLength, mLogInfoPackageCrc); // The first crc16Package is = CRC16_DEFAULT_VALUE, as stated.
     }
 
 // 2) Assign the entire package crc16 to all packets.
-    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
+    for (packetCounter = 0; packetCounter < mLogInfoTelemetryNumberPackets; packetCounter++)
     {
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB] = mLogInfoPackageCrc;        // Little endian!
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] = mLogInfoPackageCrc >> 8;   //
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_LSB] = mLogInfoPackageCrc;        // Little endian!
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKAGE_MSB] = mLogInfoPackageCrc >> 8;   //
     }
 
 // 3) CRC16 of this packet:
-    for (packetCounter = 0; packetCounter < mPackageLogInfoNumberOfPackets; packetCounter++)
+    for (packetCounter = 0; packetCounter < mLogInfoTelemetryNumberPackets; packetCounter++)
     {
-        crc16ThisPacket = crc16(mPackageLogInfoTelemetryArray[packetCounter], packetLength); // As the temporary CRC16 of this packet is know to be 0,
+        crc16ThisPacket = crc16(mLogInfoTelemetryArray[packetCounter], packetLength); // As the temporary CRC16 of this packet is know to be 0,
         //it can do the crc16 of the packet without skipping the crc16 fields
 
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = crc16ThisPacket;        // Little endian!
-        mPackageLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] = crc16ThisPacket >> 8;   //
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB] = crc16ThisPacket;        // Little endian!
+        mLogInfoTelemetryArray[packetCounter][PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] = crc16ThisPacket >> 8;   //
 
-        mPackageLogInfoTelemetryArrayLengths[packetCounter] = packetLength;
+        mLogInfoTelemetryArrayLengths[packetCounter] = packetLength;
     }
 }

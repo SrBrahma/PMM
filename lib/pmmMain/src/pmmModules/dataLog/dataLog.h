@@ -35,7 +35,7 @@
 
 // DataLog AND LogInfo Defines (Which I will call as DATA_LOG)
 
-    #define PMM_MODULE_DATA_LOG_MAX_VARIABLES              50  // This must be the same value for the transmitter and the receptor.
+    #define PMM_MODULE_DATA_LOG_MAX_VARS              50  // This must be the same value for the transmitter and the receptor.
     
     #define PMM_MODULE_DATA_LOG_MAX_STRING_LENGTH          30  // The maximum Variable String. Includes the '\0'.
 
@@ -95,11 +95,11 @@
     // When sending the types of the variables (4 bits each type), they are grouped into 1 byte, to make the telemetry packet smaller (read the Telemetry Guide).
     //   If the number of variables is odd, the last variable type won't be grouped with another variable type, as there isn't another one,
     //   but it will still take 1 byte on the telemetry packet to send it. So, it's the same as: maxLengthVariablesType = ceil(numberVariables/2).
-    #define PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH     ((PMM_MODULE_DATA_LOG_MAX_VARIABLES + 2 - 1) / 2)
+    #define PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH     ((PMM_MODULE_DATA_LOG_MAX_VARS + 2 - 1) / 2)
                                                             // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
     // The total payload length, combining all the packets.
-    #define PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH   (1 + PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH + PMM_MODULE_DATA_LOG_MAX_VARIABLES*PMM_MODULE_DATA_LOG_MAX_STRING_LENGTH)
+    #define PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH   (1 + PMM_PORT_LOG_INFO_VARIABLE_TYPES_MAX_LENGTH + PMM_MODULE_DATA_LOG_MAX_VARS*PMM_MODULE_DATA_LOG_MAX_STRING_LENGTH)
    
     // How many packets are needed to send the Combined Payload.
     #define PMM_PORT_LOG_INFO_MAX_PACKETS                   ((PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH + PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
@@ -114,7 +114,8 @@ public:
 
     PmmModuleDataLog();
 
-    int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+
 
     // Transmission
     void updateLogInfoCombinedPayload(); // Updates the LogInfo
@@ -122,20 +123,20 @@ public:
 
 
     // Reception
-    void receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
-    void receivedLogInfo(receivedPacketAllInfoStructType* packetInfo);
+    int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
+    int  receivedLogInfo(receivedPacketAllInfoStructType* packetInfo);
 
 
     // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
-    void addMagnetometer     (void* magnetometerArray);
-    void addGyroscope        (void* gyroscopeArray);
+    void addMagnetometer     (void* magnetometerArray) ;
+    void addGyroscope        (void* gyroscopeArray)    ;
     void addAccelerometer    (void* accelerometerArray);
-    void addBarometer        (void* barometerPtr);
-    void addAltitudeBarometer(void* altitudePtr);
-    void addThermometer      (void* thermometerPtr);
+    void addBarometer        (void* barometerPtr)      ;
+    void addAltitudeBarometer(void* altitudePtr)       ;
+    void addThermometer      (void* thermometerPtr)    ;
 
-    void addImu(pmmImuStructType* pmmImuStructPtr); // Adds all the sensors above.
-    void addGps(pmmGpsStructType* pmmGpsStruct);
+    void addImu(pmmImuStructType* pmmImuStructPtr)     ; // Adds all the sensors above.
+    void addGps(pmmGpsStructType* pmmGpsStruct)        ;
 
     // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
     // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like PMM_MODULE_DATA_LOG_TYPE_UINT8;
@@ -143,66 +144,65 @@ public:
 
 
     // Getters
-    uint8_t getNumberOfVariables();
-    uint8_t getPackageLogSizeInBytes();
+    uint8_t      getNumberOfVariables();
+    uint8_t      getLogSize();
 
-    const char** getVariableNameArray();
-    uint8_t* getVariableTypeArray();
-    uint8_t* getVariableSizeArray();
-    uint8_t** getVariableAddressArray();
+    const char** getVariableNameArray   ();
+    uint8_t*     getVariableTypeArray   ();
+    uint8_t*     getVariableSizeArray   ();
+    uint8_t**    getVariableAddressArray();
 
 
     // Debug!
-    #if PMM_DEBUG
-        void debugPrintLogHeader();
-        void debugPrintLogContent();
-    #endif
+    void debugPrintLogHeader ();
+    void debugPrintLogContent();
 
 
 
 private:
 
     // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
-    void addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
+    void    addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
     uint8_t variableTypeToVariableSize(uint8_t variableType);
-    void includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
-    void includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
+
+    void    includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress);
+    void    includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize);
 
     // Build the Package Log Info Package
-    void updatePackageLogInfoRaw();
-    void updateLogInfoInTelemetryFormat();
+    void    updatePackageLogInfoRaw();
+    void    updateLogInfoInTelemetryFormat();
 
     // Uses the received packets via telemetry to get the Package Log Info
-    void unitePackageInfoPackets();
+    void    unitePackageInfoPackets();
 
 
 
     PmmTelemetry* mPmmTelemetry;
+
     PmmSd* mPmmSd;
 
     // Default variables added in every DataLog package:
-    uint8_t*  mSystemSessionPtr;
+    uint8_t  mSystemSession;
 
     // Transmission
-    char*    mVariableNameArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableTypeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES];
-    uint8_t  mVariableSizeArray   [PMM_MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
-    uint8_t* mVariableAddressArray[PMM_MODULE_DATA_LOG_MAX_VARIABLES];
+    char*    mVariableNameArray   [PMM_MODULE_DATA_LOG_MAX_VARS];
+    uint8_t  mVariableTypeArray   [PMM_MODULE_DATA_LOG_MAX_VARS];
+    uint8_t  mVariableSizeArray   [PMM_MODULE_DATA_LOG_MAX_VARS]; // For a faster size access for the telemetry
+    uint8_t* mVariableAddressArray[PMM_MODULE_DATA_LOG_MAX_VARS];
 
 
-    uint16_t mLogInfoPackageCrc;
-    uint8_t  mLogNumberOfVariables;
-    uint8_t  mPackageLogSizeInBytes;
+    uint8_t  mLogNumberVariables;
+    uint8_t  mLogSize;
 
 
     uint8_t  mPackageLogInfoRawArray[PMM_PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
     uint16_t mLogInfoRawPayloadArrayLength;
 
 
-    uint8_t  mPackageLogInfoNumberOfPackets;
-    uint8_t  mPackageLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH];
-    uint8_t  mPackageLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
+    uint8_t  mLogInfoTelemetryNumberPackets;
+    uint8_t  mLogInfoTelemetryArray[PMM_PORT_LOG_INFO_MAX_PACKETS][PMM_PORT_LOG_INFO_MAX_PAYLOAD_LENGTH];
+    uint8_t  mLogInfoTelemetryArrayLengths[PMM_PORT_LOG_INFO_MAX_PACKETS];
 
 
 

@@ -30,17 +30,17 @@ PmmModuleDataLog::PmmModuleDataLog()
 
 
 
-int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t* systemSessionPtr, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
     mPmmTelemetry = pmmTelemetry;
     mPmmSd = pmmSd;
     
-    mPackageLogSizeInBytes = 0;
-    mLogNumberOfVariables = 0;
-    mPackageLogInfoNumberOfPackets = 0; // For receptor.
+    mLogSize         = 0;
+    mLogNumberVariables          = 0;
+    mLogInfoTelemetryNumberPackets = 0; // For receptor.
 
-    mSystemSessionPtr = systemSessionPtr;
+    mSystemSession = systemSession;
 
     // These variables are always added to the package.
     addPackageBasicInfo(packageIdPtr, packageTimeMsPtr);
@@ -75,7 +75,7 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
         case PMM_MODULE_DATA_LOG_TYPE_DOUBLE:
             return 8;
         default:    // Maybe will avoid internal crashes?
-            PMM_DEBUG_PRINTLN("PmmPort #1: Invalid variable type to size!");
+            PMM_DEBUG_ADV_PRINT("Invalid variable type to size!");
             return 1;
     }
 }
@@ -85,35 +85,31 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);
-    if (mLogNumberOfVariables >= PMM_MODULE_DATA_LOG_MAX_VARIABLES)
+    if (mLogNumberVariables >= PMM_MODULE_DATA_LOG_MAX_VARS)
     {
-        #if PMM_DEBUG
-            Serial.print("PmmPort #2: Failed to add the variable \"");
-            Serial.print(variableName);
-            Serial.print("\". Exceeds the maximum number of variables in the Package Log.\n");
-        #endif
+        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
+        PMM_DEBUG_PRINT(variableName)
+        PMM_DEBUG_PRINTLN("\". Exceeds the maximum number of variables in the DataLog.")
         return;
     }
-    if ((mPackageLogSizeInBytes + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
+    if ((mLogSize + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
     {
-        #if PMM_DEBUG
-            Serial.print("PmmPort #3: Failed to add the variable \"");
-            Serial.print(variableName);
-            Serial.print("\". Exceeds the maximum payload length (tried to be ");
-            Serial.print((mPackageLogSizeInBytes + varSize));
-            Serial.print(", maximum is ");
-            Serial.print(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
-            Serial.print(".\n");
-        #endif
+        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
+        PMM_DEBUG_PRINT(variableName);
+        PMM_DEBUG_PRINT("\". Exceeds the maximum payload length (tried to be ");
+        PMM_DEBUG_PRINT(mLogSize + varSize);
+        PMM_DEBUG_PRINT(", maximum is ");
+        PMM_DEBUG_PRINT(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
+        PMM_DEBUG_PRINTLN(".");
         return;
     }
 
-    mVariableNameArray[mLogNumberOfVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
-    mVariableTypeArray[mLogNumberOfVariables] = variableType;
-    mVariableSizeArray[mLogNumberOfVariables] = varSize;
-    mVariableAddressArray[mLogNumberOfVariables] = (uint8_t*) variableAddress;
-    mLogNumberOfVariables ++;
-    mPackageLogSizeInBytes += varSize;
+    mVariableNameArray[mLogNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
+    mVariableTypeArray[mLogNumberVariables] = variableType;
+    mVariableSizeArray[mLogNumberVariables] = varSize;
+    mVariableAddressArray[mLogNumberVariables] = (uint8_t*) variableAddress;
+    mLogNumberVariables ++;
+    mLogSize += varSize;
 
     updateLogInfoCombinedPayload();
     updateLogInfoInTelemetryFormat();
@@ -246,14 +242,14 @@ void PmmModuleDataLog::addCustomVariable(const char* variableName, uint8_t varia
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 uint8_t PmmModuleDataLog::getNumberOfVariables()
 {
-    return mLogNumberOfVariables;
+    return mLogNumberVariables;
 }
 
 
 
-uint8_t PmmModuleDataLog::getPackageLogSizeInBytes()
+uint8_t PmmModuleDataLog::getLogSize()
 {
-    return mPackageLogSizeInBytes;
+    return mLogSize;
 }
 
 
@@ -269,12 +265,7 @@ uint8_t**    PmmModuleDataLog::getVariableAddressArray() { return mVariableAddre
 
 
 
-/* Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-
-#if PMM_DEBUG
-// Note for the 2 functions below:
-// There are faster ways to print the debugs, but since it isn't something that is going to be used frequently,
-// I (HB :) ) will spend my precious time on other stuffs)
+// Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 void PmmModuleDataLog::debugPrintLogHeader()
 {
@@ -282,10 +273,10 @@ void PmmModuleDataLog::debugPrintLogHeader()
     char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
     // For adding the first variable header to the print
-    if (mLogNumberOfVariables > 0)
+    if (mLogNumberVariables > 0)
         snprintf(buffer, 512, "%s", mVariableNameArray[0]);
 
-    for (variableIndex = 1; variableIndex < mLogNumberOfVariables; variableIndex ++)
+    for (variableIndex = 1; variableIndex < mLogNumberVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }
@@ -297,30 +288,30 @@ void PmmModuleDataLog::debugPrintLogContent()
     unsigned variableIndex;
     static char buffer[512]; // Static for optimization
     buffer[0] = '\0'; // for the snprintf
-    for (variableIndex = 0; variableIndex < mLogNumberOfVariables; variableIndex ++)
+    for (variableIndex = 0; variableIndex < mLogNumberVariables; variableIndex ++)
     {
         switch(mVariableTypeArray[variableIndex])
         {
             case PMM_MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%f, ", buffer, *(float*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%f, ",   buffer, *(float*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu, ", buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%lu, ",  buffer, *(uint32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li, ", buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%li, ",  buffer, *(int32_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u, ", buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u, ",   buffer, *(uint8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i, ", buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i, ",   buffer, *(int8_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u, ", buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u, ",   buffer, *(uint16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i, ", buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i, ",   buffer, *(int16_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_UINT64:
                 snprintf(buffer, 512, "%s%llu, ", buffer, *(uint64_t*) (mVariableAddressArray[variableIndex]));
@@ -329,16 +320,12 @@ void PmmModuleDataLog::debugPrintLogContent()
                 snprintf(buffer, 512, "%s%lli, ", buffer, *(int64_t*) (mVariableAddressArray[variableIndex]));
                 break;
             case PMM_MODULE_DATA_LOG_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%f, ", buffer, *(double*) (mVariableAddressArray[variableIndex]));
+                snprintf(buffer, 512, "%s%f, ",   buffer, *(double*) (mVariableAddressArray[variableIndex]));
                 break;
             default:    // If none above,
-                snprintf(buffer, 512, "%s%s, ", buffer, ">TYPE ERROR HERE!<");
+                snprintf(buffer, 512, "%s%s, ",   buffer, ">TYPE ERROR HERE!<");
                 break;
         } // switch end
     } // for loop end
     Serial.println(buffer);
 } // end of function debugPrintLogContent()
-
-
-
-#endif

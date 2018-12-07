@@ -3,9 +3,6 @@
 #ifndef FORMATTER_h
 #define FORMATTER_h
 
-//#include <stdint.h> // for uint types
-//#include <string.h> // for memset and strchr
-
 #define USE_SDIO 1
 
 #define SPI_SPEED SD_SCK_MHZ(50)

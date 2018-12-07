@@ -33,8 +33,8 @@ void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLaye
 uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructType* toBeSentTelemetryPacketInfoStruct)
 {
     // 1) Test the given array
-    if (!packet  || !toBeSentTelemetryPacketInfoStruct)    // If given array or struct is NULL, error!
-        return 0;
+    if (!packet || !toBeSentTelemetryPacketInfoStruct)    // If given array or struct is NULL, error!
+        return 1;
 
     // 2) Which protocol are we using?
     switch (toBeSentTelemetryPacketInfoStruct->protocol)

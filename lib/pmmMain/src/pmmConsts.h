@@ -74,7 +74,7 @@
 
 
     #if PMM_DEBUG_MORE
-        #define PMM_DEBUG_PRINTLN_MORE(x) Serial.println(x)
+        #define PMM_DEBUG_PRINTLN_MORE(x) PMM_DEBUG_PRINTLN(x)
     #else
         #define PMM_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO
     #endif

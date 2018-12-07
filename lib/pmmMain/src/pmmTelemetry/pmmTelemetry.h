@@ -22,7 +22,7 @@
 
 #define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH // Since this is currently the only protocol.
 
-#define PMM_TELEMETRY_QUEUE_LENGTH 8
+#define PMM_TELEMETRY_QUEUE_LENGTH              8
 
 
 class PmmTelemetry
@@ -67,10 +67,6 @@ public:
     //void setPackageStringReceivedFunctionPtr
     //void setPackageRequestReceivedFunctionPtr;
 
-    // NOT USED ANYMORE
-    //int addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t dataLengthsArray[], uint8_t numberVariables, uint8_t totalDataLength,
-    //                             toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
-
 private:
 
     uint8_t mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
@@ -78,7 +74,7 @@ private:
     receivedPacketAllInfoStructType* mReceivedPacketAllInfoStructPtr;
     receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
 
-    RH_RF95 mRf95;
+    RH_RF95  mRf95;
     unsigned mTelemetryIsWorking;
     uint32_t mPreviousPackageLogTransmissionMillis;
     uint32_t mPackageLogDelayMillis;

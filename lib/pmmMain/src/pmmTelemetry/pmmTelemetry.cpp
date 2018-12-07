@@ -7,8 +7,8 @@
 #include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
-PmmTelemetry::PmmTelemetry(): // https://stackoverflow.com/a/12927220
-    mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT)
+PmmTelemetry::PmmTelemetry()
+    : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT) // https://stackoverflow.com/a/12927220
 {}
 
 int PmmTelemetry::init()

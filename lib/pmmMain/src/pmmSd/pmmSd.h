@@ -42,42 +42,44 @@ public:
 
     PmmSd();
 
-    int init();
-    int init(uint8_t sessionId);
+    int  init();
+    int  init(uint8_t sessionId);
 
-    int setPmmCurrentDirectory();
-    int setCurrentDirectory   (char fullPath[]);
+    int  setPmmCurrentDirectory();
+    int  setCurrentDirectory   (char fullPath[]);
 
-    int println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
-
-    int write(char filename[], char arrayToWrite[], size_t length, uint8_t sourceAddress, uint8_t sourceSession = 0);
+    int  removeDirRecursively(char relativePath[]);
 
 
-    int writeTextFileWithBackup(char filename[], uint8_t sourceAddress, char stringToWrite[]);
-
-    void getFilenameOwn(char destination[], uint8_t maxLength, char filename[]);
-
+    void getFilenameOwn     (char destination[], uint8_t maxLength, char filename[]);
     void getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[]);
+
+    int  open (char filename[], char dirFullRelativePath[], uint8_t mode = O_RDWR | O_CREAT | O_APPEND);
+    int  seek (uint32_t position);
+    int  read (uint8_t buffer[], size_t numberBytes);
+    int  write(uint8_t byte);
+    int  write(char arrayToWrite[], size_t length);
+    int  close();
+
+    int  println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
 
     bool getSdIsBusy();
 
-    int removeDirRecursively(char relativePath[]);
-    
     SdFatSdio* getSdFatPtr();
+    SdioCard*  getCardPtr ();
 
-    SdioCard* getCardPtr();
+
 
 private:
 
     SdFatSdio mSdFat;
+    File      mFile;
 
-    File mFile;
+    unsigned  mSdIsWorking;
 
-    unsigned mSdIsWorking;
+    unsigned  mHasCreatedThisSessionDirectory;
 
-    unsigned mHasCreatedThisSessionDirectory;
-
-    uint8_t mThisSessionId;
+    uint8_t   mThisSessionId;
 
 };
 

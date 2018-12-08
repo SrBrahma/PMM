@@ -520,10 +520,6 @@ public:
     // Doesn't automaticaly add any header to the packet like Protocol, To, From, CRC, etc! Do it on your own!
     bool    send(uint8_t data[], uint8_t dataLength);
 
-    // not used anymore
-    //bool    sendArrayOfPointersOfSmartSizes(uint8_t** data, uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalDataLength,
-    //                                        toBeSentTelemetryPacketInfoStructType* protocolsContentStruct);
-
 // Reception
 
     void    getPacketInfoInStruct(uint8_t packet[], receivedPacketAllInfoStructType* packetStatusStruct);

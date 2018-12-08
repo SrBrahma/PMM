@@ -19,7 +19,7 @@
 
 
 
-// =============               CRC 8               =======================
+// =============               CRC-8               =======================
 
 // CRC8 Function (ROM=39 / RAM=4 / Average => 196_Tcy / 24.5_us for 8MHz clock)
 // CRC-8/MAXIM, as seen when comparing the results with this site https://crccalc.com/.

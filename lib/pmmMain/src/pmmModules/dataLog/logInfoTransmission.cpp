@@ -10,7 +10,6 @@
 // DataLogInfo in Telemetry format, for transmission.
 void PmmModuleDataLog::updateLogInfoCombinedPayload()
 {
-
     unsigned variableCounter;
     unsigned stringLength;              // The length withou null char!
 
@@ -59,17 +58,22 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
 
     // Calculate the total number of packets.
     mDataLogInfoPackets = ceil(mLogInfoRawPayloadArrayLength / (float) PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
+
+    mIsLocked = 1;
 }
 
 
 
-int PmmModuleDataLog::updateLogInfoInTelemetryFormat(uint8_t requestedPacket, uint8_t arrayToCopyTo[], uint8_t* packetLength)
+int PmmModuleDataLog::getDataLogInfoPacketToTransmit(uint8_t requestedPacket, uint8_t arrayToCopyTo[], uint8_t* packetLength)
 {
     if (!arrayToCopyTo || !packetLength)
         return 1;
 
     if (requestedPacket >= mDataLogInfoPackets)
         return 2;
+
+    if (!mIsLocked) // So we won't be able to change the variables anymore in this LogData Identifier!
+        updateLogInfoCombinedPayload();
 
     *packetLength = 0;
 

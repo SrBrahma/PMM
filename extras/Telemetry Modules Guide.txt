@@ -39,18 +39,18 @@ https://en.wikipedia.org/wiki/OSI_model
     1) PMM Neo Protocol
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-        ------------ PMM Neo Protocol Header -------------
-        [Positions] : [Function] : [ Length in Bytes ]
-
-        a) [ 0 ] : [ Protocol Identifier .. ] : [ 1 ]
-        b) [ 1 ] : [ Packet Length ........ ] : [ 1 ]
-        c) [ 2 ] : [ Source Address ....... ] : [ 1 ]
-        d) [ 3 ] : [ Destination Address .. ] : [ 1 ]
-        e) [ 4 ] : [ Port ................. ] : [ 1 ]
-        f) [ 5 ] : [ Header CRC-8 ......... ] : [ 1 ]
-
-                            Total header length = 6 bytes.
-        --------------------------------------------------
+        // ------------ PMM Neo Protocol Header -------------
+        // [Positions] : [Function] : [ Length in Bytes ]
+        //
+        // a) [ 0 ] : [ Protocol Identifier .. ] : [ 1 ]
+        // b) [ 1 ] : [ Packet Length ........ ] : [ 1 ]
+        // c) [ 2 ] : [ Source Address ....... ] : [ 1 ]
+        // d) [ 3 ] : [ Destination Address .. ] : [ 1 ]
+        // e) [ 4 ] : [ Port ................. ] : [ 1 ]
+        // f) [ 5 ] : [ Header CRC-8 ......... ] : [ 1 ]
+        //
+        //                    Total header length = 6 bytes.
+        // --------------------------------------------------
 
     b) Packet Length:
         The Packet Length exists to ensure that the length was added by the microcontroller itself, and not by the connected telemetry module, as there may exist a module that adds
@@ -74,21 +74,21 @@ https://en.wikipedia.org/wiki/OSI_model
 
     1.1) Header
 
-        --------------- DataLog Header 1.0 ---------------
-        [Positions] : [Function] : [ Length in Bytes ]
+        // --------------- DataLog Header 1.0 ---------------
+        // [Positions] : [Function] : [ Length in Bytes ]
+        //
+        // a) [ 0 ] : [ CRC-8 of this header . ] : [ 1 ]
+        // b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
+        // c) [ 2 ] : [ DataLogInfo Identifier ] : [ 1 ]
+        // d) [3,4] : [ CRC-16 of the Log .... ] : [ 2 ]
+        // 
+        //                    Total header length = 5 bytes.
+        // --------------------------------------------------
 
-        a) [ 0 ] : [ CRC 8 of this header . ] : [ 1 ]
-        b) [ 1 ] : [ Session Identifier ... ] : [ 1 ]
-        c) [ 2 ] : [ DataLogInfo Identifier ] : [ 1 ]
-        d) [3,4] : [ CRC 16 of the Log .... ] : [ 2 ]
 
-                            Total header length = 5 bytes.
-        --------------------------------------------------
-
-
-        a) CRC 8 of this header:
-            The CRC 8 of the above fields, to know if we are receiving the right content.
-            If even with this you get a wrong header, contact me to change to CRC 16.
+        a) CRC-8 of this header:
+            The CRC-8 of the above fields, to know if we are receiving the right content.
+            If even with this you get a wrong header, contact me to change to CRC-16.
 
 
         b) Session Identifier:
@@ -99,18 +99,18 @@ https://en.wikipedia.org/wiki/OSI_model
             To which DataLogInfo Package are we relating to?
 
 
-        e) CRC 16 of the Payload:
+        e) CRC-16 of the Payload:
             To validate the Data Log. If it doesn't match, it will still be saved, but with a CRC Fail flag.
 
 
 
     1.2) Payload
 
-        -------------- DataLog Payload 1.0 ---------------
-        [Positions] : [ Function ] : [ Length in Bytes ]
-
-        a) [5,+] : [ Data Log ] : [ LogLength ]
-        --------------------------------------------------
+        // -------------- DataLog Payload 1.0 ---------------
+        // [Positions] : [ Function ] : [ Length in Bytes ]
+        // 
+        // a) [5,+] : [ Data Log ] : [ LogLength ]
+        // --------------------------------------------------
 
 
         a) Data Log:
@@ -136,27 +136,27 @@ https://en.wikipedia.org/wiki/OSI_model
 
     2.1) Header:
 
-        ------------- DataLogInfo Header 1.0 --------------
-        [Positions] : [ Function ] : [ Length in Bytes ]
+        // ------------- DataLogInfo Header 1.0 --------------
+        // [Positions] : [ Function ] : [ Length in Bytes ]
+        //
+        // a) [0,1] : [ CRC-16 of the current Packet ] : [ 2 ]
+        // b) [ 2 ] : [ System Session ............. ] : [ 1 ]
+        // c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
+        // d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
+        // e) [ 5 ] : [ DataLogInfo Identifier ..... ] : [ 1 ]
+        //
+        //                     Total header length = 6 bytes.
+        // ---------------------------------------------------
 
-        a) [0,1] : [ CRC 16 of the current Packet ] : [ 2 ]
-        b) [ 2 ] : [ System Session ............. ] : [ 1 ]
-        c) [ 3 ] : [ Packet X ................... ] : [ 1 ]
-        d) [ 4 ] : [ Of Y Packets ............... ] : [ 1 ]
-        e) [ 5 ] : [ DataLogInfo Identifier ..... ] : [ 1 ]
 
-                            Total header length = 6 bytes.
-        ---------------------------------------------------
-
-
-        a) CRC 16 of the current Packet:
+        a) CRC-16 of the current Packet:
             To validate the integrity of the current packet. Little endian.
             crc = crc16(packetArray + 2, packetSize - 2);
 
 
         b) Session Identifier
             In which system session this package was generated.
-            It is in the header, and not on the payload, for keeping the CRC 16 of all Payload Parts to be
+            It is in the header, and not on the payload, for keeping the CRC-16 of all Payload Parts to be
               the same for multiple sessions, as an alternative way to get the DataLogInfo after the flight,
               if it was unable to be received.
 
@@ -180,15 +180,15 @@ https://en.wikipedia.org/wiki/OSI_model
 
     2.22) Payload:
 
-        -------------- DataLogInfo Payload 1.0 ---------------
-        [Positions] : [ Function ] : [ Length in Bytes ]
-
-        a) [ 6 ] : [ Number of Variables ] : [ 1 ]
-        b) [7,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
-        c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
-        
-        Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber*maxStringLength
-        --------------------------------------------------
+        // -------------- DataLogInfo Payload 1.0 ---------------
+        // [Positions] : [ Function ] : [ Length in Bytes ]
+        //
+        // a) [ 6 ] : [ Number of Variables ] : [ 1 ]
+        // b) [7,+] : [ Variables Types ... ] : [ ceil(Number of variables/2) ]
+        // c) [+,+] : [ Variables Names ... ] : [ Depends on each variable name ]
+        //
+        // Maximum combined payload length = 1 + ceil(Number of variables/2) + maxVariablesNumber * maxStringLength
+        // --------------------------------------------------
 
 
         a) Number of Variables:
@@ -239,20 +239,20 @@ https://en.wikipedia.org/wiki/OSI_model
 
     3.1) Header:
 
-        ------------- MessageLog Header 1.0 --------------
-        [Positions] : [ Function ] : [ Length in Bytes ]
+        // ------------- MessageLog Header 1.0 --------------
+        // [Positions] : [ Function ] : [ Length in Bytes ]
+        //
+        // a) [ 0 ] : [ CRC-8 of this Header ] : [ 1 ]
+        // b) [ 1 ] : [ Session Identifier . ] : [ 1 ]
+        // c) [ 2 ] : [ String X ........... ] : [ 1 ]
+        // d) [ 3 ] : [ Of Y Strings ....... ] : [ 1 ]
+        // e) [4,5] : [ CRC-16 of the String ] : [ 2 ]
+        //
+        //                    Total header length = 7 bytes.
+        // --------------------------------------------------
 
-        a) [ 0 ] : [ CRC 8 of this Header ] : [ 1 ]
-        b) [ 1 ] : [ Session Identifier . ] : [ 1 ]
-        c) [ 2 ] : [ String X ........... ] : [ 1 ]
-        d) [ 3 ] : [ Of Y Strings ....... ] : [ 1 ]
-        e) [4,5] : [ CRC 16 of the String ] : [ 2 ]
 
-                            Total header length = 7 bytes.
-        --------------------------------------------------
-
-
-        a) CRC 8 of this header:
+        a) CRC-8 of this header:
             To know the integrity of the current package. Little endian.
 
             packetCrc = crc16(packet + 7, packetLength - 7);
@@ -277,7 +277,7 @@ https://en.wikipedia.org/wiki/OSI_model
             Of 2 Strings. So, there is currently String 0 and String 1.
 
 
-        e) CRC 16 of the String
+        e) CRC-16 of the String
             The CRC header must be valid for the package to be accepted, but the CRC of the string doesn't need to be.
             The string will be saved, but will be marked with a '?' in it's start.
 
@@ -285,10 +285,10 @@ https://en.wikipedia.org/wiki/OSI_model
 
     3.2) Payload:
 
-        ------------- MessageLog Payload 1.0 -------------
-        [Positions] : [ Function ] : [ Length in Bytes ]
-        a) [6,+] : [ String ] : [ String Length ]
-        --------------------------------------------------
+        // ------------- MessageLog Payload 1.0 -------------
+        // [Positions] : [ Function ] : [ Length in Bytes ]
+        // a) [6,+] : [ String ] : [ String Length ]
+        // --------------------------------------------------
 
 
         a) String:

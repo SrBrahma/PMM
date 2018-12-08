@@ -42,33 +42,20 @@ uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructTyp
 
         // NEO
         case PMM_NEO_PROTOCOL_ID:
-
-            // NEO, 3) Write the Protocol ID. These previous checks are to possibly make the code faster, as most of these
-            // parameters doesn't change during runtime. Maybe I will remove them someday. Had to make a decision. No regrets.
-            if (packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL] != PMM_NEO_PROTOCOL_ID)
-                packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL]  = PMM_NEO_PROTOCOL_ID;
-           
+            // NEO, 3) Write the Protocol ID.
+            packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL]  = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
-            if (packet[PMM_NEO_PROTOCOL_INDEX_SOURCE] != toBeSentTelemetryPacketInfoStruct->sourceAddress)
-                packet[PMM_NEO_PROTOCOL_INDEX_SOURCE]  = toBeSentTelemetryPacketInfoStruct->sourceAddress;
-            
+            packet[PMM_NEO_PROTOCOL_INDEX_SOURCE]  = toBeSentTelemetryPacketInfoStruct->sourceAddress;
             // NEO, 5) Write the Destination Address
-            if (packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != toBeSentTelemetryPacketInfoStruct->destinationAddress); 
-                packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION]  = toBeSentTelemetryPacketInfoStruct->destinationAddress; 
-
+            packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION]  = toBeSentTelemetryPacketInfoStruct->destinationAddress;
             // NEO, 6) Write the Port
-            if (packet[PMM_NEO_PROTOCOL_INDEX_PORT] != toBeSentTelemetryPacketInfoStruct->port);
-                packet[PMM_NEO_PROTOCOL_INDEX_PORT]  = toBeSentTelemetryPacketInfoStruct->port;
-
-            // NEO, 7) Write the Payload Length. It doesn't check the value before, as it would need to sum the value 2 times, on the check and on the write.
+            packet[PMM_NEO_PROTOCOL_INDEX_PORT]  = toBeSentTelemetryPacketInfoStruct->port;
+            // NEO, 7) Write the Payload Length.
             packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]  = toBeSentTelemetryPacketInfoStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
-
             // NEO, 8) Write the CRC of this header
             uint16_t crcVar = crc16(packet, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
-
-            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB] = LSB0(crcVar);   // Here we don't check the previous CRC as the CRC value isn't stored in the
-            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB] = LSB1(crcVar);   // toBeSentTelemetryPacketInfoStructType. Even if it was, any change on a parameter would change the CRC value,
-                                                                            // so "probabilistically", maybe it won't worth the checking.
+            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB] = LSB0(crcVar);
+            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB] = LSB1(crcVar);
 
             return PMM_NEO_PROTOCOL_HEADER_LENGTH;
     }

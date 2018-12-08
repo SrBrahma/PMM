@@ -143,17 +143,18 @@ private:
     // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
     void    addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
-    void includeVariableInPackage(const char*  variableName,   uint8_t variableType, void* variableAddress);
-    void includeArrayInPackage   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
+    int     includeVariableInPackage(const char*  variableName,   uint8_t variableType, void* variableAddress);
+    void    includeArrayInPackage   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
 
     // Build the Package Log Info Package
-    void updatePackageLogInfoRaw();
-    int  updateLogInfoInTelemetryFormat(uint8_t requestedPacket, uint8_t arrayToCopyTo[], uint8_t* packetLength);
+    void    updatePackageLogInfoRaw();
+
+    int     getDataLogInfoPacketToTransmit(uint8_t arrayToCopyTo[], uint8_t* packetLength);
+    int     getDataLogInfoPacketToTransmit(uint8_t requestedPacket, uint8_t arrayToCopyTo[], uint8_t* packetLength);
 
 // Reception Functions
 
     // Uses the received packets via telemetry to get the Package Log Info
-    void    unitePackageInfoPackets();
 
 
 
@@ -161,24 +162,21 @@ private:
     PmmSd       * mPmmSd;
 
 // Self
+    unsigned mIsLocked;
     uint8_t  mSystemSession;
     uint8_t  mDataLogInfoId;
 
-
-    // Transmission
     char   * mVariableNameArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableTypeArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableSizeArray[MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
-
     uint8_t  mNumberVariables;
     uint8_t  mDataLogSize;
 
-
+// Transmission
     uint8_t  mDataLogInfoTelemetryRawArray[PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
     uint16_t mLogInfoRawPayloadArrayLength;
-
 
     uint8_t  mDataLogInfoPackets;
 

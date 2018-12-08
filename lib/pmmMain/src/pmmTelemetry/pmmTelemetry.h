@@ -32,22 +32,20 @@ class PmmTelemetry
     {
         PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
         PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
-        PMM_TELEMETRY_QUEUE_PRIORITY_LOW,
-        PMM_TELEMETRY_QUEUE_PRIORITY_DEFAULT
+        PMM_TELEMETRY_QUEUE_PRIORITY_LOW
     } pmmTelemetryQueuePrioritiesType;
 
     typedef struct
     {
         toBeSentTelemetryPacketInfoStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
-
-        uint8_t*  uint8_tPtrArray[PMM_TELEMETRY_QUEUE_LENGTH];      // Used in send(), as the data array
-        uint8_t   lengthInBytesArray[PMM_TELEMETRY_QUEUE_LENGTH];   // Used in send(), as the length of the data array
-
+        uint8_t*  payloadArray[PMM_TELEMETRY_QUEUE_LENGTH];
+        uint8_t   lengthArray [PMM_TELEMETRY_QUEUE_LENGTH];
         uint8_t   actualIndex;
         uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
-
     } pmmTelemetryQueueStructType;
-    
+
+
+
 public:
 
     PmmTelemetry();
@@ -63,26 +61,20 @@ public:
     
     receivedPacketAllInfoStructType* getReceivedPacketStatusStructPtr();
 
-    //void setPackageLogInfoReceivedFunctionPtr
-    //void setPackageStringReceivedFunctionPtr
-    //void setPackageRequestReceivedFunctionPtr;
-
 private:
 
-    uint8_t mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
-    uint8_t* mPayloadPointer;
-    receivedPacketAllInfoStructType* mReceivedPacketAllInfoStructPtr;
+    RH_RF95  mRf95;
+
+    unsigned mTelemetryIsWorking;
+
+    receivedPacketAllInfoStructType*           mReceivedPacketAllInfoStructPtr;
     receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
 
-    RH_RF95  mRf95;
-    unsigned mTelemetryIsWorking;
-    uint32_t mPreviousPackageLogTransmissionMillis;
-    uint32_t mPackageLogDelayMillis;
+    uint8_t  mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
 
     pmmTelemetryQueueStructType mHighPriorityQueueStruct;
     pmmTelemetryQueueStructType mNormalPriorityQueueStruct;
     pmmTelemetryQueueStructType mLowPriorityQueueStruct;
-    pmmTelemetryQueueStructType mDefaultPriorityQueueStruct;
 
     int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
 

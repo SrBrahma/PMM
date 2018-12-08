@@ -24,14 +24,15 @@ int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInf
         return 2;
 
 // 3) Save the received packet on the memory
-    //mPmmSd->write
-    unitePackageInfoPackets(); // Packets of the world, unite!
+    // mPmmSd->write
+    // unitePackageInfoPackets(); 
 
     return 0;
 }
 
 
-
+// Packets of the world, unite!
+/*
 void PmmModuleDataLog::unitePackageInfoPackets()
 {
     unsigned packetCounter;
@@ -88,3 +89,4 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 
     // Finished!
 }
+*/

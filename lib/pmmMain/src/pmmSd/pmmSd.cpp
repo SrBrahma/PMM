@@ -62,7 +62,7 @@ int PmmSd::setPmmCurrentDirectory()
     char fullPathRenameOld[PMM_SD_FILENAME_MAX_LENGTH];
     unsigned oldCounter = 0;
 
-    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session-%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
+    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
 
     // 1) Make sure we are at root dir
     if (!mSdFat.chdir())
@@ -79,7 +79,7 @@ int PmmSd::setPmmCurrentDirectory()
         {
             do
             {
-                snprintf(fullPathRenameOld, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session-%02u-old-%02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, oldCounter);
+                snprintf(fullPathRenameOld, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u old %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, oldCounter);
                 oldCounter++;
             } while (mSdFat.exists(fullPathRenameOld));
 
@@ -90,7 +90,6 @@ int PmmSd::setPmmCurrentDirectory()
             }
             mHasCreatedThisSessionDirectory = 1;
         }
-
     }
     
     // 3) Create the new dir
@@ -164,28 +163,41 @@ int PmmSd::println(char filename[], char string[], uint8_t sourceAddress, uint8_
 
 
 
-// sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
-// sourceSession is from which session we did receive the message. This field is useless if the soureAddress is the
-//  PMM_TELEMETRY_ADDRESS_SELF define, so it's an optional argument.
-// length argument is int as the return value of the file.write() is also int, so when comparing the results, the same sign is used.
-int PmmSd::write(char filename[], char arrayToWrite[], size_t length, uint8_t sourceAddress, uint8_t sourceSession)
+int PmmSd::open(char filename[], char dirFullRelativePath[], uint8_t mode)
 {
+    // Create directories if doesn't exists
+    if (!mSdFat.exists(dirFullRelativePath))
+        mSdFat.mkdir(dirFullRelativePath);
 
-    if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
+    if (!mFile.open(filename, mode)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
     {
         mFile.close();
         return 1;
     }
-
-    if (mFile.write(arrayToWrite, length) == -1)
-    {
-        PMM_DEBUG_PRINTLN("PmmSd: ERROR 3 - The data haven't been successfully written!");
-        mFile.close();
-        return 2;
-    }
-
-    mFile.close();
     return 0;
+}
+int PmmSd::seek(uint32_t position)
+{
+    return mFile.seek(position);
+}
+int PmmSd::read(uint8_t buffer[], size_t numberBytes)
+{
+    if (!buffer)
+        return 1;
+
+    return mFile.read(buffer, numberBytes);
+}
+int PmmSd::write(uint8_t byte)
+{
+    return mFile.write(byte);
+}
+int PmmSd::write(char arrayToWrite[], size_t length)
+{
+    return mFile.write(arrayToWrite, length);
+}
+int PmmSd::close()
+{
+    return mFile.close();
 }
 
 

@@ -36,9 +36,10 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mPmmTelemetry = pmmTelemetry;
     mPmmSd        = pmmSd;
     
-    mDataLogSize          = 0;
-    mNumberVariables = 0;
-    mDataLogInfoPackets   = 0; // For receptor.
+    mIsLocked           = 0;
+    mDataLogSize        = 0;
+    mNumberVariables    = 0;
+    mDataLogInfoPackets = 0;
 
     mSystemSession = systemSession;
 
@@ -82,16 +83,26 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 
 
 
-void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
+int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
+    if (mIsLocked)
+    {
+        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
+        PMM_DEBUG_PRINT(variableName)
+        PMM_DEBUG_PRINTLN("\". DataLog is already locked.")
+        return 1;
+    }
+
     uint8_t varSize = variableTypeToVariableSize(variableType);
+
     if (mNumberVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName)
         PMM_DEBUG_PRINTLN("\". Exceeds the maximum number of variables in the DataLog.")
-        return;
+        return 2;
     }
+
     if ((mDataLogSize + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
@@ -101,18 +112,17 @@ void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_
         PMM_DEBUG_PRINT(", maximum is ");
         PMM_DEBUG_PRINT(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
         PMM_DEBUG_PRINTLN(".");
-        return;
+        return 3;
     }
 
     mVariableNameArray[mNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
     mVariableTypeArray[mNumberVariables] = variableType;
     mVariableSizeArray[mNumberVariables] = varSize;
     mVariableAdrsArray[mNumberVariables] = (uint8_t*) variableAddress;
-    mNumberVariables ++;
-    mDataLogSize += varSize;
-    updateLogInfoCombinedPayload();
-    updateLogInfoInTelemetryFormat();
+    mNumberVariables++;
+    mDataLogSize    += varSize;
 
+    return 0;
 }
 
 void PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)

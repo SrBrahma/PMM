@@ -14,9 +14,6 @@ PmmTelemetry::PmmTelemetry()
 int PmmTelemetry::init()
 {
     int initCounter = 0;
-    mPreviousPackageLogTransmissionMillis = mPackageLogDelayMillis = 0;
-
-    
 
     // Reset the priority queues
     mHighPriorityQueueStruct.actualIndex = 0;
@@ -90,7 +87,7 @@ int PmmTelemetry::updateTransmission()
 
 
     // 4) Send it!
-    mRf95.send(queueStructPtr->uint8_tPtrArray[queueStructPtr->actualIndex], queueStructPtr->lengthInBytesArray[queueStructPtr->actualIndex]);
+    mRf95.send(queueStructPtr->payloadArray[queueStructPtr->actualIndex], queueStructPtr->lengthArray[queueStructPtr->actualIndex]);
 
 
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
@@ -176,8 +173,8 @@ int PmmTelemetry::addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, toB
     if (newItemIndex == -1)
         return 1;   // If no available space on the queue, return 1.
 
-    pmmTelemetryQueueStructPtr->uint8_tPtrArray[newItemIndex] = dataArray;
-    pmmTelemetryQueueStructPtr->lengthInBytesArray[newItemIndex] = totalByteSize;
+    pmmTelemetryQueueStructPtr->payloadArray[newItemIndex] = dataArray;
+    pmmTelemetryQueueStructPtr->lengthArray[newItemIndex] = totalByteSize;
     pmmTelemetryQueueStructPtr->protocolsContentStructArray[newItemIndex] = protocolsContentStruct;
 
     return 0;
@@ -187,24 +184,3 @@ receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr(
 {
     return mReceivedPacketAllInfoStructPtr;
 }
-
-// NOT USED ANYMORE. Will be removed someday. Returns 0 if added to the queue successfully, 1 ifn't.
-/*
-int PmmTelemetry::addSendSmartSizesToQueue(uint8_t* dataArrayOfPointers[], uint8_t sizesArray[], uint8_t numberVariables, uint8_t totalByteSize, toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority)
-{
-    pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]";
-
-    int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
-
-    if (newItemIndex == -1)
-        return 1;   // If no available space on the queue, return 1.
-
-    pmmTelemetryQueueStructPtr->sendTypeArray               [newItemIndex] = PMM_TELEMETRY_SEND_SMART_SIZES;
-    pmmTelemetryQueueStructPtr->uint8_tPtrToPtrArray        [newItemIndex] = dataArrayOfPointers;
-    pmmTelemetryQueueStructPtr->uint8_tPtrArray             [newItemIndex] = sizesArray;
-    pmmTelemetryQueueStructPtr->numberVariablesArray        [newItemIndex] = numberVariables;
-    pmmTelemetryQueueStructPtr->lengthInBytesArray          [newItemIndex] = totalByteSize;
-    pmmTelemetryQueueStructPtr->protocolsContentStructArray [newItemIndex] = protocolsContentStruct;
-
-    return 0;
-}*/

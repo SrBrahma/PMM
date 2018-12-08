@@ -172,7 +172,7 @@ private:
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
 
-    uint8_t  mLogNumberOfVariables;
+    uint8_t  mNumberVariables;
     uint8_t  mDataLogSize;
 
 

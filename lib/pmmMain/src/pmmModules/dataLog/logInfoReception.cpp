@@ -11,25 +11,23 @@
 // Received Package Log Info Package
 int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
-
-    uint16_t tempPackageCrc;
-    unsigned packetId;
+    unsigned packetX       = packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
+    unsigned numberPackets = packetInfo->payload[PORT_LOG_INFO_INDEX_OF_Y_PACKETS];
 
 // 1) If the packet size is smaller than the packet header length, it's invalid
-    if (packetInfo->payloadLength < PMM_PORT_LOG_INFO_HEADER_LENGTH)
+    if (packetInfo->payloadLength < PORT_LOG_INFO_HEADER_LENGTH)
         return 1;
 
-
 // 2) Test the CRC, to see if the packet is valid.
-    if (((packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_MSB] << 8) | (packetInfo->payload[PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB]))
-                                  != crc16(packetInfo->payload + PMM_PORT_LOG_INFO_INDEX_CRC_PACKET_LSB + 2, packetInfo->payloadLength - 2))
+    if (((packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_MSB] << 8) | (packetInfo->payload[PORT_LOG_INFO_INDEX_CRC_LSB]))
+                                  != crc16(packetInfo->payload + PORT_LOG_INFO_INDEX_CRC_LSB + 2, packetInfo->payloadLength - 2))
         return 2;
 
-    packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
-
 // 3) Save the received packet on the memory
-    mPmmSd->write
+    //mPmmSd->write
     unitePackageInfoPackets(); // Packets of the world, unite!
+
+    return 0;
 }
 
 
@@ -47,7 +45,7 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 // 1) Copies all the packets into the big raw array
     for (packetCounter = 0; packetCounter < mDataLogInfoPackets; packetCounter ++)
     {
-        payloadLength = mDataLogInfoTelemetryArrayLengths[packetCounter] - PORT_LOG_INFO_HEADER_LENGTH;
+        //payloadLength = 
         // Copies the telemetry array to the raw array. Skips the headers in the telemetry packet.
         memcpy(mDataLogInfoTelemetryRawArray + mLogInfoRawPayloadArrayLength,
                mDataLogInfoTelemetryArray[packetCounter] + PORT_LOG_INFO_HEADER_LENGTH,
@@ -62,10 +60,10 @@ void PmmModuleDataLog::unitePackageInfoPackets()
 // 2) Now extracts all the info from the raw array.
 
     // 2.1) First get the number of variables
-    mLogNumberOfVariables = mDataLogInfoTelemetryRawArray[0];
+    mNumberVariables = mDataLogInfoTelemetryRawArray[0];
     
     // 2.2) Get the variable types and sizes
-    for (variableCounter = 0; variableCounter < mLogNumberVariables; variableCounter++)
+    for (variableCounter = 0; variableCounter < mNumberVariables; variableCounter++)
     {
         if (variableCounter % 2) // If is odd (if rest is 1)
         {

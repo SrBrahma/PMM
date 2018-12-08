@@ -37,7 +37,7 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mPmmSd        = pmmSd;
     
     mDataLogSize          = 0;
-    mLogNumberOfVariables = 0;
+    mNumberVariables = 0;
     mDataLogInfoPackets   = 0; // For receptor.
 
     mSystemSession = systemSession;
@@ -85,34 +85,34 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 void PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     uint8_t varSize = variableTypeToVariableSize(variableType);
-    if (mLogNumberOfVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
+    if (mNumberVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName)
         PMM_DEBUG_PRINTLN("\". Exceeds the maximum number of variables in the DataLog.")
         return;
     }
-    if ((mLogSize + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
+    if ((mDataLogSize + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName);
         PMM_DEBUG_PRINT("\". Exceeds the maximum payload length (tried to be ");
-        PMM_DEBUG_PRINT(mLogSize + varSize);
+        PMM_DEBUG_PRINT(mDataLogSize + varSize);
         PMM_DEBUG_PRINT(", maximum is ");
         PMM_DEBUG_PRINT(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
         PMM_DEBUG_PRINTLN(".");
         return;
     }
 
-    mVariableNameArray[mLogNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
-    mVariableTypeArray[mLogNumberVariables] = variableType;
-    mVariableSizeArray[mLogNumberVariables] = varSize;
-    mVariableAddressArray[mLogNumberVariables] = (uint8_t*) variableAddress;
-    mLogNumberVariables ++;
-    mLogSize += varSize;
-
+    mVariableNameArray[mNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
+    mVariableTypeArray[mNumberVariables] = variableType;
+    mVariableSizeArray[mNumberVariables] = varSize;
+    mVariableAdrsArray[mNumberVariables] = (uint8_t*) variableAddress;
+    mNumberVariables ++;
+    mDataLogSize += varSize;
     updateLogInfoCombinedPayload();
     updateLogInfoInTelemetryFormat();
+
 }
 
 void PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
@@ -242,14 +242,7 @@ void PmmModuleDataLog::addCustomVariable(const char* variableName, uint8_t varia
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 uint8_t PmmModuleDataLog::getNumberOfVariables()
 {
-    return mLogNumberVariables;
-}
-
-
-
-uint8_t PmmModuleDataLog::getLogSize()
-{
-    return mDataLogSize;
+    return mNumberVariables;
 }
 
 
@@ -273,10 +266,10 @@ void PmmModuleDataLog::debugPrintLogHeader()
     char buffer[512] = {0}; // No static needed, as it is called usually only once.
 
     // For adding the first variable header to the print
-    if (mLogNumberVariables > 0)
+    if (mNumberVariables > 0)
         snprintf(buffer, 512, "%s", mVariableNameArray[0]);
 
-    for (variableIndex = 1; variableIndex < mLogNumberVariables; variableIndex ++)
+    for (variableIndex = 1; variableIndex < mNumberVariables; variableIndex ++)
     {
         snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
     }
@@ -288,7 +281,7 @@ void PmmModuleDataLog::debugPrintLogContent()
     unsigned variableIndex;
     static char buffer[512]; // Static for optimization
     buffer[0] = '\0'; // for the snprintf
-    for (variableIndex = 0; variableIndex < mLogNumberVariables; variableIndex ++)
+    for (variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
     {
         switch(mVariableTypeArray[variableIndex])
         {

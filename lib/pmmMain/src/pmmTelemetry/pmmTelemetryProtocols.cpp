@@ -7,60 +7,77 @@
 
 
 
-// It assumes the packet was already validated by the validateReceivedPacket() function, which is called in handleInterrupt() function (in case of our rfm95w).
-void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct)
+// Returns the Header Length according to the given protocol. Returns 0 if invalid protocol.
+uint8_t protocolHeaderLength(uint8_t protocol)
 {
-    // 1) Which protocol is this packet using?
-    switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    switch (protocol)
     {
         case PMM_NEO_PROTOCOL_ID:
-            receivedPacketAllInfoStruct->payload            = packet + PMM_NEO_PROTOCOL_HEADER_LENGTH;
-            receivedPacketAllInfoStruct->snr                = receivedPacketPhysicalLayerInfoStruct->snr;
-            receivedPacketAllInfoStruct->rssi               = receivedPacketPhysicalLayerInfoStruct->rssi;
-            receivedPacketAllInfoStruct->protocol           = PMM_NEO_PROTOCOL_ID;
-            receivedPacketAllInfoStruct->sourceAddress      = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
-            receivedPacketAllInfoStruct->destinationAddress = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
-            receivedPacketAllInfoStruct->port               = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
-            receivedPacketAllInfoStruct->payloadLength      = packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] - PMM_NEO_PROTOCOL_HEADER_LENGTH;
-
-            break;
+            return PMM_NEO_PROTOCOL_HEADER_LENGTH;
+        default:
+            return 0;
     }
 }
 
 // Adds the corresponding header depending on the protocol.
 // It assumes you already checked the total length of the packet to be sent.
-// It returns the length of the chosen protocol header. If 0 is returned, an error ocurred.
-uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructType* toBeSentTelemetryPacketInfoStruct)
+int addProtocolHeader(uint8_t destinationArray[], toBeSentPacketStructType* toBeSentTelemetryPacketStruct)
 {
     // 1) Test the given array
-    if (!packet || !toBeSentTelemetryPacketInfoStruct)    // If given array or struct is NULL, error!
+    if (!destinationArray || !toBeSentTelemetryPacketStruct)    // If given array or struct is NULL, error!
         return 1;
 
     // 2) Which protocol are we using?
-    switch (toBeSentTelemetryPacketInfoStruct->protocol)
+    switch (toBeSentTelemetryPacketStruct->protocol)
     {
-
         // NEO
         case PMM_NEO_PROTOCOL_ID:
             // NEO, 3) Write the Protocol ID.
-            packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL]  = PMM_NEO_PROTOCOL_ID;
+            destinationArray[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
-            packet[PMM_NEO_PROTOCOL_INDEX_SOURCE]  = toBeSentTelemetryPacketInfoStruct->sourceAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]          = toBeSentTelemetryPacketStruct->sourceAddress;
             // NEO, 5) Write the Destination Address
-            packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION]  = toBeSentTelemetryPacketInfoStruct->destinationAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]     = toBeSentTelemetryPacketStruct->destinationAddress;
             // NEO, 6) Write the Port
-            packet[PMM_NEO_PROTOCOL_INDEX_PORT]  = toBeSentTelemetryPacketInfoStruct->port;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]            = toBeSentTelemetryPacketStruct->port;
             // NEO, 7) Write the Payload Length.
-            packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]  = toBeSentTelemetryPacketInfoStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]   = toBeSentTelemetryPacketStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
             // NEO, 8) Write the CRC of this header
-            uint16_t crcVar = crc16(packet, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
-            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB] = LSB0(crcVar);
-            packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB] = LSB1(crcVar);
+            uint16_t crcVar = crc16(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]  = LSB0(crcVar);
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]  = LSB1(crcVar);
+            break;
 
-            return PMM_NEO_PROTOCOL_HEADER_LENGTH;
+        default:
+            return 2;   // Invalid given protocol
     }
+
     return 0;
 }
+
+int addProtocolPayload(uint8_t destinationArray[], toBeSentPacketStructType* toBeSentTelemetryPacketStruct)
+{
+    // 1) Test the given array
+    if (!destinationArray || !toBeSentTelemetryPacketStruct)    // If given array or struct is NULL, error!
+        return 1;
+
+    // 2) Which protocol are we using?
+    switch (toBeSentTelemetryPacketStruct->protocol)
+    {
+        // NEO
+        case PMM_NEO_PROTOCOL_ID:
+            memcpy(destinationArray + PMM_NEO_PROTOCOL_HEADER_LENGTH, toBeSentTelemetryPacketStruct->payload, toBeSentTelemetryPacketStruct->payloadLength);
+            break;
+
+        default:
+            return 2;   // Invalid given protocol
+    }
+
+    return 0;
+}
+
+// RECEPTION =======================================================================
+
 
 // This function checks the received telemetry packet:
 // 
@@ -127,4 +144,24 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
             return -2;   // Invalid Protocol.
     }
 
+}
+
+// It assumes the packet was already validated by the validateReceivedPacket() function, which is called in handleInterrupt() function (in case of our rfm95w).
+void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct)
+{
+    // 1) Which protocol is this packet using?
+    switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    {
+        case PMM_NEO_PROTOCOL_ID:
+            receivedPacketAllInfoStruct->payload            = packet + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            receivedPacketAllInfoStruct->snr                = receivedPacketPhysicalLayerInfoStruct->snr;
+            receivedPacketAllInfoStruct->rssi               = receivedPacketPhysicalLayerInfoStruct->rssi;
+            receivedPacketAllInfoStruct->protocol           = PMM_NEO_PROTOCOL_ID;
+            receivedPacketAllInfoStruct->sourceAddress      = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
+            receivedPacketAllInfoStruct->destinationAddress = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
+            receivedPacketAllInfoStruct->port               = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
+            receivedPacketAllInfoStruct->payloadLength      = packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] - PMM_NEO_PROTOCOL_HEADER_LENGTH;
+
+            break;
+    }
 }

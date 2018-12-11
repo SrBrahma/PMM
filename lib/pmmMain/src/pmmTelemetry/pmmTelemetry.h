@@ -5,14 +5,7 @@
 #ifndef PMM_TELEMETRY_h
 #define PMM_TELEMETRY_h
 
-
-
-// General defines
-
 #include <RH_RF95.h>                            // Our current RF module!
-
-  // For errors reporting and health status
-
 #include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
 
 
@@ -28,25 +21,14 @@
 class PmmTelemetry
 {
 
+public:
+
     typedef enum
     {
         PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
         PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
         PMM_TELEMETRY_QUEUE_PRIORITY_LOW
-    } pmmTelemetryQueuePrioritiesType;
-
-    typedef struct
-    {
-        toBeSentTelemetryPacketInfoStructType protocolsContentStructArray[PMM_TELEMETRY_QUEUE_LENGTH];
-        uint8_t*  payloadArray[PMM_TELEMETRY_QUEUE_LENGTH];
-        uint8_t   lengthArray [PMM_TELEMETRY_QUEUE_LENGTH];
-        uint8_t   actualIndex;
-        uint8_t   remainingItemsOnQueue; // How many items on this queue not sent yet.
-    } pmmTelemetryQueueStructType;
-
-
-
-public:
+    } telemetryQueuePrioritiesType;
 
     PmmTelemetry();
 
@@ -55,28 +37,39 @@ public:
     int updateReception();
     int updateTransmission();
 
-    int addSendToQueue(uint8_t dataArray[], uint8_t totalByteSize, toBeSentTelemetryPacketInfoStructType protocolsContentStruct, pmmTelemetryQueuePrioritiesType priority);
+    int addPacketToQueue(uint8_t dataArray[], toBeSentPacketStructType toBeSentPacketInfoStruct, telemetryQueuePrioritiesType priority);
 
     uint8_t* getReceivedPacketArray();
     
     receivedPacketAllInfoStructType* getReceivedPacketStatusStructPtr();
 
+
+
 private:
+
+    typedef struct
+    {
+        toBeSentPacketStructType toBeSentPacketInfoStruct[PMM_TELEMETRY_QUEUE_LENGTH];
+        unsigned*                feedback                [PMM_TELEMETRY_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
+        uint8_t                  actualIndex;
+        uint8_t                  remainingItemsOnQueue; // How many items on this queue not sent yet.
+    } telemetryQueueStructType;
+
 
     RH_RF95  mRf95;
 
     unsigned mTelemetryIsWorking;
 
-    receivedPacketAllInfoStructType*           mReceivedPacketAllInfoStructPtr;
-    receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
-
     uint8_t  mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
 
-    pmmTelemetryQueueStructType mHighPriorityQueueStruct;
-    pmmTelemetryQueueStructType mNormalPriorityQueueStruct;
-    pmmTelemetryQueueStructType mLowPriorityQueueStruct;
+    receivedPacketAllInfoStructType*           mReceivedPacketAllInfoStructPtr          ;
+    receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
 
-    int tryToAddToQueue(pmmTelemetryQueuePrioritiesType priority, pmmTelemetryQueueStructType *pmmTelemetryQueueStructPtr);
+    telemetryQueueStructType mHighPriorityQueueStruct  ;
+    telemetryQueueStructType mNormalPriorityQueueStruct;
+    telemetryQueueStructType mLowPriorityQueueStruct   ;
+
+    int tryToAddToQueue(telemetryQueuePrioritiesType priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
 };
 

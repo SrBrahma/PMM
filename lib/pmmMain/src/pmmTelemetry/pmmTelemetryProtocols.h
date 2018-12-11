@@ -1,13 +1,17 @@
 #ifndef PMM_TELEMETRY_PROTOCOLS_h
 #define PMM_TELEMETRY_PROTOCOLS_h
 
-#include <stdint.h>                     // For uintx_t types
-#include <pmmConsts.h>                  // For ADDRESS_THIS_SYSTEM define.
+#include <stdint.h>                     // For uintx_t types.
+#include "pmmConsts.h"                  // For ADDRESS_THIS_SYSTEM define.
+#include "pmmTelemetry.h"               // For MAX_LENGTH define.
+
+
+
 // Addresses
 
 // This is defined at pmmConsts.h for a more centralized control of the important defines, so the user won't have to access different files
 // for normal operation.
-#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM  PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H 
+#define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM   PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H 
 
 
     // Source only addresses
@@ -18,16 +22,16 @@
 
 
     // Can't be source or destination addresses. Note that it is between the two limits of the forbidden addresses!
-        #define PMM_TELEMETRY_ADDRESS_SELF         0xF8    // Have some specifics uses in the code.
+        #define PMM_TELEMETRY_ADDRESS_SELF                            0xF8    // Have some specifics uses in the code.
 
 
     // Destination only addresses
-        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE 0xF8
+        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE      0xF8
 
-        #define PMM_TELEMETRY_ADDRESS_FINAL_FORBIDDEN_SOURCE   0xFE    // Destination only.
-        #define PMM_TELEMETRY_ADDRESS_BROADCAST    0xFF    // Destination only. This is the address that indicates a broadcast
+        #define PMM_TELEMETRY_ADDRESS_FINAL_FORBIDDEN_SOURCE          0xFE    // Destination only.
+        #define PMM_TELEMETRY_ADDRESS_BROADCAST                       0xFF    // Destination only. This is the address that indicates a broadcast
 
-        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE   0xFF
+        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE        0xFF
     // End of Destination only addresses
     
 // End of addresses
@@ -56,7 +60,7 @@
     // The define below is defined on pmmTelemetry.h, as there was happening a circular dependency!
     // #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
 
-    #define PMM_NEO_PROTOCOL_ID                 1
+    #define PMM_NEO_PROTOCOL_ID                         1
 
 
 
@@ -84,9 +88,10 @@ typedef struct
     uint8_t protocol;
     uint8_t sourceAddress;
     uint8_t destinationAddress;
-    uint8_t payloadLength;
     uint8_t port;
-} toBeSentTelemetryPacketInfoStructType;
+    uint8_t payload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
+    uint8_t payloadLength;  // Note that it is the payload length, not the entire packet length!
+} toBeSentPacketStructType;
 
 
 
@@ -109,6 +114,9 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
 void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
 
 // ===== Transmissin functions =====
-uint8_t addProtocolHeader(uint8_t packet[], toBeSentTelemetryPacketInfoStructType* toBeSentTelemetryPacketInfoStruct);
+int addProtocolHeader(uint8_t packet[], toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
+int addProtocolPayload(uint8_t packet[], toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
+
+uint8_t protocolHeaderLength(uint8_t protocol);
 
 #endif

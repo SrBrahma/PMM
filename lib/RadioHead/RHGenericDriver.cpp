@@ -58,10 +58,7 @@ bool RHGenericDriver::waitAvailableTimeout(uint16_t timeout)
 // By Henrique Bruno, Minerva Rockets - UFRJ
 bool RHGenericDriver::isAnyPacketBeingSent()
 {
-    if (mMode == RH_MODE_IS_TRANSMITTING)
-        return true; // Yes! There is a packet being sent!
-
-    return false;    // No! No packet being sent!
+    return mMode == RH_MODE_IS_TRANSMITTING ? true : false;
 }
 
 

@@ -33,15 +33,15 @@ PmmModuleDataLog::PmmModuleDataLog()
 int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
 
-    mPmmTelemetry = pmmTelemetry;
-    mPmmSd        = pmmSd;
+    mPmmTelemetry       = pmmTelemetry;
+    mPmmSd              = pmmSd;
     
     mIsLocked           = 0;
     mDataLogSize        = 0;
     mNumberVariables    = 0;
     mDataLogInfoPackets = 0;
 
-    mSystemSession = systemSession;
+    mSystemSession      = systemSession;
 
     // These variables are always added to the package.
     addPackageBasicInfo(packageIdPtr, packageTimeMsPtr);

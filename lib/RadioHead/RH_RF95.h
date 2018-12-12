@@ -512,6 +512,12 @@ public:
 
 //  Transmission
 
+    // Won't automatically add any header on the packet! Know what you are doing! (The default lib adds a bad header, so I removed it.)
+    // This function, contrary to the normal send(), will not wait a previous packet to be sent, or wait until CAD is over. This one
+    // will check if is available to send, if not, will return an value.
+    // By Henrique Bruno, Minerva Rockets - UFRJ
+    int     sendIfAvailable(uint8_t packet[], uint8_t packetLength);
+
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then optionally waits for Channel Activity Detection (CAD)
     /// to show the channnel is clear (if the radio supports CAD) by calling waitCAD().

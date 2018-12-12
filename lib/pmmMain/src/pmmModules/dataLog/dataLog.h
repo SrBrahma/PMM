@@ -54,7 +54,6 @@
 
 
 
-
     #define PORT_LOG_INFO_INDEX_CRC_LSB                 0
     #define PORT_LOG_INFO_INDEX_CRC_MSB                 1
     #define PORT_LOG_INFO_INDEX_SESSION_ID              2
@@ -92,17 +91,18 @@ public:
 
     int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
-    // Transmission
-    void updateLogInfoCombinedPayload(); // Updates the DataLogInfo
+// Transmission
     int  sendDataLog();
+    int  sendDataLogInfo(uint8_t requestedPacket);
+    int  saveDataLog();
+    int  saveDataLogInfo();
 
-
-    // Reception
+// Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
     int  receivedLogInfo(receivedPacketAllInfoStructType* packetInfo);
 
 
-    // Add variables to the package log. Their types are specified in PmmModuleDataLog.cpp.
+// Add variables to the package log. Their types are specified in PmmModuleDataLog.cpp.
     void addMagnetometer     (void* magnetometerArray );
     void addGyroscope        (void* gyroscopeArray    );
     void addAccelerometer    (void* accelerometerArray);
@@ -138,23 +138,17 @@ public:
 
 private:
 
+// Auxiliar functions
     uint8_t variableTypeToVariableSize(uint8_t variableType);
 
-    // Add variables to the package log. The types are specified in PmmModuleDataLog.cpp.
+// Add variables to the Data Log. The types are specified in PmmModuleDataLog.cpp.
     void    addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
-
     int     includeVariableInPackage(const char*  variableName,   uint8_t variableType, void* variableAddress);
     void    includeArrayInPackage   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
 
-    // Build the Package Log Info Package
-    void    updatePackageLogInfoRaw();
+// Build the Package Log Info Package
+    void    updateLogInfoCombinedPayload(); // Updates the DataLogInfo
 
-    int     getDataLogInfoPacketToTransmit(uint8_t arrayToCopyTo[], uint8_t* packetLength);
-    int     getDataLogInfoPacketToTransmit(uint8_t requestedPacket, uint8_t arrayToCopyTo[], uint8_t* packetLength);
-
-// Reception Functions
-
-    // Uses the received packets via telemetry to get the Package Log Info
 
 
 
@@ -179,6 +173,7 @@ private:
     uint16_t mLogInfoRawPayloadArrayLength;
 
     uint8_t  mDataLogInfoPackets;
+    toBeSentPacketStructType mPacketStruct;
 
 }; // End of the class
 

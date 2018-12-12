@@ -9,26 +9,24 @@
 #include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
 
 
-#define PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH   255 // Max LoRa Packet Size!
 
-#define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH     (PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH)
-
-#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH // Since this is currently the only protocol.
 
 #define PMM_TELEMETRY_QUEUE_LENGTH              8
 
+
+
+
+typedef enum
+{
+    PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
+    PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
+    PMM_TELEMETRY_QUEUE_PRIORITY_LOW
+} telemetryQueuePrioritiesType;
 
 class PmmTelemetry
 {
 
 public:
-
-    typedef enum
-    {
-        PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
-        PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
-        PMM_TELEMETRY_QUEUE_PRIORITY_LOW
-    } telemetryQueuePrioritiesType;
 
     PmmTelemetry();
 
@@ -37,10 +35,13 @@ public:
     int updateReception();
     int updateTransmission();
 
-    int addPacketToQueue(uint8_t dataArray[], toBeSentPacketStructType toBeSentPacketInfoStruct, telemetryQueuePrioritiesType priority);
+    uint8_t availablePositionsInQueue(telemetryQueuePrioritiesType priority);
 
-    uint8_t* getReceivedPacketArray();
+    // As the telemetry will usually be slow, I did a queue system. To send a packet, you must use this.
+    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePrioritiesType priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
     
+    uint8_t getTotalPacketsRemainingOnQueue();
+
     receivedPacketAllInfoStructType* getReceivedPacketStatusStructPtr();
 
 
@@ -49,10 +50,11 @@ private:
 
     typedef struct
     {
-        toBeSentPacketStructType toBeSentPacketInfoStruct[PMM_TELEMETRY_QUEUE_LENGTH];
-        unsigned*                feedback                [PMM_TELEMETRY_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
-        uint8_t                  actualIndex;
-        uint8_t                  remainingItemsOnQueue; // How many items on this queue not sent yet.
+        uint8_t   packet      [PMM_TELEMETRY_QUEUE_LENGTH][PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];  // The packet data, ready to be sent.
+        uint8_t   packetLength[PMM_TELEMETRY_QUEUE_LENGTH];
+        unsigned* feedback    [PMM_TELEMETRY_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
+        uint8_t   actualIndex;
+        uint8_t   remainingPacketsOnQueue; // How many items on this queue not sent yet.
     } telemetryQueueStructType;
 
 

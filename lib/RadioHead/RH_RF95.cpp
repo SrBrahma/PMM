@@ -120,38 +120,61 @@ bool RH_RF95::init()
     return true;
 }
 
-// Won't automatically add any header on the packet! Know what you are doing!
+// Won't automatically add any header on the packet! Know what you are doing! (The default lib adds a bad header, so I removed it.)
+// This function, contrary to the normal send(), will not wait a previous packet to be sent, or wait until CAD is over. This one
+// will check if is available to send, if not, will return an value.
+// By Henrique Bruno, Minerva Rockets - UFRJ
+int RH_RF95::sendIfAvailable(uint8_t packet[], uint8_t packetLength)
+{
+// 1) Test the pointer
+    if (!packet)
+        return 1;
+// 2) Check if the length is valid
+    if (packetLength > RH_RF95_MAX_PACKET_LENGTH || !packetLength) // If invalid length
+        return 2;
+
+// 3) Can we send the packet now?
+    if (isAnyPacketBeingSent())
+        return 3;
+    if (isChannelActive())
+        return 4;  // Check channel activity
+// 4) Start sending the data to LoRa!
+    // 4.1) Position at the beginning of the FIFO
+    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
+    // 4.2) The message data
+    spiBurstWrite(RH_RF95_REG_00_FIFO, packet, packetLength);
+    // 4.3) Set the LoRa payload length register to the total amount of data we are sending
+    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength);
+// 5) Send!
+    setModeTransmission(); // Start the transmitter
+    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
+    return true;
+}
+
+// Won't automatically add any header on the packet! Know what you are doing! (The default lib adds a bad header, so I removed it.)
 bool RH_RF95::send(uint8_t packet[], uint8_t packetLength)
 {
     // 1) Test the pointer
     if (!packet)
         return false;
-
     // 2) Check if the length is valid
     if (packetLength > RH_RF95_MAX_PACKET_LENGTH || !packetLength) // If invalid length
         return false;
-
     // 3) Can we send the packet now?
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
     setModeIdle();
-
     if (!waitCAD())
         return false;  // Check channel activity
 
-    // 4) Start sending the data to LoRa!
-
+// 4) Start sending the data to LoRa!
     // 4.1) Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-
     // 4.2) The message data
     spiBurstWrite(RH_RF95_REG_00_FIFO, packet, packetLength);
-
     // 4.3) Set the LoRa payload length register to the total amount of data we are sending
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, packetLength);
-
     // 5) Send!
     setModeTransmission(); // Start the transmitter
-
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return true;
 }

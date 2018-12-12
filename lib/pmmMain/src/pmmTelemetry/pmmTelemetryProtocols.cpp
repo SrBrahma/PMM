@@ -32,6 +32,7 @@ int addProtocolHeader(uint8_t destinationArray[], toBeSentPacketStructType* toBe
     {
         // NEO
         case PMM_NEO_PROTOCOL_ID:
+        {
             // NEO, 3) Write the Protocol ID.
             destinationArray[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
@@ -47,6 +48,7 @@ int addProtocolHeader(uint8_t destinationArray[], toBeSentPacketStructType* toBe
             destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]  = LSB0(crcVar);
             destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]  = LSB1(crcVar);
             break;
+        }
 
         default:
             return 2;   // Invalid given protocol

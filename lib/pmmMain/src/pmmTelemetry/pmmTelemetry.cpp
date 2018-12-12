@@ -19,11 +19,11 @@ int PmmTelemetry::init()
 
     // Reset the priority queues
     mHighPriorityQueueStruct.actualIndex = 0;
-    mHighPriorityQueueStruct.remainingItemsOnQueue = 0;
+    mHighPriorityQueueStruct.remainingPacketsOnQueue = 0;
     mNormalPriorityQueueStruct.actualIndex = 0;
-    mNormalPriorityQueueStruct.remainingItemsOnQueue = 0;
+    mNormalPriorityQueueStruct.remainingPacketsOnQueue = 0;
     mLowPriorityQueueStruct.actualIndex = 0;
-    mLowPriorityQueueStruct.remainingItemsOnQueue = 0;
+    mLowPriorityQueueStruct.remainingPacketsOnQueue = 0;
 
     pinMode(PMM_PIN_RFM95_RST, OUTPUT);     // (does this make the pin floating?)
     delay(15);                              // Reset pin should be left floating for >10ms, according to "7.2.1. POR" in SX1272 manual.
@@ -74,18 +74,19 @@ int PmmTelemetry::updateTransmission()
 
 
     // 3) Check the queues, following the priorities. What should the PMM send now?
-    if (mHighPriorityQueueStruct.remainingItemsOnQueue)
+    if (mHighPriorityQueueStruct.remainingPacketsOnQueue)
         queueStructPtr = &mHighPriorityQueueStruct;
-    else if (mNormalPriorityQueueStruct.remainingItemsOnQueue)
+    else if (mNormalPriorityQueueStruct.remainingPacketsOnQueue)
         queueStructPtr = &mNormalPriorityQueueStruct;
-    else if (mLowPriorityQueueStruct.remainingItemsOnQueue)
+    else if (mLowPriorityQueueStruct.remainingPacketsOnQueue)
         queueStructPtr = &mLowPriorityQueueStruct;
     else
         return 0; // Nothing to send!
 
 
     // 4) Send it!
-    mRf95.send(queueStructPtr->payloadArray[queueStructPtr->actualIndex], queueStructPtr->lengthArray[queueStructPtr->actualIndex]);
+    if (mRf95.sendIfAvailable(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]))
+        return 3;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
 
 
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
@@ -93,7 +94,7 @@ int PmmTelemetry::updateTransmission()
     if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
         queueStructPtr->actualIndex = 0;                            // (the > in >= is just to fix eventual mystical bugs.)
 
-    queueStructPtr->remainingItemsOnQueue--;
+    queueStructPtr->remainingPacketsOnQueue--;
 
     // 6) Done! Sent successfully!
     return 0;
@@ -115,9 +116,47 @@ int PmmTelemetry::updateReception()
 
 
 
-/* Returns the index of the new allocated item of the queue (0 ~ the maximum index of the new item in the queue). Returns -1 if not successful (queue may be full!).
- * Also, returns by reference the struct.
- * It does increase the pmmTelemetryQueueStruct.remainingItemsOnQueue at the end */
+uint8_t PmmTelemetry::availablePositionsInQueue(telemetryQueuePrioritiesType priority)
+{
+    switch (priority)
+    {
+        case PMM_TELEMETRY_QUEUE_PRIORITY_HIGH:
+            return PMM_TELEMETRY_QUEUE_LENGTH - mHighPriorityQueueStruct.remainingPacketsOnQueue;
+
+        case PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL:
+            return PMM_TELEMETRY_QUEUE_LENGTH - mNormalPriorityQueueStruct.remainingPacketsOnQueue;
+
+        case PMM_TELEMETRY_QUEUE_PRIORITY_LOW:
+            return PMM_TELEMETRY_QUEUE_LENGTH - mLowPriorityQueueStruct.remainingPacketsOnQueue;
+
+        default:    // If for some mystic reason it goes wrong...
+            return 0;
+    } // End of switch
+}
+
+
+
+// Returns 0 if added to the queue successfully, 1 ifn't.
+int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePrioritiesType priority)
+{
+    telemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]"
+    int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
+
+    if (newItemIndex < 0)
+        return 1;   // If no available space on the queue, return 1.
+
+    addProtocolHeader (pmmTelemetryQueueStructPtr->packet[newItemIndex], packetStruct);
+    addProtocolPayload(pmmTelemetryQueueStructPtr->packet[newItemIndex], packetStruct);
+
+    return 0;
+}
+
+
+
+// Returns the index of the new allocated item of the queue (0 ~ the maximum index of the new item in the queue). Returns a negative number if
+// not successful. 
+// Also, returns by reference the struct.
+// It does increase the pmmTelemetryQueueStruct.remainingPacketsOnQueue at the end
 int PmmTelemetry::tryToAddToQueue(telemetryQueuePrioritiesType priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr)
 {
     int newItemIndex;
@@ -141,38 +180,29 @@ int PmmTelemetry::tryToAddToQueue(telemetryQueuePrioritiesType priority, telemet
     } // End of switch
 
     // If there is no room to allocate a new item on the queue
-    if (pmmTelemetryQueueStructPtr->remainingItemsOnQueue >= PMM_TELEMETRY_QUEUE_LENGTH)
+    if (pmmTelemetryQueueStructPtr->remainingPacketsOnQueue >= PMM_TELEMETRY_QUEUE_LENGTH)
         return -1;
 
-    newItemIndex = (pmmTelemetryQueueStructPtr->actualIndex) + (pmmTelemetryQueueStructPtr->remainingItemsOnQueue);
+    newItemIndex = (pmmTelemetryQueueStructPtr->actualIndex) + (pmmTelemetryQueueStructPtr->remainingPacketsOnQueue);
 
     // If the newItemIndex is a number beyond the maximum length, turns it into a valid index. Hey, in my drawings it make sense.
     if (newItemIndex >= PMM_TELEMETRY_QUEUE_LENGTH)
         newItemIndex = PMM_TELEMETRY_QUEUE_LENGTH - PMM_TELEMETRY_QUEUE_LENGTH;
 
     // Now there is a new item on the queue! (Just add the remaining arguments on the function that called this one!)
-    pmmTelemetryQueueStructPtr->remainingItemsOnQueue++;
+    pmmTelemetryQueueStructPtr->remainingPacketsOnQueue++;
 
     return newItemIndex; // Returns the index of the new item on the queue!
 }
 
 
 
-/* Returns 0 if added to the queue successfully, 1 ifn't. */
-int PmmTelemetry::addPacketToQueue(uint8_t dataArray[], toBeSentPacketStructType protocolsContentStruct, telemetryQueuePrioritiesType priority)
-{
-    telemetryQueueStructType *pmmTelemetryQueueStructPtr = NULL; // = NULL to stop "warning: 'pmmTelemetryQueueStructPtr' is used uninitialized in this function [-Wuninitialized]"
-    int newItemIndex = tryToAddToQueue(priority, pmmTelemetryQueueStructPtr);
-
-    if (newItemIndex == -1)
-        return 1;   // If no available space on the queue, return 1.
-
-    pmmTelemetryQueueStructPtr->toBeSentPacketInfoStruct[newItemIndex] = protocolsContentStruct;
-
-    return 0;
-}
-
 receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
 {
     return mReceivedPacketAllInfoStructPtr;
+}
+
+uint8_t PmmTelemetry::getTotalPacketsRemainingOnQueue()
+{
+    return mHighPriorityQueueStruct.remainingPacketsOnQueue + mNormalPriorityQueueStruct.remainingPacketsOnQueue + mLowPriorityQueueStruct.remainingPacketsOnQueue;
 }

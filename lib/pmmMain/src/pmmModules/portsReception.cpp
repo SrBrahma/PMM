@@ -26,16 +26,16 @@ void PmmPortsReception::receivedPacket(receivedPacketAllInfoStructType* packetIn
     // 1) Which kind of packet is it?
     switch(packetInfo->protocol)
     {
-        case PMM_PORT_DATA_LOG:
+        case PORT_DATA_LOG_ID:
             mPmmModuleDataLog->receivedDataLog(packetInfo);
             return;
-        case PMM_PORT_LOG_INFO:
+        case PMM_PORT_LOG_INFO_ID:
             mPmmModuleDataLog->receivedLogInfo(packetInfo);
             return;
-        case PMM_PORT_MESSAGE_LOG:
+        case PMM_PORT_MESSAGE_LOG_ID:
             mPmmModuleMessageLog->receivedPackageString(packetInfo);
             return;
-        case PMM_PORT_REQUEST:
+        case PMM_PORT_REQUEST_ID:
             return;
     }
 }

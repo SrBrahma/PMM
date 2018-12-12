@@ -1,16 +1,21 @@
 #ifndef PMM_TELEMETRY_PROTOCOLS_h
 #define PMM_TELEMETRY_PROTOCOLS_h
 
-#include <stdint.h>                     // For uintx_t types.
-#include "pmmConsts.h"                  // For ADDRESS_THIS_SYSTEM define.
-#include "pmmTelemetry.h"               // For MAX_LENGTH define.
+#include <stdint.h>             // For uintx_t types.
+#include "pmmConsts.h"          // For ADDRESS_THIS_SYSTEM define.
 
 
+#define PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH   255 // Max LoRa Packet Size!
+
+#define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH     (PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH)
+
+#define PMM_TELEMETRY_MAX_PAYLOAD_LENGTH        PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH // Since this is currently the only protocol.
 
 // Addresses
 
 // This is defined at pmmConsts.h for a more centralized control of the important defines, so the user won't have to access different files
 // for normal operation.
+
 #define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM   PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H 
 
 
@@ -89,12 +94,9 @@ typedef struct
     uint8_t sourceAddress;
     uint8_t destinationAddress;
     uint8_t port;
-    uint8_t payload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];
     uint8_t payloadLength;  // Note that it is the payload length, not the entire packet length!
+    uint8_t payload[PMM_TELEMETRY_MAX_PAYLOAD_LENGTH];        // The pointer to the payload you are sending.
 } toBeSentPacketStructType;
-
-
-
 
 // ===== Reception functions =====
 // This function checks the received telemetry packet:

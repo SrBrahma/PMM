@@ -49,11 +49,11 @@ public:
     typedef enum
     {
         RH_MODE_IS_INITIALIZING = 0, ///< Transport is initialising. Initial default value until init() is called..
-        RH_MODE_IS_SLEEPING,            ///< Transport hardware is in low power sleep mode (if supported)
+        RH_MODE_IS_SLEEPING,         ///< Transport hardware is in low power sleep mode (if supported)
         RH_MODE_IS_IDLE,             ///< Transport is idle.
-        RH_MODE_IS_TRANSMITTING,               ///< Transport is in the process of transmitting a message.
-        RH_MODE_IS_RECEIVING,               ///< Transport is in the process of receiving a message.
-        RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD               ///< Transport is in the process of detecting channel activity (if supported)
+        RH_MODE_IS_TRANSMITTING,     ///< Transport is in the process of transmitting a message.
+        RH_MODE_IS_RECEIVING,        ///< Transport is in the process of receiving a message.
+        RH_MODE_IS_DETECTING_CHANNEL_ACTIVITY_CAD  ///< Transport is in the process of detecting channel activity (if supported)
     } RHMode;
 
     /// Constructor

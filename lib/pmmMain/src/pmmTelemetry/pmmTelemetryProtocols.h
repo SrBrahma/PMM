@@ -19,24 +19,26 @@
 #define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM   PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H 
 
 
+    #define PMM_TELEMETRY_ADDRESSES_INITIAL_ALLOWED_SOURCE        0x00
+    #define PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE          0xF7
+
     // Source only addresses
-        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION 0xF0
-            // #define No source only reserved addresses for now!
-        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION   0xF8
+    #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION 0xF0
+        // #define No source only reserved addresses for now!
+    #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION   0xF8
     // End of Soure only addresses
+    
 
-
-    // Can't be source or destination addresses. Note that it is between the two limits of the forbidden addresses!
-        #define PMM_TELEMETRY_ADDRESS_SELF                            0xF8    // Have some specifics uses in the code.
+    // Can't be source or destination addresses. Note that it is INSIDE the two limits of the forbidden addresses!
+    #define PMM_TELEMETRY_ADDRESS_SELF                            0xF8    // Have some specifics uses in the code.
 
 
     // Destination only addresses
-        #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE      0xF8
+    #define PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE      0xF8
 
-        #define PMM_TELEMETRY_ADDRESS_FINAL_FORBIDDEN_SOURCE          0xFE    // Destination only.
-        #define PMM_TELEMETRY_ADDRESS_BROADCAST                       0xFF    // Destination only. This is the address that indicates a broadcast
+        #define PMM_TELEMETRY_ADDRESS_BROADCAST                   0xFF    // Destination only. This is the address that indicates a broadcast
 
-        #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE        0xFF
+    #define PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE        0xFF
     // End of Destination only addresses
     
 // End of addresses

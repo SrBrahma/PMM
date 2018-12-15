@@ -35,9 +35,9 @@
 
 // DataLog AND DataLogInfo Defines (Which I will call as DATA_LOG)
 
-    #define MODULE_DATA_LOG_MAX_VARIABLES              50  // This must be the same value for the transmitter and the receptor.
+    #define MODULE_DATA_LOG_MAX_VARIABLES               50  // This must be the same value for the transmitter and the receptor.
     
-    #define MODULE_DATA_LOG_MAX_STRING_LENGTH          30  // The maximum Variable String. Includes the '\0'.
+    #define MODULE_DATA_LOG_MAX_STRING_LENGTH           30  // The maximum Variable String. Includes the '\0'.
 
 
 // DataLog Defines
@@ -57,8 +57,8 @@
     #define PORT_LOG_INFO_INDEX_CRC_LSB                 0
     #define PORT_LOG_INFO_INDEX_CRC_MSB                 1
     #define PORT_LOG_INFO_INDEX_SESSION_ID              2
-    #define PORT_LOG_INFO_INDEX_PACKET_X                3
-    #define PORT_LOG_INFO_INDEX_OF_Y_PACKETS            4
+    #define PORT_LOG_INFO_INDEX_CURRENT_PACKET          3
+    #define PORT_LOG_INFO_INDEX_TOTAL_PACKETS           4
     #define PORT_LOG_INFO_INDEX_LOG_INFO_ID             5
     
     // Total header length is equal to...
@@ -91,11 +91,11 @@ public:
 
     int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
 
+
 // Transmission
     int  sendDataLog();
-    int  sendDataLogInfo(uint8_t requestedPacket);
-    int  saveDataLog();
-    int  saveDataLogInfo();
+    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST);
+
 
 // Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
@@ -119,9 +119,7 @@ public:
 
 
     // Getters
-    uint8_t getNumberOfVariables     ();
-    uint8_t getPackageLogSizeInBytes ();
-
+    uint8_t      getNumberOfVariables();
     const char** getVariableNameArray();
     uint8_t*     getVariableTypeArray();
     uint8_t*     getVariableSizeArray();
@@ -149,24 +147,33 @@ private:
 // Build the Package Log Info Package
     void    updateLogInfoCombinedPayload(); // Updates the DataLogInfo
 
+// Storage
+    int  saveDataLog(uint8_t groupData[], char dirRelativePath[], pmmSdAllocStatusStructType* statusStruct);
+    int  saveOwnDataLog();
+    int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t sourceAddress, uint8_t sourceSession);
 
-
+    int  saveDataLogInfo(char dirRelativePath[], uint16_t partsMaxLength, uint8_t currentPart, uint8_t totalParts);
+    int  saveOwnDataLogInfo();
+    int  saveReceivedDataLogInfo(uint8_t data[], uint8_t dataLength, uint8_t currentPart, uint8_t totalParts, uint8_t sourceAddress, uint8_t sourceSession);
 
     PmmTelemetry* mPmmTelemetry;
     PmmSd       * mPmmSd;
+    PmmSdSafeLog* mPmmSdSafeLog;
 
 // Self
     unsigned mIsLocked;
     uint8_t  mSystemSession;
     uint8_t  mDataLogInfoId;
 
+    uint8_t  mDataLogSize;
+
+    uint8_t  mNumberVariables;
     char   * mVariableNameArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableTypeArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableSizeArray[MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
-    uint8_t  mNumberVariables;
-    uint8_t  mDataLogSize;
+
 
 // Transmission
     uint8_t  mDataLogInfoTelemetryRawArray[PORT_LOG_INFO_COMBINED_PAYLOAD_MAX_LENGTH];
@@ -175,6 +182,14 @@ private:
     uint8_t  mDataLogInfoPackets;
     toBeSentPacketStructType mPacketStruct;
 
+// Storage
+    // For storing own DataLog.
+    pmmSdAllocStatusStructType mAllocStatusOwnDataLog;
+
+    // For storing received DataLog.
+    // static = https://www.tutorialspoint.com/cplusplus/cpp_static_members.htm
+    static pmmSdAllocStatusStructType mAllocStatusReceivedDataLog[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE]; 
+    
 }; // End of the class
 
 #endif

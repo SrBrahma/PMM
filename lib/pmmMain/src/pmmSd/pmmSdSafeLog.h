@@ -2,6 +2,9 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
+#ifndef PMM_SD_SAFE_LOG_h
+#define PMM_SD_SAFE_LOG_h
+
 #include <stdint.h>
 #include <SdFat.h>
 
@@ -10,7 +13,7 @@
 
 #define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
-// typedef pmmSdAllocationStatusStructType pmmSdAllocationStatusStructType;
+// typedef pmmSdAllocStatusStructType pmmSdAllocStatusStructType;
 
 // System made to work with data of persistent length. Later I will explain it more.
 // This need a deconstructor!
@@ -22,9 +25,9 @@ class PmmSdSafeLog : public PmmSdAllocation
 
 public:
 
-    PmmSdSafeLog(PmmSd* pmmSd, unsigned defaultPartSize = PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB);
+    PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard);
 
-    int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
+    int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocStatusStructType* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
 
     const char* getFilenameExtension();
 
@@ -33,7 +36,6 @@ public:
 
 private:
 
-    PmmSd*     mPmmSd;
     SdFatSdio* mSdFat;
     SdioCard*  mSdioCard;
 
@@ -43,3 +45,5 @@ private:
 
 
 };
+
+#endif

@@ -81,9 +81,9 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket)
     // 1.2) Add the Session Identifier
     mPacketStruct.payload[PORT_LOG_INFO_INDEX_SESSION_ID]   = mSystemSession;
     // 1.3) Add the Packet X
-    mPacketStruct.payload[PORT_LOG_INFO_INDEX_PACKET_X]     = requestedPacket;
+    mPacketStruct.payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET]     = requestedPacket;
     // 1.4) Add the Of Y Packets
-    mPacketStruct.payload[PORT_LOG_INFO_INDEX_OF_Y_PACKETS] = mDataLogInfoPackets;
+    mPacketStruct.payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS] = mDataLogInfoPackets;
     // 1.5) Add the DataLogInfo Identifier
 
 // 2) Adds the DataLogInfo Payload, which was built on updateLogInfoCombinedPayload().

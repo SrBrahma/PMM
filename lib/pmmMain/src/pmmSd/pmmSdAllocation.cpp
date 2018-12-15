@@ -3,18 +3,19 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <string.h>                 // For snprintf
+#include "pmmConsts.h"              // For Debug prints
+#include "pmmSd/pmmSdConsts.h"
 #include "pmmSd/pmmSdAllocation.h"
 
 
-PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat, uint16_t defaultKiBAllocationPerPart)
+PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
 {
     mSdFat = sdFat;
     mSdioCard = sdFat->card();
-    mDefaultKiBAllocationPerPart = defaultKiBAllocationPerPart;
 }
 
 
-void PmmSdAllocation::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
+void PmmSdAllocation::initSafeLogStatusStruct(pmmSdAllocStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
 {
     statusStruct->currentBlock           = 0;
     statusStruct->freeBlocksAfterCurrent = 0;
@@ -24,10 +25,10 @@ void PmmSdAllocation::initSafeLogStatusStruct(pmmSdAllocationStatusStructType* s
     statusStruct->currentPositionInBlock = 0;
 
     if (KiBPerPart == 0)
-        statusStruct->KiBPerPart      = mDefaultKiBAllocationPerPart;
+        statusStruct->KiBPerPart         = PMM_SD_ALLOCATION_PART_DEFAULT_KIB;
 
     else
-        statusStruct->KiBPerPart      = KiBPerPart;
+        statusStruct->KiBPerPart         = KiBPerPart;
 }
 
 
@@ -71,7 +72,7 @@ int PmmSdAllocation::getFileRange(char filePath[], uint32_t *beginBlock, uint32_
 }
 
 
-int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct)
 {
     // 1) Do we need a new part? No!
     if (statusStruct->freeBlocksAfterCurrent)
@@ -88,8 +89,8 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const
 
 
 
-// Handles our pmmSdAllocationStatusStructType struct automatically.
-int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct)
+// Handles our pmmSdAllocStatusStructType struct automatically.
+int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct)
 {
     uint32_t endBlock;
     int returnValue;
@@ -135,7 +136,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
     {
 
         if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_MAX_KIB)
-            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at pmmSdAllocationStatusStructType.
+            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at pmmSdAllocStatusStructType.
 
         // 2) Allocate the new file!
         if (!mFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
@@ -159,8 +160,6 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
             return 3;
             // error("erase failed");
         }
-
-        PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] File allocation succeeded.");
 
     }
     

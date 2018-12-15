@@ -11,6 +11,7 @@
 
 
 PmmSd::PmmSd()
+    : mSafeLog(getSdFatPtr(), getCardPtr())
 {
 }
 
@@ -216,14 +217,17 @@ void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t s
 
 
 
-SdioCard* PmmSd::getCardPtr()
+SdioCard*     PmmSd::getCardPtr()
 {
     return mSdFat.card();
 }
-
-SdFatSdio* PmmSd::getSdFatPtr()
+SdFatSdio*    PmmSd::getSdFatPtr()
 {
     return &mSdFat;
+}
+PmmSdSafeLog* PmmSd::getSafeLog()
+{
+    return &mSafeLog;
 }
 
 bool PmmSd::getSdIsBusy()

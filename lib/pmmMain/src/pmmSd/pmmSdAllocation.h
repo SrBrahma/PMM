@@ -3,10 +3,11 @@
 
 #include <stdint.h>     // For uintx_t types
 #include <SdFat.h>
-#include "pmmSd/pmmSd.h"
+#include "pmmSd/pmmSdConsts.h"
 
 #define PMM_SD_ALLOCATION_PART_DEFAULT_KIB  1024
-#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at pmmSdAllocationStatusStructType.
+#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at pmmSdAllocStatusStructType.
+
 
 // These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
 // They could be any byte other than 0x00 or 0xFF (default erase possibilities). To honor my team, I gave those letters.
@@ -49,7 +50,7 @@ typedef struct
     // There could be a bit field to 9, but currently, no actual need.
     uint16_t currentPositionInBlock;
     
-} pmmSdAllocationStatusStructType;      // Total struct size is 12 bytes, with padding.
+} pmmSdAllocStatusStructType;      // Total struct size is 12 bytes, with padding.
 
 
 
@@ -58,16 +59,16 @@ class PmmSdAllocation
 
 public:
 
-    PmmSdAllocation(SdFatSdio* sdFat, uint16_t defaultKiBAllocationPerPart = PMM_SD_ALLOCATION_PART_DEFAULT_KIB);
+    PmmSdAllocation(SdFatSdio* sdFat);
 
     // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
-    void initSafeLogStatusStruct(pmmSdAllocationStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
+    void initSafeLogStatusStruct(pmmSdAllocStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
 
     // Writing
-    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct);
     int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 
-    int  nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocationStatusStructType* statusStruct);
+    int  nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct);
 
     // Reading
     int  getNumberFileParts(char dirFullRelativePath[], const char filenameExtension[], uint8_t* fileParts);
@@ -75,7 +76,7 @@ public:
     void getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
     int  getFileRange   (char fileFullRelativePath[], uint32_t *beginBlock, uint32_t *endBlock);
 
-    int readBlock(uint32_t blockAddress, uint8_t* destinationArray);
+    int  readBlock(uint32_t blockAddress, uint8_t* destinationArray);
     
 protected:
 
@@ -83,8 +84,6 @@ protected:
     SdioCard*  mSdioCard;
     File       mFile;
     char       mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
-
-    uint16_t   mDefaultKiBAllocationPerPart;
 
 };
 

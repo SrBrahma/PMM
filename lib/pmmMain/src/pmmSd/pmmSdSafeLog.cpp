@@ -17,13 +17,12 @@
 // By having the backup blocks always ahead of the current block instead of a fixed place for them, we distribute the SD
 
 
-PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
-    : PmmSdAllocation(pmmSd->getSdFatPtr(), defaulBlocksAllocationPerPart)
+PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard)
+    : PmmSdAllocation(sdFat)
 {
     // These 3 exists as I an confused of which option to use. This must be improved later.
-    mPmmSd    = pmmSd;
-    mSdFat    = pmmSd->getSdFatPtr();
-    mSdioCard = pmmSd->getCardPtr();
+    mSdFat    = sdFat;
+    mSdioCard = sdioCard;
 }
 
 
@@ -35,7 +34,7 @@ PmmSdSafeLog::PmmSdSafeLog(PmmSd* pmmSd, unsigned defaulBlocksAllocationPerPart)
 // https://stackoverflow.com/questions/31256206/c-memory-alignment
 // readBlock() and writeBlock() uses a local array of 512 bytes, and a memcpy() if it is requested.
 // When time is available for me, I will write a function in pmmSd for reading and writing without these slowers, and making sure the blockBuffer is aligned to 4.
-int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocationStatusStructType* statusStruct, uint8_t externalBlockBuffer[])
+int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocStatusStructType* statusStruct, uint8_t externalBlockBuffer[])
 {
 
     // I didn't want to create this variable and keep changing it, and I didn't want to use (PMM_SD_BLOCK_SIZE - statusStruct->currentPositionInBlock),

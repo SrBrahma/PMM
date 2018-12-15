@@ -11,8 +11,8 @@
 // Received Package Log Info Package
 int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
-    unsigned packetX       = packetInfo->payload[PORT_LOG_INFO_INDEX_PACKET_X];
-    unsigned numberPackets = packetInfo->payload[PORT_LOG_INFO_INDEX_OF_Y_PACKETS];
+    unsigned currentPacket = packetInfo->payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET];
+    unsigned totalPackets  = packetInfo->payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS];
 
 // 1) If the packet size is smaller than the packet header length, it's invalid
     if (packetInfo->payloadLength < PORT_LOG_INFO_HEADER_LENGTH)

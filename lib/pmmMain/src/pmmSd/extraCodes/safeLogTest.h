@@ -1,4 +1,4 @@
-/* mPmmSdSafeLog.h
+/* mPmmSdSafeLog->h
  *
  * Just a quick code to test the SafeLog system. This isn't intended at the moment to look good.
  * 
@@ -11,8 +11,6 @@
 
 #include <Arduino.h>
 #include "pmmSd/pmmSd.h"
-#include "pmmSd/pmmSdAllocation.h"
-#include "pmmSd/pmmSdSafeLog.h"
 
 #define MAX_BYTES_PER_LINE      49
 #define GROUP_LENGTH            150
@@ -25,12 +23,6 @@ class SafeLogTest   // Being a class allows us to have functions inside, instead
 {
 
 public:
-
-    SafeLogTest()
-    : mPmmSdSafeLog(&mPmmSd, 63) // 1 will create the file with the smallest cluster size possible.
-    {}
-
-
 
     int main()
     {
@@ -58,9 +50,9 @@ public:
 
         while (!mDoQuit)
         {
-            mPmmSdSafeLog.getNumberFileParts(mDirPath, &mTotalParts);
+            mPmmSdSafeLog->getNumberFileParts(mDirPath, &mTotalParts);
 
-            mPmmSdSafeLog.getFileRange(mDirPath, mStatusStruct.nextFilePart - 1, &mBeginBlockWorking, &mEndBlockWorking);
+            mPmmSdSafeLog->getFileRange(mDirPath, mStatusStruct.nextFilePart - 1, &mBeginBlockWorking, &mEndBlockWorking);
             Serial.print("Working: ");
             Serial.print("Part  ["); Serial.print(mStatusStruct.nextFilePart - 1); Serial.print("] of ["); Serial.print(mTotalParts - 1); Serial.print("]; ");
             Serial.print("Block ["); Serial.print(mStatusStruct.currentBlock - mBeginBlockWorking); Serial.print("] of ["); Serial.print(mEndBlockWorking - mBeginBlockWorking); Serial.println("].");
@@ -104,7 +96,7 @@ public:
                     if (mTotalParts > 1)
                     {
                         (mCurrentPartShowing >= mTotalParts - 1) ? (mCurrentPartShowing = 0) : mCurrentPartShowing++;
-                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mPmmSdSafeLog->getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
                         mCurrentBlockShowing = mBeginBlockShowing;
                     }
                     break;
@@ -113,7 +105,7 @@ public:
                     if (mTotalParts > 1)
                     {
                         (mCurrentPartShowing == 0) ? (mCurrentPartShowing = mTotalParts - 1) : mCurrentPartShowing--;
-                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mPmmSdSafeLog->getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
                         mCurrentBlockShowing = mBeginBlockShowing;
                     }
                     break;
@@ -123,7 +115,7 @@ public:
                     if (mCurrentBlockShowing >= mEndBlockShowing)
                     {
                         (mCurrentPartShowing >= mTotalParts - 1) ? (mCurrentPartShowing = 0) : mCurrentPartShowing++;
-                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mPmmSdSafeLog->getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
                         mCurrentBlockShowing = mBeginBlockShowing;
                     }
                     else
@@ -135,7 +127,7 @@ public:
                     if (mCurrentBlockShowing <= mBeginBlockShowing)
                     {
                         (mCurrentPartShowing == 0) ? (mCurrentPartShowing = mTotalParts - 1) : mCurrentPartShowing--;
-                        mPmmSdSafeLog.getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
+                        mPmmSdSafeLog->getFileRange(mDirPath, mCurrentPartShowing, &mBeginBlockShowing, &mEndBlockShowing);
                         mCurrentBlockShowing = mEndBlockShowing;
                     }
                     else
@@ -165,9 +157,9 @@ private:
 
     PmmSd mPmmSd;
 
-    PmmSdSafeLog mPmmSdSafeLog;
+    PmmSdSafeLog* mPmmSdSafeLog;
 
-    pmmSdAllocationStatusStructType mStatusStruct;
+    pmmSdAllocStatusStructType mStatusStruct;
 
     uint32_t mBeginBlockShowing, mEndBlockShowing, mCurrentBlockShowing;
     uint32_t mBeginBlockWorking, mEndBlockWorking;
@@ -187,8 +179,9 @@ private:
     {
         snprintf(mDirPath, 128, "%s-%s-%u", DIR_BASE_NAME, DIR_SUFFIX, GROUP_LENGTH);
         mDoQuit = false;
-        
-        return mPmmSd.init(0); // sessionId = 0;
+        int initValue = mPmmSd.init(0);
+        mPmmSdSafeLog = mPmmSd.getSafeLog();
+        return initValue; // sessionId = 0;
     }
 
 
@@ -196,7 +189,7 @@ private:
     {
         for (unsigned i = 0; i < GROUP_LENGTH; i++) { mGroupData[i] = i; }   // Give the initial values of the group data, just for a better demonstration.
         
-        mPmmSdSafeLog.initSafeLogStatusStruct(&mStatusStruct, GROUP_LENGTH);
+        mPmmSdSafeLog->initSafeLogStatusStruct(&mStatusStruct, GROUP_LENGTH, 32);
 
         // remove previous contents from the dir, if exists
         if (mPmmSd.getSdFatPtr()->exists(mDirPath))
@@ -204,16 +197,15 @@ private:
             mPmmSd.removeDirRecursively(mDirPath);
         }
 
-
         // Write the first group, so we can show something.
         if (writeGroup())
             return 2;
 
-        mBeginBlockShowing = mStatusStruct.currentBlock;
-        mEndBlockShowing = mStatusStruct.currentBlock + mStatusStruct.freeBlocksAfterCurrent;
+        mBeginBlockShowing   = mStatusStruct.currentBlock;
+        mEndBlockShowing     = mStatusStruct.currentBlock + mStatusStruct.freeBlocksAfterCurrent;
         
         mCurrentBlockShowing = mBeginBlockShowing;
-        mCurrentPartShowing = 0;
+        mCurrentPartShowing  = 0;
 
         return 0;
     }
@@ -221,7 +213,7 @@ private:
 
     int writeGroup()
     {
-        if (mPmmSdSafeLog.write(mGroupData, mDirPath, &mStatusStruct))
+        if (mPmmSdSafeLog->write(mGroupData, mDirPath, &mStatusStruct))
             return 1;
 
         uint8_t value = mGroupData[GROUP_LENGTH - 1];

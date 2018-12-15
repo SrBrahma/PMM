@@ -65,5 +65,5 @@ int PmmModuleDataLog::sendDataLog()
 // Yeap. This is on the Transmission file.
 int PmmModuleDataLog::saveDataLog()
 {
-    
+    return 0;
 }

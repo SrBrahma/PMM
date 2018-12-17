@@ -26,11 +26,10 @@ int PmmModuleDataLog::saveOwnDataLog()
         updateLogInfoCombinedPayload();
 
     // Build the 
-    for (unsigned actualVar = 0, mGroupTempLength = 0; actualVar < mNumberVariables; actualVar++)
+    for (unsigned actualVar = 0; actualVar < mNumberVariables; actualVar++)
         memcpy(mGroupTempData + mPacketStruct.payloadLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
 
-
-    return saveDataLog(mGroupTempData, dirRelativePath[], mAllocStatusSelfDataLog)
+    return saveDataLog(mGroupTempData, mDataLogSelfDirPath, &mAllocStatusSelfDataLog);
 }
 
 int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)

@@ -102,15 +102,22 @@ int PmmModuleDataLog::saveOwnDataLogInfo()
         mPmmSd->open(filename);
         mPmmSd->write(mLogInfoContentArray, mLogInfoContentArrayLength);
     }
+    return 0;
 }
 
 int PmmModuleDataLog::saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)
 {
+    int  finishedBuilding;
     char filename[PMM_SD_FILENAME_MAX_LENGTH];
     char filenameTemp[PMM_SD_FILENAME_MAX_LENGTH];
 
     getDataLogDirectory(filenameTemp, PMM_SD_FILENAME_MAX_LENGTH, mDataLogId, mDataLogSize, LOG_INFO_FILENAME);
     mPmmSd->getReceivedDirectory(filename, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, filenameTemp);
 
-    return saveDataLogInfo(filename, mLogInfoContentArray, mLogInfoContentArrayLength, 0, 1);
+    savePart(filename, mLogInfoContentArray, mLogInfoContentArrayLength, currentPart, totalParts, &finishedBuilding);
+    if (finishedBuilding)
+    {
+        // Finished building the package
+    }
+    return 0;
 }

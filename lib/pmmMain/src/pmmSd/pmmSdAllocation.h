@@ -32,7 +32,11 @@ class PmmSdAllocStatus
 
 public:
     
-    PmmSdAllocStatus(uint8_t groupLengthArg = 0, uint8_t KiBPerPartArg = PMM_SD_ALLOCATION_PART_DEFAULT_KIB)
+    PmmSdAllocStatus(uint8_t groupLengthArg = 0, uint16_t KiBPerPartArg = PMM_SD_ALLOCATION_PART_DEFAULT_KIB)
+    {
+        reset(groupLengthArg, KiBPerPartArg);
+    }
+    void reset(uint8_t groupLengthArg = 0, uint16_t KiBPerPartArg = PMM_SD_ALLOCATION_PART_DEFAULT_KIB)
     {
         currentBlock           = 0;
         freeBlocksAfterCurrent = 0;

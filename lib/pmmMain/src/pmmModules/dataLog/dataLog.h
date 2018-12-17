@@ -148,7 +148,7 @@ private:
     void updateLogInfoCombinedPayload(); // Updates the DataLogInfo
 
 // Storage
-    int  getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[]);
+    int  getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[] = NULL);
     
     int  saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus);
     int  saveOwnDataLog();
@@ -193,8 +193,9 @@ private:
 // Storage
     static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo.splt"; // https://stackoverflow.com/a/25323360/10247962
     static PmmSdAllocStatus mAllocStatusReceivedDataLog[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
-           PmmSdAllocStatus mAllocStatusSelfDataLog;
-    char mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
+
+    PmmSdAllocStatus mAllocStatusSelfDataLog;
+    char   mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
 
 }; // End of the class

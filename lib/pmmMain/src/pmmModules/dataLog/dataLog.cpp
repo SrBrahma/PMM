@@ -103,14 +103,14 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
         return 2;
     }
 
-    if ((mDataLogSize + varSize) >= PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH)
+    if ((mDataLogSize + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName);
         PMM_DEBUG_PRINT("\". Exceeds the maximum payload length (tried to be ");
         PMM_DEBUG_PRINT(mDataLogSize + varSize);
         PMM_DEBUG_PRINT(", maximum is ");
-        PMM_DEBUG_PRINT(PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH);
+        PMM_DEBUG_PRINT(PORT_DATA_LOG_MAX_PAYLOAD_LENGTH);
         PMM_DEBUG_PRINTLN(".");
         return 3;
     }

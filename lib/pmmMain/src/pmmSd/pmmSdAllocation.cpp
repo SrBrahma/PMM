@@ -15,23 +15,6 @@ PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
 }
 
 
-void PmmSdAllocation::initSafeLogStatusStruct(pmmSdAllocStatusStructType* statusStruct, uint8_t groupLength, uint16_t KiBPerPart)
-{
-    statusStruct->currentBlock           = 0;
-    statusStruct->freeBlocksAfterCurrent = 0;
-    statusStruct->groupLength            = groupLength;
-    statusStruct->nextFilePart           = 0;
-    
-    statusStruct->currentPositionInBlock = 0;
-
-    if (KiBPerPart == 0)
-        statusStruct->KiBPerPart         = PMM_SD_ALLOCATION_PART_DEFAULT_KIB;
-
-    else
-        statusStruct->KiBPerPart         = KiBPerPart;
-}
-
-
 void PmmSdAllocation::getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[])
 {
     snprintf(destinationArray, PMM_SD_FILENAME_MAX_LENGTH, "%s/part-%u.%s", dirFullRelativePath, filePart, filenameExtension);
@@ -72,33 +55,33 @@ int PmmSdAllocation::getFileRange(char filePath[], uint32_t *beginBlock, uint32_
 }
 
 
-int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct)
+int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus)
 {
     // 1) Do we need a new part? No!
-    if (statusStruct->freeBlocksAfterCurrent)
+    if (allocStatus->freeBlocksAfterCurrent)
     {
-        statusStruct->freeBlocksAfterCurrent--; // We don't need a new part!
-        statusStruct->currentBlock++;
+        allocStatus->freeBlocksAfterCurrent--; // We don't need a new part!
+        allocStatus->currentBlock++;
         return 0;
     }
     
     // 2) YA
-    // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock; nextFilePart++
-     return allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct);
+    // NOTE this function does currentPositionInBlock = 0; freeBlocksAfterCurrent = endBlock - allocStatus->currentBlock; nextFilePart++
+     return allocateFilePart(dirFullRelativePath, filenameExtension, allocStatus);
 }
 
 
 
-// Handles our pmmSdAllocStatusStructType struct automatically.
-int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct)
+// Handles our PmmSdAllocStatus struct automatically.
+int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus)
 {
     uint32_t endBlock;
     int returnValue;
 
-    if (!(returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, statusStruct->nextFilePart, statusStruct->KiBPerPart, &(statusStruct->currentBlock), &endBlock)))
+    if (!(returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, allocStatus->nextFilePart, allocStatus->KiBPerPart, &(allocStatus->currentBlock), &endBlock)))
     {
-        statusStruct->freeBlocksAfterCurrent = endBlock - statusStruct->currentBlock;
-        statusStruct->nextFilePart++;
+        allocStatus->freeBlocksAfterCurrent = endBlock - allocStatus->currentBlock;
+        allocStatus->nextFilePart++;
     }
 
     return returnValue;
@@ -136,7 +119,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
     {
 
         if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_MAX_KIB)
-            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at pmmSdAllocStatusStructType.
+            kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at PmmSdAllocStatus.
 
         // 2) Allocate the new file!
         if (!mFile.createContiguous(mTempFilename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))

@@ -60,6 +60,11 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     // Calculate the total number of packets.
     mDataLogInfoPackets = ceil(mLogInfoContentArrayLength / (float) PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
 
+    //mAllocStatusSelfDataLog.
+    char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+    getDataLogDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, mDataLogId, mDataLogSize);
+    mPmmSd->getSelfDirectory(mDataLogSelfDirPath, PMM_SD_FILENAME_MAX_LENGTH, tempFilename);
+
     mIsLocked = 1;
 }
 

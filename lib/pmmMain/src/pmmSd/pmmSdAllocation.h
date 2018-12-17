@@ -6,7 +6,7 @@
 #include "pmmSd/pmmSdConsts.h"
 
 #define PMM_SD_ALLOCATION_PART_DEFAULT_KIB  1024
-#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at pmmSdAllocStatusStructType.
+#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at PmmSdAllocStatus.
 
 
 // These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
@@ -27,8 +27,21 @@
 #endif
 
 
-typedef struct
+class PmmSdAllocStatus
 {
+
+public:
+    
+    PmmSdAllocStatus(uint8_t groupLengthArg = 0, uint8_t KiBPerPartArg = PMM_SD_ALLOCATION_PART_DEFAULT_KIB)
+    {
+        currentBlock           = 0;
+        freeBlocksAfterCurrent = 0;
+        groupLength            = groupLengthArg;
+        nextFilePart           = 0;
+        KiBPerPart             = KiBPerPartArg;
+        currentPositionInBlock = 0;
+    }
+
     // At which block we currently are. If it is 0, it hasn't been allocated yet.
     uint32_t currentBlock;
 
@@ -50,7 +63,7 @@ typedef struct
     // There could be a bit field to 9, but currently, no actual need.
     uint16_t currentPositionInBlock;
     
-} pmmSdAllocStatusStructType;      // Total struct size is 12 bytes, with padding.
+};
 
 
 
@@ -62,13 +75,13 @@ public:
     PmmSdAllocation(SdFatSdio* sdFat);
 
     // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
-    void initSafeLogStatusStruct(pmmSdAllocStatusStructType* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
+    void initSafeLogStatusStruct(PmmSdAllocStatus* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
 
     // Writing
-    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct);
+    int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus);
     int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], uint8_t filePart, uint16_t kibibytesToAllocate, uint32_t* beginBlock, uint32_t* endBlock);
 
-    int  nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], pmmSdAllocStatusStructType* statusStruct);
+    int  nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus);
 
     // Reading
     int  getNumberFileParts(char dirFullRelativePath[], const char filenameExtension[], uint8_t* fileParts);

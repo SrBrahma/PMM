@@ -150,7 +150,7 @@ private:
 // Storage
     int  getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[]);
     
-    int  saveDataLog(uint8_t groupData[], uint8_t groupLength, char dirRelativePath[], pmmSdAllocStatusStructType* statusStruct);
+    int  saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus);
     int  saveOwnDataLog();
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
 
@@ -170,7 +170,7 @@ private:
     uint8_t  mSystemSession;
     uint8_t  mDataLogId;
 
-    uint8_t  mDataLogSize;
+
 
     uint8_t  mNumberVariables;
     char   * mVariableNameArray[MODULE_DATA_LOG_MAX_VARIABLES];
@@ -178,6 +178,9 @@ private:
     uint8_t  mVariableSizeArray[MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
+    uint8_t  mDataLogSize;
+
+    uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
 
 // Transmission
     uint8_t  mLogInfoContentArray[MODULE_LOG_INFO_CONTENT_MAX_LENGTH];
@@ -189,8 +192,9 @@ private:
 
 // Storage
     static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo.splt"; // https://stackoverflow.com/a/25323360/10247962
-    static pmmSdAllocStatusStructType mAllocStatusReceivedDataLog[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
-           pmmSdAllocStatusStructType mAllocStatusOwnDataLog;
+    static PmmSdAllocStatus mAllocStatusReceivedDataLog[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+           PmmSdAllocStatus mAllocStatusSelfDataLog;
+    char mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
 
 }; // End of the class

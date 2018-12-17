@@ -15,14 +15,22 @@ int PmmModuleDataLog::getDataLogDirectory(char destination[], uint8_t maxLength,
     return 0;
 }
 
-int PmmModuleDataLog::saveDataLog(uint8_t groupData[], uint8_t groupLength, char dirRelativePath[], pmmSdAllocStatusStructType* statusStruct)
+int PmmModuleDataLog::saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus)
 {
     return 0;
 }
 
 int PmmModuleDataLog::saveOwnDataLog()
 {
-    return 0;
+    if (!mIsLocked)
+        updateLogInfoCombinedPayload();
+
+    // Build the 
+    for (unsigned actualVar = 0, mGroupTempLength = 0; actualVar < mNumberVariables; actualVar++)
+        memcpy(mGroupTempData + mPacketStruct.payloadLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
+
+
+    return saveDataLog(mGroupTempData, dirRelativePath[], mAllocStatusSelfDataLog)
 }
 
 int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)

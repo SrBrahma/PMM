@@ -13,7 +13,7 @@
 
 #define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
-// typedef pmmSdAllocStatusStructType pmmSdAllocStatusStructType;
+// typedef PmmSdAllocStatus PmmSdAllocStatus;
 
 // System made to work with data of persistent length. Later I will explain it more.
 // This need a deconstructor!
@@ -27,7 +27,7 @@ public:
 
     PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard);
 
-    int write(uint8_t data[], char dirFullRelativePath[], pmmSdAllocStatusStructType* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
+    int write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocStatus* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
 
     const char* getFilenameExtension();
 

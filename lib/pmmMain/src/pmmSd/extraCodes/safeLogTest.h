@@ -159,7 +159,7 @@ private:
 
     PmmSdSafeLog* mPmmSdSafeLog;
 
-    pmmSdAllocStatusStructType mStatusStruct;
+    PmmSdAllocStatus mStatusStruct;
 
     uint32_t mBeginBlockShowing, mEndBlockShowing, mCurrentBlockShowing;
     uint32_t mBeginBlockWorking, mEndBlockWorking;

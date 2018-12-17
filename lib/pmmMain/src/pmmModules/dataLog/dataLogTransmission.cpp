@@ -33,7 +33,7 @@ int PmmModuleDataLog::sendDataLog()
     // 1.2) Add the Session Identifier
     mPacketStruct.payload[PORT_DATA_LOG_INDEX_SESSION_ID]       = mSystemSession;
     // 1.3) Add the DataLogInfo Identifier
-    mPacketStruct.payload[PORT_DATA_LOG_INDEX_DATA_LOG_INFO_ID] = mDataLogInfoId;
+    mPacketStruct.payload[PORT_DATA_LOG_INDEX_DATA_LOG_INFO_ID] = mDataLogId;
     // 1.4) The CRC-16 of the log is added after adding the Log data.
 
     mPacketStruct.payloadLength = PORT_DATA_LOG_HEADER_LENGTH;
@@ -59,11 +59,5 @@ int PmmModuleDataLog::sendDataLog()
     mPacketStruct.destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST;
     mPacketStruct.port               = PORT_DATA_LOG_ID;
     mPmmTelemetry->addPacketToQueue(&mPacketStruct, PMM_TELEMETRY_QUEUE_PRIORITY_LOW);
-    return 0;
-}
-
-// Yeap. This is on the Transmission file.
-int PmmModuleDataLog::saveDataLog()
-{
     return 0;
 }

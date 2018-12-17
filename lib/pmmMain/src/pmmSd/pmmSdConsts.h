@@ -8,4 +8,6 @@
 
 #define PMM_SD_FILENAME_MAX_LENGTH          128
 
+#define PMM_SD_DIRECTORY_SELF               "_Self"
+
 #endif

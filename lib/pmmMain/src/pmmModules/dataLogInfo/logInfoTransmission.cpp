@@ -14,12 +14,12 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     unsigned variableCounter;
     unsigned stringLength;              // The length withou null char!
 
-    mLogInfoRawPayloadArrayLength = 0;  // Zero the length of the array.
+    mLogInfoContentArrayLength = 0;  // Zero the length of the array.
 
 
 // 1) Add the "Number of variables"
-    mDataLogInfoTelemetryRawArray[0] = mNumberVariables;
-    mLogInfoRawPayloadArrayLength++;
+    mLogInfoContentArray[0] = mNumberVariables;
+    mLogInfoContentArrayLength++;
 
 
 // 2) Add the "Variable types"
@@ -28,18 +28,18 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     for (variableCounter = 0; variableCounter < mNumberVariables; variableCounter ++)
     {
         if (!variableCounter % 2) // If the counter is even (rest of division by 2 is 0)
-            mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] = (mVariableTypeArray[variableCounter] << 4);
+            mLogInfoContentArray[mLogInfoContentArrayLength] = (mVariableTypeArray[variableCounter] << 4);
 
         else // Else, the number is odd (rest of division by 2 is 1)
         {
-            mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] |= mVariableTypeArray[variableCounter];
-            mLogInfoRawPayloadArrayLength++;
+            mLogInfoContentArray[mLogInfoContentArrayLength] |= mVariableTypeArray[variableCounter];
+            mLogInfoContentArrayLength++;
         }
     }
 
     // 2.2) If the the previous loop ended on a odd number (so the last conditional-valid value on the counter was even), increase the length.
     if (variableCounter % 2) 
-        mLogInfoRawPayloadArrayLength++;
+        mLogInfoContentArrayLength++;
 
 
 // 3) Add the Variable strings
@@ -51,21 +51,21 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
              ((stringLength < (MODULE_DATA_LOG_MAX_STRING_LENGTH - 1)) && mVariableNameArray[variableCounter][stringLength]); // - 1 as the MAX_STRING_LENGTH includes the '\0'.
              stringLength++); 
             
-        memcpy(mDataLogInfoTelemetryRawArray + mLogInfoRawPayloadArrayLength, mVariableNameArray[variableCounter], stringLength);
-        mLogInfoRawPayloadArrayLength += stringLength;
-        mDataLogInfoTelemetryRawArray[mLogInfoRawPayloadArrayLength] = '\0'; // Manually write the null terminating char, in case the string was broken.
-        mLogInfoRawPayloadArrayLength ++;
+        memcpy(mLogInfoContentArray + mLogInfoContentArrayLength, mVariableNameArray[variableCounter], stringLength);
+        mLogInfoContentArrayLength += stringLength;
+        mLogInfoContentArray[mLogInfoContentArrayLength] = '\0'; // Manually write the null terminating char, in case the string was broken.
+        mLogInfoContentArrayLength ++;
     }
 
     // Calculate the total number of packets.
-    mDataLogInfoPackets = ceil(mLogInfoRawPayloadArrayLength / (float) PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
+    mDataLogInfoPackets = ceil(mLogInfoContentArrayLength / (float) PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
 
     mIsLocked = 1;
 }
 
 
 
-int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket)
+int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress)
 {
 
     if (requestedPacket >= mDataLogInfoPackets)
@@ -79,23 +79,23 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket)
 // 1) Adds the DataLogInfo Header to the packet
     // 1.1) The CRC-16 of the packet is added on the end of the function.
     // 1.2) Add the Session Identifier
-    mPacketStruct.payload[PORT_LOG_INFO_INDEX_SESSION_ID]   = mSystemSession;
+    mPacketStruct.payload[PORT_LOG_INFO_INDEX_SESSION_ID]     = mSystemSession;
     // 1.3) Add the Packet X
-    mPacketStruct.payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET]     = requestedPacket;
+    mPacketStruct.payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET] = requestedPacket;
     // 1.4) Add the Of Y Packets
-    mPacketStruct.payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS] = mDataLogInfoPackets;
+    mPacketStruct.payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS]  = mDataLogInfoPackets;
     // 1.5) Add the DataLogInfo Identifier
 
 // 2) Adds the DataLogInfo Payload, which was built on updateLogInfoCombinedPayload().
     // 2.1) First, get the number of bytes this payload will have, as the last packet may not occupy all the available length.
     // This packet size is the total raw size minus the (current packet * packetPayloadLength).
     // If it is > maximum payload length, it will be equal to the payload length.
-    uint16_t payloadBytesInThisPacket = mLogInfoRawPayloadArrayLength - (requestedPacket * PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
+    uint16_t payloadBytesInThisPacket = mLogInfoContentArrayLength - (requestedPacket * PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
     if (payloadBytesInThisPacket > PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
         payloadBytesInThisPacket = PORT_LOG_INFO_MAX_PAYLOAD_LENGTH;
 
     // 2.2) Add the Payload.
-    memcpy(mPacketStruct.payload + mPacketStruct.payloadLength, mDataLogInfoTelemetryRawArray, payloadBytesInThisPacket);
+    memcpy(mPacketStruct.payload + mPacketStruct.payloadLength, mLogInfoContentArray, payloadBytesInThisPacket);
     mPacketStruct.payloadLength += payloadBytesInThisPacket;
 
 // 3) CRC16 of this packet:
@@ -107,7 +107,7 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket)
 // 5) Add the remaining fields and add it to the queue!
     mPacketStruct.protocol           = PMM_NEO_PROTOCOL_ID;
     mPacketStruct.sourceAddress      = PMM_TELEMETRY_ADDRESS_THIS_SYSTEM;
-    mPacketStruct.destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST;
+    mPacketStruct.destinationAddress = destinationAddress;
     mPacketStruct.port               = PORT_DATA_LOG_ID;
     mPmmTelemetry->addPacketToQueue(&mPacketStruct, PMM_TELEMETRY_QUEUE_PRIORITY_LOW);
 

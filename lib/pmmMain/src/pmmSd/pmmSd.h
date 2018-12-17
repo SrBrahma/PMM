@@ -40,24 +40,25 @@ public:
     int  removeDirRecursively(char relativePath[]);
 
 
-    void getFilenameOwn     (char destination[], uint8_t maxLength, char filename[]);
-    void getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[]);
+    int getSelfDirectory    (char destination[], uint8_t maxLength, char additionalPath[] = NULL);
+    int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char additionalPath[] = NULL);
 
-    int  open (char filename[], char dirFullRelativePath[], uint8_t mode = O_RDWR | O_CREAT | O_APPEND);
-    int  seek (uint32_t position);
-    int  read (uint8_t buffer[], size_t numberBytes);
-    int  write(uint8_t byte);
-    int  write(char arrayToWrite[], size_t length);
-    int  close();
+    bool     exists(char filename[]);
+    
+    int      open (char filename[], uint8_t mode = O_RDWR | O_CREAT | O_APPEND);
+    int      seek (uint32_t position);
+    uint32_t fileSize();
+    int      read (uint8_t buffer[], size_t numberBytes);
+    int      write(uint8_t byte);
+    int      write(uint8_t arrayToWrite[], size_t length);
+    int      close();
 
-    int  println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession = 0);
-
-    bool getSdIsBusy();
+    bool     getSdIsBusy();
 
     SdFatSdio*    getSdFatPtr();
     SdioCard*     getCardPtr ();
     PmmSdSafeLog* getSafeLog ();
-
+    File*         getFile    ();
 
 
 private:
@@ -72,6 +73,8 @@ private:
     uint8_t   mThisSessionId;
 
     PmmSdSafeLog mSafeLog;
+
+    char mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
 
 };
 

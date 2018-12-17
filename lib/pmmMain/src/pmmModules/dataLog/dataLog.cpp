@@ -125,19 +125,32 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
     return 0;
 }
 
-void PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
+int PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
 {
+    if (!variableName)
+        return 1;
+    if (!arrayAddress)
+        return 2;
+
     uint8_t counter;
     for (counter = 0; counter < arraySize; counter++)
         includeVariableInPackage(*variableName++, arrayType, (uint8_t*) arrayAddress + (variableTypeToVariableSize(arrayType) * counter));
+
+    return 0;
 }
 
 
 
-void PmmModuleDataLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmModuleDataLog::addPackageBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
 {
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,           MODULE_DATA_LOG_TYPE_UINT32, packageIdPtr);
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING,         MODULE_DATA_LOG_TYPE_UINT32, packageTimeMsPtr);
+    if (!packageIdPtr)
+        return 1;
+    if (!packageTimeMsPtr)
+        return 2;
+
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, packageIdPtr);
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, packageTimeMsPtr);
+    return 0;
 }
 
 

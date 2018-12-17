@@ -139,36 +139,32 @@ int PmmSd::removeDirRecursively(char relativePath[])
     return 0;
 }
 
-// sourceAddress is from where we did receive the message, for example, the PMM_TELEMETRY_ADDRESS_SELF define.
-// sourceSession is from which session we did receive the message. This field is useless if the soureAddress is the
-//  PMM_TELEMETRY_ADDRESS_SELF define, so it's an optional argument.
-int PmmSd::println(char filename[], char string[], uint8_t sourceAddress, uint8_t sourceSession)
+
+// The functions below are mostly just a call for the original function. But you won't need to use the File variable directly.
+// For using it directly (aka using a function not listed here), you can just getFile() from this class.
+
+bool PmmSd::exists(char filename[])
 {
-    if (!mFile.open(filename, O_RDWR | O_CREAT | O_APPEND)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
-    {
-        mFile.close();
-        return 1;
-    }
-
-    if (strlen(string) + 2 != mFile.println(string)) // + 2 as it will write the normal chars from the string, plus the '\r' and the '\n' (they are added in the file.println().
-    {                                                // comparing to -1 the result is problematic, as the println function returns a sum of the write(string) + write("\r\n"),
-                                                     // so it's possible to return a false negative.
-        PMM_DEBUG_PRINTLN("PmmSd: ERROR 2 - The string haven't been successfully written!");
-        mFile.close();
-        return 2;
-    }
-
-    mFile.close();
-    return 0;
+    return mSdFat.exists(filename);
 }
 
-
-
-int PmmSd::open(char filename[], char dirFullRelativePath[], uint8_t mode)
+// The default open, but this will also automatically create the path.
+int PmmSd::open(char filename[], uint8_t mode)
 {
-    // Create directories if doesn't exists
-    if (!mSdFat.exists(dirFullRelativePath))
-        mSdFat.mkdir(dirFullRelativePath);
+    if (!filename)
+        return 1;
+
+    // 1) Create the path if needed.
+    char* lastDirectoryPosition = strrchr(filename, '/');
+
+    if (lastDirectoryPosition && (filename != lastDirectoryPosition)) // Avoid the last '/', if it's the root.
+    {
+        snprintf(mTempFilename, lastDirectoryPosition - filename, "%s", filename); // This will copy the string until the last '/', which is replaced with a '\0'.
+
+        // Create directories if doesn't exists
+        if (!mSdFat.exists(mTempFilename))
+            mSdFat.mkdir(mTempFilename);
+    }
 
     if (!mFile.open(filename, mode)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
     {
@@ -181,6 +177,10 @@ int PmmSd::seek(uint32_t position)
 {
     return mFile.seek(position);
 }
+uint32_t PmmSd::fileSize()
+{
+    return mFile.fileSize();
+}
 int PmmSd::read(uint8_t buffer[], size_t numberBytes)
 {
     if (!buffer)
@@ -192,7 +192,7 @@ int PmmSd::write(uint8_t byte)
 {
     return mFile.write(byte);
 }
-int PmmSd::write(char arrayToWrite[], size_t length)
+int PmmSd::write(uint8_t arrayToWrite[], size_t length)
 {
     return mFile.write(arrayToWrite, length);
 }
@@ -203,16 +203,36 @@ int PmmSd::close()
 
 
 
-void PmmSd::getFilenameOwn(char destination[], uint8_t maxLength, char filename[])
+int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, char additionalPath[])
 {
-    snprintf(destination, maxLength, "_self/%s", filename);
+    if (!destination)
+        return 1;
+
+    // Left expression is always evaluated first! https://stackoverflow.com/a/2456415/10247962
+    if (!additionalPath || additionalPath[0] == '\0')
+        snprintf(destination, maxLength, "%s", PMM_SD_DIRECTORY_SELF);
+
+    else
+        snprintf(destination, maxLength, "%s/%s", PMM_SD_DIRECTORY_SELF, additionalPath);
+    
+    return 0;
 }
 
 
 
-void PmmSd::getFilenameReceived(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char filename[])
+int PmmSd::getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char additionalPath[])
 {
-    snprintf(destination, maxLength, "%03u/%02u/%s", sourceAddress, sourceSession, filename);
+    if (!destination)
+        return 1;
+
+    // Left expression is always evaluated first! https://stackoverflow.com/a/2456415/10247962
+    if (!additionalPath || additionalPath[0] == '\0')
+        snprintf(destination, maxLength, "%03u/Session %02u", sourceAddress, sourceSession);
+
+    else
+        snprintf(destination, maxLength, "%03u/Session %02u/%s", sourceAddress, sourceSession, additionalPath);
+    
+    return 0;
 }
 
 
@@ -228,6 +248,10 @@ SdFatSdio*    PmmSd::getSdFatPtr()
 PmmSdSafeLog* PmmSd::getSafeLog()
 {
     return &mSafeLog;
+}
+File*         PmmSd::getFile()
+{
+    return &mFile;
 }
 
 bool PmmSd::getSdIsBusy()

@@ -37,7 +37,7 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mPmmSd              = pmmSd;
     
     mIsLocked           = 0;
-    mDataLogSize        = 0;
+    mGroupLength        = 0;
     mNumberVariables    = 0;
     mDataLogInfoPackets = 0;
 
@@ -103,12 +103,12 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
         return 2;
     }
 
-    if ((mDataLogSize + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
+    if ((mGroupLength + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
     {
         PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
         PMM_DEBUG_PRINT(variableName);
         PMM_DEBUG_PRINT("\". Exceeds the maximum payload length (tried to be ");
-        PMM_DEBUG_PRINT(mDataLogSize + varSize);
+        PMM_DEBUG_PRINT(mGroupLength + varSize);
         PMM_DEBUG_PRINT(", maximum is ");
         PMM_DEBUG_PRINT(PORT_DATA_LOG_MAX_PAYLOAD_LENGTH);
         PMM_DEBUG_PRINTLN(".");
@@ -120,7 +120,7 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
     mVariableSizeArray[mNumberVariables] = varSize;
     mVariableAdrsArray[mNumberVariables] = (uint8_t*) variableAddress;
     mNumberVariables++;
-    mDataLogSize    += varSize;
+    mGroupLength    += varSize;
 
     return 0;
 }

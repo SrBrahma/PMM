@@ -5,7 +5,7 @@
 #include <string.h>                 // For snprintf
 #include "pmmConsts.h"              // For Debug prints
 #include "pmmSd/pmmSdConsts.h"
-#include "pmmSd/pmmSdAllocation.h"
+#include "pmmSd/alloc/pmmSdAllocation.h"
 
 
 PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)

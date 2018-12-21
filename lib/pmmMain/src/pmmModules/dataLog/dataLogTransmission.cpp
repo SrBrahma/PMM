@@ -33,7 +33,7 @@ int PmmModuleDataLog::sendDataLog()
     // 1.2) Add the Session Identifier
     mPacketStruct.payload[PORT_DATA_LOG_INDEX_SESSION_ID]       = mSystemSession;
     // 1.3) Add the DataLogInfo Identifier
-    mPacketStruct.payload[PORT_DATA_LOG_INDEX_DATA_LOG_INFO_ID] = mDataLogId;
+    mPacketStruct.payload[PORT_DATA_LOG_INDEX_DATA_LOG_ID] = mDataLogId;
     // 1.4) The CRC-16 of the log is added after adding the Log data.
 
     mPacketStruct.payloadLength = PORT_DATA_LOG_HEADER_LENGTH;

@@ -2,8 +2,8 @@
 #include "pmmConsts.h"
 
 #include "pmmSd/pmmSd.h"
-#include "pmmSd/pmmSdSafeLog.h"
-#include "pmmSd/pmmSdAllocation.h"
+#include "pmmSd/alloc/pmmSdSafeLog.h"
+#include "pmmSd/alloc/pmmSdAllocation.h"
 
 // These are files which are:
 // 1) Pre-allocated with a length of X KiB

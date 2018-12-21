@@ -5,8 +5,8 @@
 #include <SdFat.h>
 #include "pmmSd/pmmSdConsts.h"
 
-#define PMM_SD_ALLOCATION_PART_DEFAULT_KIB  1024
-#define PMM_SD_ALLOCATION_PART_MAX_KIB      16384 // Be careful if changing this. Read the comments at PmmSdAllocStatus.
+#define PMM_SD_ALLOCATION_PART_DEFAULT_KIB      1024
+#define PMM_SD_ALLOCATION_PART_MAX_KIB          16384 // Be careful if changing this. Read the comments at PmmSdAllocStatus.
 
 
 // These letters bellow are flags used in the SD blocks, in SafeLog and fastLog writting modes.
@@ -77,9 +77,6 @@ class PmmSdAllocation
 public:
 
     PmmSdAllocation(SdFatSdio* sdFat);
-
-    // If the blocksPerPart is 0, as is the default argument, the mDefaultKiBAllocationPerPart variable value will be used.
-    void initSafeLogStatusStruct(PmmSdAllocStatus* safeLogStatusStruct, uint8_t groupLength, uint16_t KiBPerPart = 0);
 
     // Writing
     int  allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus);

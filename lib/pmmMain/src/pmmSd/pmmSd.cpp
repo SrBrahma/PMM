@@ -3,15 +3,15 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <SdFat.h>
-
-#include "pmmConsts.h"  // For this system name
-
+#include "pmmConsts.h"                      // For this system name
+#include "pmmSd/pmmSdGeneralFunctions.h"
 #include "pmmSd/pmmSd.h"
 
 
 
 PmmSd::PmmSd()
-    : mSafeLog(getSdFatPtr(), getCardPtr())
+    : mSafeLog(getSdFatPtr(), getCardPtr()),
+      mSplit(getSdFatPtr())
 {
 }
 
@@ -143,43 +143,28 @@ int PmmSd::removeDirRecursively(char relativePath[])
 // The functions below are mostly just a call for the original function. But you won't need to use the File variable directly.
 // For using it directly (aka using a function not listed here), you can just getFile() from this class.
 
-bool PmmSd::exists(char filename[])
+bool PmmSd::exists(char path[])
 {
-    return mSdFat.exists(filename);
+    return mSdFat.exists(path);
 }
 
 // The default open, but this will also automatically create the path.
-int PmmSd::open(char filename[], uint8_t mode)
+int PmmSd::createDirsAndOpen(char path[], uint8_t mode)
 {
-    if (!filename)
-        return 1;
+    return createDirsAndOpen(&mSdFat, &mFile, path, mode);
+}
 
-    // 1) Create the path if needed.
-    char* lastDirectoryPosition = strrchr(filename, '/');
-
-    if (lastDirectoryPosition && (filename != lastDirectoryPosition)) // Avoid the last '/', if it's the root.
-    {
-        snprintf(mTempFilename, lastDirectoryPosition - filename, "%s", filename); // This will copy the string until the last '/', which is replaced with a '\0'.
-
-        // Create directories if doesn't exists
-        if (!mSdFat.exists(mTempFilename))
-            mSdFat.mkdir(mTempFilename);
-    }
-
-    if (!mFile.open(filename, mode)) // Read and write, create path if doesnt exist. http://man7.org/linux/man-pages/man2/open.2.html
-    {
-        mFile.close();
-        return 1;
-    }
-    return 0;
+int PmmSd::open(char path[], uint8_t mode)
+{
+    return mFile.open(path, mode);
 }
 int PmmSd::seek(uint32_t position)
 {
     return mFile.seek(position);
 }
-uint32_t PmmSd::fileSize()
+uint32_t PmmSd::size()
 {
-    return mFile.fileSize();
+    return mFile.size();
 }
 int PmmSd::read(uint8_t buffer[], size_t numberBytes)
 {
@@ -248,6 +233,10 @@ SdFatSdio*    PmmSd::getSdFatPtr()
 PmmSdSafeLog* PmmSd::getSafeLog()
 {
     return &mSafeLog;
+}
+PmmSdSplit*   PmmSd::getSplit()
+{
+    return &mSplit;
 }
 File*         PmmSd::getFile()
 {

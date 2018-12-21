@@ -3,14 +3,14 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#ifndef PORT_LOG_h
-#define PORT_LOG_h
+#ifndef PMM_MODULE_DATA_LOG_h
+#define PMM_MODULE_DATA_LOG_h
 
-#include "pmmTelemetry/pmmTelemetry.h"
-#include "pmmSd/pmmSd.h"
-#include "pmmGps/pmmGps.h" // for GPS struct
-#include "pmmImu/pmmImu.h" // for IMU struct
-
+#include "pmmTelemetry/pmmTelemetry.h"      // For transmitting
+#include "pmmSd/pmmSd.h"                    // For storing
+#include "pmmGps/pmmGps.h"                  // For GPS struct
+#include "pmmImu/pmmImu.h"                  // For IMU struct
+#include "pmmModules/dataLogInfo/logInfo.h" // For specific defines
 
 
 // 000X 0-1 (1 byte)
@@ -34,51 +34,22 @@
 
 
 // DataLog AND DataLogInfo Defines (Which I will call as DATA_LOG)
-
 #define MODULE_DATA_LOG_MAX_VARIABLES               50  // This must be the same value for the transmitter and the receptor.
-
 #define MODULE_DATA_LOG_MAX_STRING_LENGTH           30  // The maximum Variable String. Includes the '\0'.
 
 
 // DataLog Defines
-
 #define PORT_DATA_LOG_INDEX_CRC_8_HEADER            0
 #define PORT_DATA_LOG_INDEX_SESSION_ID              1
-#define PORT_DATA_LOG_INDEX_DATA_LOG_INFO_ID        2
+#define PORT_DATA_LOG_INDEX_DATA_LOG_ID             2
 #define PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_LSB      3
 #define PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_MSB      4
 // Total header length is equal to...
 #define PORT_DATA_LOG_HEADER_LENGTH                 5
 
+#define PORT_DATA_LOG_PAYLOAD_START                 PORT_DATA_LOG_HEADER_LENGTH
+
 #define PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PORT_DATA_LOG_HEADER_LENGTH)
-
-
-
-#define PORT_LOG_INFO_INDEX_CRC_LSB                 0
-#define PORT_LOG_INFO_INDEX_CRC_MSB                 1
-#define PORT_LOG_INFO_INDEX_SESSION_ID              2
-#define PORT_LOG_INFO_INDEX_CURRENT_PACKET          3
-#define PORT_LOG_INFO_INDEX_TOTAL_PACKETS           4
-#define PORT_LOG_INFO_INDEX_LOG_INFO_ID             5
-
-// Total header length is equal to...
-#define PORT_LOG_INFO_HEADER_LENGTH                 6
-
-// The maximum payload length per packet.
-#define PORT_LOG_INFO_MAX_PAYLOAD_LENGTH        (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PORT_LOG_INFO_HEADER_LENGTH)
-
-// When sending the types of the variables (4 bits each type), they are grouped into 1 byte, to make the telemetry packet smaller (read the Telemetry Guide).
-//   If the number of variables is odd, the last variable type won't be grouped with another variable type, as there isn't another one,
-//   but it will still take 1 byte on the telemetry packet to send it. So, it's the same as: maxLengthVariablesType = ceil(numberVariables/2).
-#define MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH   ((MODULE_DATA_LOG_MAX_VARIABLES + 2 - 1) / 2)
-                                                    // Ceiling without ceil(). https://stackoverflow.com/a/2745086
-
-// The total DataLogInfo content length
-#define MODULE_LOG_INFO_CONTENT_MAX_LENGTH      (1 + MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH + MODULE_DATA_LOG_MAX_VARIABLES * MODULE_DATA_LOG_MAX_STRING_LENGTH)
-
-// How many packets are needed to send the Combined Payload.
-#define PORT_LOG_INFO_MAX_PACKETS               ((MODULE_LOG_INFO_CONTENT_MAX_LENGTH + PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
-                                                // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
 
 
@@ -89,8 +60,8 @@ public:
 
     PmmModuleDataLog();
 
-    int init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
-
+    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
 // Transmission
     int  sendDataLog();
@@ -102,7 +73,7 @@ public:
     int  receivedLogInfo(receivedPacketAllInfoStructType* packetInfo);
 
 
-// Add variables to the package log. Their types are specified in PmmModuleDataLog.cpp.
+// Add variables to DataLog. Their types are specified in PmmModuleDataLog.cpp.
     void addMagnetometer     (void* magnetometerArray );
     void addGyroscope        (void* gyroscopeArray    );
     void addAccelerometer    (void* accelerometerArray);
@@ -141,6 +112,7 @@ private:
 
 // Add variables to the Data Log. The types are specified in PmmModuleDataLog.cpp.
     int  addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
+
     int  includeVariableInPackage(const char*  variableName,   uint8_t variableType, void* variableAddress);
     int  includeArrayInPackage   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
 
@@ -150,16 +122,17 @@ private:
 // Storage
     int  getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[] = NULL);
     
-    int  saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus);
-    int  saveOwnDataLog();
+    int  saveDataLog        (uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus);
+    int  saveOwnDataLog     ();
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
 
     int  saveOwnDataLogInfo();
-    int  savePart(char filePath[], uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, int* finishedBuilding);
+    int  savePart(char filePath[], uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, int* finishedBuilding, int flags);
     int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
 
 
 
+// Variables
     PmmTelemetry* mPmmTelemetry;
     PmmSd       * mPmmSd;
     PmmSdSafeLog* mPmmSdSafeLog;
@@ -170,15 +143,13 @@ private:
     uint8_t  mSystemSession;
     uint8_t  mDataLogId;
 
-
-
     uint8_t  mNumberVariables;
     char   * mVariableNameArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableTypeArray[MODULE_DATA_LOG_MAX_VARIABLES];
     uint8_t  mVariableSizeArray[MODULE_DATA_LOG_MAX_VARIABLES]; // For a faster size access for the telemetry
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
-    uint8_t  mDataLogSize;
+    uint8_t  mGroupLength;
 
     uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
 
@@ -191,8 +162,11 @@ private:
 
 
 // Storage
-    static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo.splt"; // https://stackoverflow.com/a/25323360/10247962
-    static PmmSdAllocStatus mAllocStatusReceivedDataLog[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
+    static PmmSdAllocStatus mAllocStatusReceived[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static uint8_t          mAllocStatusReceivedSession[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static char             mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+    static char             mTempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
 
     PmmSdAllocStatus mAllocStatusSelfDataLog;
     char   mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];

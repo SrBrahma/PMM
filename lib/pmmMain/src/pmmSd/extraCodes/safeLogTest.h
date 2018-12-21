@@ -24,6 +24,10 @@ class SafeLogTest   // Being a class allows us to have functions inside, instead
 
 public:
 
+    SafeLogTest()
+        : mStatusStruct(GROUP_LENGTH, 32)
+    {}
+
     int main()
     {
         
@@ -189,7 +193,7 @@ private:
     {
         for (unsigned i = 0; i < GROUP_LENGTH; i++) { mGroupData[i] = i; }   // Give the initial values of the group data, just for a better demonstration.
         
-        mPmmSdSafeLog->initSafeLogStatusStruct(&mStatusStruct, GROUP_LENGTH, 32);
+        mStatusStruct.reset(GROUP_LENGTH, 32);
 
         // remove previous contents from the dir, if exists
         if (mPmmSd.getSdFatPtr()->exists(mDirPath))

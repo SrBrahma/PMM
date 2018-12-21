@@ -8,8 +8,7 @@
 #include <stdint.h>
 #include <SdFat.h>
 
-#include "pmmSd/pmmSd.h"
-#include "pmmSd/pmmSdAllocation.h"
+#include "pmmSd/alloc/pmmSdAllocation.h"
 
 #define PMM_SD_SAFE_LOG_DEFAULT_PART_SIZE_KIB   1024
 
@@ -27,7 +26,7 @@ public:
 
     PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard);
 
-    int write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocStatus* safeLogStatusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
+    int write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocStatus* statusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
 
     const char* getFilenameExtension();
 

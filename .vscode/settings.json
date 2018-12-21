@@ -8,6 +8,7 @@
         "PLATFORMIO_CALLER": "vscode"
     },
     "files.associations": {
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "fstream": "cpp"
     }
 }

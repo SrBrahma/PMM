@@ -8,7 +8,7 @@
 
 
 
-// Received Package Log Info Package
+// Received DataLogInfo Package
 int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
     unsigned currentPacket = packetInfo->payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET];

@@ -1,6 +1,6 @@
 #include <string.h>
 #include "pmmConsts.h"
-
+#include "pmmDebug.h"
 #include "pmmSd/pmmSd.h"
 #include "pmmSd/alloc/pmmSdSafeLog.h"
 #include "pmmSd/alloc/pmmSdAllocation.h"

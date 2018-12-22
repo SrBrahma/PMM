@@ -36,6 +36,7 @@
 #include <Arduino.h>
 #include <NMEAGPS.h>
 #include "pmmConsts.h"
+#include "pmmDebug.h"
 
 #include "pmmGps/pmmGps.h"
 

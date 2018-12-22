@@ -1,3 +1,21 @@
+//    DataLogInfo File Structure
+// This system will probably be used for splitting any packet in the future, like being the default in a protocol.
+
+// [Total Packets : 1 Byte] [Position of Part 0 Length : 2 Bytes] ... [Position of Part X Length : 2 Bytes]
+// [Part 0 Length : 2 Bytes] [Part 0 Data] ... [Part X Length] [Part X Data]
+
+//    Total Packets:
+// How many packets will build the entire package?
+
+//    Position of Part X Length
+// Where in this file is located the Part X Length? We point to the Length, as the Data itself is just after (+2 Bytes) the length.
+// We will have (TotalPackets) of this field. Is stored in LSB format.
+
+//    Part X Length:
+// The length of this part. LSB format.
+
+//    Part X Data:
+// The data of this part.
 
 #include <stdint.h>
 #include "pmmSd/pmmSdConsts.h"
@@ -40,7 +58,7 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
 
         // 1.2) Write the second field, which is the positions of each part. For now, they will all be zeroes.
         for (unsigned counter = 0; counter < totalParts * 2; counter++) // * 2 as they are 2 bytes each
-            mFile.write(0);
+            mFile.write((uint8_t)0);
     } // Just this.
 
 // 2) We are ready for writing the received packet. Not really. First, we check if we already received this packet.
@@ -76,23 +94,38 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
         }
     }
 
+    if (flags & PMM_SD_SPLIT_BUILD_FLAG)
+    {
+        buildFileFromSplit(filePath);
 
-    if (flags & PMM_SD_SPLIT_REMOVE_FLAG)
-        mFile.remove();
-
+        if (flags & PMM_SD_SPLIT_REMOVE_FLAG)
+            mFile.remove();
+    }
+    
     mFile.close();
 
     return PMM_SD_SPLIT_FINISHED_PACKAGE_RETURN;
 }
 
 
-
+// This function won't check if destination file already exists, so, check before or mess will come to Earth.
 int PmmSdSplit::buildFileFromSplit(char filePath[])
 {
+    if (!filePath)
+        return 1;
+
     File sourceFile;
     
-    uint8_t  buffer[512];
-    uint16_t bufferLength;
+    uint8_t  buffer[PMM_SD_SPLIT_BUFFER_LENGTH];
+    
+    uint8_t  totalPackets;
+
+    uint16_t partLengthPosition;
+    uint8_t  partLengthPositionArray[2];
+
+    uint16_t partLength;
+    uint8_t  partLengthArray[2];
+
 
     char sourcePath[PMM_SD_FILENAME_MAX_LENGTH];
     snprintf(sourcePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath, PMM_SD_SPLIT_EXTENSION);
@@ -100,5 +133,36 @@ int PmmSdSplit::buildFileFromSplit(char filePath[])
     sourceFile.open(sourcePath); // O_READ flag is default flag
     createDirsAndOpen(mSdFat, &mFile, filePath);
     
+    // 2) Read the totalPackets
+    sourceFile.seek(PMM_SD_SPLIT_INDEX_TOTAL_PACKETS);
+    sourceFile.read(&totalPackets, 1);
+    
+    // 3) Copy!
+    for (uint8_t packetIndex = 0; packetIndex < totalPackets; packetIndex++)
+    {
+        sourceFile.seek(packetIndex * 2 + PMM_SD_SPLIT_INDEX_POSITIONS_START);
+        sourceFile.read(partLengthPositionArray, 2);
+        partLengthPosition = (partLengthPositionArray[1] << 8) | partLengthPositionArray[0]; // Ensures the LSB format.
+
+        if (partLengthPosition == 0)
+            return 2;   // This part still missing in the Split file.
+
+        sourceFile.seek(partLengthPosition);
+        sourceFile.read(partLengthArray, 2);
+        partLength = (partLengthArray[1] << 8) | partLengthArray[0];
+
+        uint16_t bytesRemaining = partLength;
+        while (bytesRemaining > 0)
+        {
+            uint16_t bytesToCopyNow = ((bytesRemaining > PMM_SD_SPLIT_BUFFER_LENGTH) ? PMM_SD_SPLIT_BUFFER_LENGTH : bytesRemaining);
+            sourceFile.read(buffer, bytesToCopyNow);
+            mFile.write(buffer, bytesToCopyNow);
+            bytesRemaining -= bytesToCopyNow;
+        }
+    }
+
+    sourceFile.close();
+    mFile.close();
+
     return 0;
 }

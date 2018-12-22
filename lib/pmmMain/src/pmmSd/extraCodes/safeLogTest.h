@@ -11,8 +11,8 @@
 
 #include <Arduino.h>
 #include "pmmSd/pmmSd.h"
+#include "pmmDebug.h"
 
-#define MAX_BYTES_PER_LINE      49
 #define GROUP_LENGTH            150
 #define MAX_FILE_PARTS          2
 
@@ -67,7 +67,7 @@ public:
             Serial.print("Block ["); Serial.print(mCurrentBlockShowing - mBeginBlockShowing); Serial.print("] of ["); Serial.print(mEndBlockShowing - mBeginBlockShowing); Serial.println("].");
             
             mPmmSd.getCardPtr()->readBlock(mCurrentBlockShowing, mBlockContent);
-            printBlock(mBlockContent);
+            printHexArray(mBlockContent, 512);
 
             printControls();
             Serial.println();
@@ -235,21 +235,6 @@ private:
             delay(10); // So we don't read the serial at 180mhz lol
 
         return Serial.read();
-    }
-
-
-    void printBlock(uint8_t mBlockContent[512])
-    {
-        char buffer[4];
-
-        for (unsigned actualByte = 0; actualByte < 512; actualByte++)
-        {
-            snprintf(buffer, 4, "%02X ", mBlockContent[actualByte]);
-            Serial.print(buffer);
-            if ((actualByte + 1) % MAX_BYTES_PER_LINE == 0)
-                Serial.println();
-        }
-        Serial.println();
     }
 
 

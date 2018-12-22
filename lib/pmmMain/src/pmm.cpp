@@ -33,7 +33,7 @@
 #include "pmmModules/messageLog/messageLog.h"
 #include "pmmModules/portsReception.h"
 
-
+#include "pmmDebug.h"   // For debug prints
 
 Pmm::Pmm() {}
 

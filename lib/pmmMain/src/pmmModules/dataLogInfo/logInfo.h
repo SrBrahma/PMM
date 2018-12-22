@@ -8,10 +8,11 @@
 #define PORT_LOG_INFO_INDEX_SESSION_ID              2
 #define PORT_LOG_INFO_INDEX_CURRENT_PACKET          3
 #define PORT_LOG_INFO_INDEX_TOTAL_PACKETS           4
-#define PORT_LOG_INFO_INDEX_LOG_INFO_ID             5
+#define PORT_LOG_INFO_INDEX_DATA_LOG_ID             5
 
 // Total header length is equal to...
 #define PORT_LOG_INFO_HEADER_LENGTH                 6
+#define PORT_LOG_INFO_INDEX_PAYLOAD_START           PORT_LOG_INFO_HEADER_LENGTH
 
 // The maximum payload length per packet.
 #define PORT_LOG_INFO_MAX_PAYLOAD_LENGTH        (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PORT_LOG_INFO_HEADER_LENGTH)

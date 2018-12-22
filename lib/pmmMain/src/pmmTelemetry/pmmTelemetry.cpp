@@ -4,6 +4,7 @@
 
 #include <RH_RF95.h>                    // Our current RF module
 #include "pmmConsts.h"                  // For the pinout of the RF module and RF frequency
+#include "pmmDebug.h"
 #include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 

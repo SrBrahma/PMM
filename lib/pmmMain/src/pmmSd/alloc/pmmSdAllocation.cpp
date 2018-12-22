@@ -5,6 +5,7 @@
 #include <string.h>                 // For snprintf
 #include "pmmConsts.h"              // For Debug prints
 #include "pmmSd/pmmSdConsts.h"
+#include "pmmDebug.h"
 #include "pmmSd/alloc/pmmSdAllocation.h"
 
 

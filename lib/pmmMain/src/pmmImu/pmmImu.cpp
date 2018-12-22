@@ -8,6 +8,7 @@
 #include <BMP085.h>
 
 #include "pmmConsts.h"
+#include "pmmDebug.h"
 #include "pmmImu/pmmImu.h"
 
 

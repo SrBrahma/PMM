@@ -50,6 +50,19 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
 }
 
 
+int PmmModuleDataLog::update()
+{
+    // We will only add to the telemetry queue this packet if there are no packets to be sent ahead of this one! We prefer
+    // to send updated logs! Not old ones!
+    // And I might change it on the future!
+    // However, packets from other modules added to the queue with a higher priority still may be added, and will be sent first.
+    // On the future, as always, I may make it better, maybe replacing the old packet on the queue with a new one.
+    if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
+        sendDataLog();
+
+    return 0;
+}
+
 
 uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
 {

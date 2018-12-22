@@ -20,11 +20,6 @@
 
 #define PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN_POSITION   0 // Where it will be on the block.
 
-// These ifndef allows using this file without PMM.
-
-#ifndef PMM_DEBUG_PRINTLN
-    #define PMM_DEBUG_PRINTLN(x) Serial.println(x)
-#endif
 
 
 class PmmSdAllocStatus

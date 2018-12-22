@@ -9,7 +9,6 @@
 #include "pmmConsts.h"
 #include "pmmSd/alloc/pmmSdSafeLog.h"
 #include "pmmSd/split/pmmSdSplit.h"
-#include "pmmSd/pmmSdGeneralFunctions.h"
 
 #define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
 

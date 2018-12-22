@@ -4,6 +4,7 @@
 
 #include <SdFat.h>
 #include "pmmConsts.h"                      // For this system name
+#include "pmmDebug.h"
 #include "pmmSd/pmmSdGeneralFunctions.h"
 #include "pmmSd/pmmSd.h"
 
@@ -151,7 +152,7 @@ bool PmmSd::exists(char path[])
 // The default open, but this will also automatically create the path.
 int PmmSd::createDirsAndOpen(char path[], uint8_t mode)
 {
-    return createDirsAndOpen(&mSdFat, &mFile, path, mode);
+    return ::createDirsAndOpen(&mSdFat, &mFile, path, mode); // https://stackoverflow.com/a/1061630/10247962
 }
 
 int PmmSd::open(char path[], uint8_t mode)

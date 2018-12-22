@@ -17,21 +17,13 @@ int PmmModuleDataLog::sendDataLog()
     //                    Total header length = 5 bytes.
     // --------------------------------------------------
 
-// We will only add to the telemetry queue this packet if there are no packets to be sent ahead of this one! We prefer
-    // to send updated logs! Not old ones!
-    // And I might change it on the future!
-    // However, packets from other modules added to the queue with a higher priority still may be added, and will be sent first.
-    // On the future, as always, I may make it better, maybe replacing the old packet on the queue with a new one.
-    if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() > 0)
-        return 1;
-
     if (!mIsLocked)
         updateLogInfoCombinedPayload();
 
 // 1) Add the Header
     // 1.1) The CRC-8 is added after the other fields
     // 1.2) Add the Session Identifier
-    mPacketStruct.payload[PORT_DATA_LOG_INDEX_SESSION_ID]       = mSystemSession;
+    mPacketStruct.payload[PORT_DATA_LOG_INDEX_SESSION_ID]  = mSystemSession;
     // 1.3) Add the DataLogInfo Identifier
     mPacketStruct.payload[PORT_DATA_LOG_INDEX_DATA_LOG_ID] = mDataLogId;
     // 1.4) The CRC-16 of the log is added after adding the Log data.

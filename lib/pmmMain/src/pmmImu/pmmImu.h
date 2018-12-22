@@ -8,7 +8,17 @@
 #ifndef PMM_IMU_h
 #define PMM_IMU_h
 
-#define DELAY_MS_BAROMETER 100 //random value
+
+#include <MPU6050.h>
+#include <HMC5883L.h>
+#include <BMP085.h>
+
+#include "pmmConsts.h"
+#include "pmmDebug.h"
+
+
+
+#define DELAY_MS_BAROMETER  20 //random value
 
 #define PMM_IMU_DEBUG       1
 #define PMM_IMU_DEBUG_MORE  1 // For this to work, 
@@ -19,11 +29,6 @@
     #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
 #endif
 
-#include <MPU6050.h>
-#include <HMC5883L.h>
-#include <BMP085.h>
-
-#include "pmmConsts.h"
 
 
 typedef struct

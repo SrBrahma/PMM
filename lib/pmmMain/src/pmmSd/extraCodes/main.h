@@ -40,6 +40,5 @@ class PmmSdExtraCodes
                 }
             }
             Serial.println("=-= Finished PmmSdExtraCodes =-=\n");
-            delete this;
         }
 };

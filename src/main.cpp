@@ -6,12 +6,13 @@ Pmm pmm;
 void setup()
 {
     runExtraCodes();
+    pmm.init();
     //expansion.init();
 }
 
 void loop()
 {
-    //pmm.update();
+    pmm.update();
     //expansion.update();
 
 }

@@ -29,10 +29,12 @@ int PmmSd::init()
     else
     {
         mSdIsWorking = 1;
+        
+        mPmmDirPath[0] = '\0';
+
         PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
         return 0;
     }
-    mHasCreatedThisSessionDirectory = 0;
 }
 
 int PmmSd::init(uint8_t sessionId)
@@ -60,11 +62,6 @@ int PmmSd::init(uint8_t sessionId)
 // Will rename, if exists, a previous Session with the same name, if this is the first time running this function in this Session.
 int PmmSd::setPmmCurrentDirectory()
 {
-    char fullPath[PMM_SD_FILENAME_MAX_LENGTH];
-    char fullPathRenameOld[PMM_SD_FILENAME_MAX_LENGTH];
-    unsigned oldCounter = 0;
-
-    snprintf(fullPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
 
     // 1) Make sure we are at root dir
     if (!mSdFat.chdir())
@@ -73,38 +70,35 @@ int PmmSd::setPmmCurrentDirectory()
         return 1;
     }
 
-    // 2) If is the first time running this function and there is an old dir with the same name as the new one about to be created,
-    //    rename the old one.
-    if (mSdFat.exists(fullPath))
+    // 2) Did we already created the Session dir at this system session?
+    if (!mPmmDirPath[0])
     {
-        if (!mHasCreatedThisSessionDirectory)
+        // 3) No! So, create it!
+        snprintf(mPmmDirPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId);
+
+        // 4) If the directory name already exists, create a new one with a suffix.
+        if (mSdFat.exists(mPmmDirPath))
         {
+            unsigned counter = 1;
             do
             {
-                snprintf(fullPathRenameOld, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u old %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, oldCounter);
-                oldCounter++;
-            } while (mSdFat.exists(fullPathRenameOld));
-
-            if (!mSdFat.rename(fullPath ,fullPathRenameOld))
-            {
-                PMM_DEBUG_ADV_PRINTLN("Error at rename()!")
-                return 2;
-            }
-            mHasCreatedThisSessionDirectory = 1;
+                snprintf(mPmmDirPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u - %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, counter);
+                counter++;
+            } while (mSdFat.exists(mPmmDirPath));
         }
     }
-    
+
     // 3) Create the new dir
-    else if (!mSdFat.mkdir(fullPath))
+    if (!mSdFat.mkdir(mPmmDirPath))
     {
         PMM_DEBUG_ADV_PRINTLN("Error at mkdir()!")
         return 3;
     }
-
-    // 4) Change to it
-    if (!mSdFat.chdir(fullPath))
+    
+    // 4) Change to the dir
+    if (!mSdFat.chdir(mPmmDirPath))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at chdir() to fullPath!")
+        PMM_DEBUG_ADV_PRINTLN("Error at chdir() to mPmmDirPath!")
         return 4;
     }
 

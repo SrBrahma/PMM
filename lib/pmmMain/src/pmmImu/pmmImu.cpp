@@ -22,9 +22,14 @@ int PmmImu::initMpu()
     if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {   
         mMpuIsWorking = 0;
-        PMM_DEBUG_PRINTLN("PmmImu #1: MPU6050 INIT FAILED");
+        PMM_DEBUG_ADV_PRINTLN("MPU6050 initialization failed!");
         return 1;
     }
+
+    // Enable bypass mode, needed to use with HMC5883L (copied from HMC5883L lib)
+    mMpu.setI2CMasterModeEnabled(false);
+    mMpu.setI2CBypassEnabled(true);
+    mMpu.setSleepEnabled(false);
 
     mMpuIsWorking = 1;
     PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: MPU6050 initialized successfully!");
@@ -39,7 +44,7 @@ int PmmImu::initMagnetometer()
     if (!mMagnetometer.begin())
     {
         mMagnetometerIsWorking = 0;
-        PMM_DEBUG_PRINTLN("PmmImu #2: MAGNETOMETER INIT ERROR");
+        PMM_DEBUG_ADV_PRINTLN("Magnetometer initialization failed!");
         return 1;
     }
 
@@ -57,7 +62,7 @@ int PmmImu::initBmp()  //BMP085 Setup
     if (!mBarometer.begin(BMP085_ULTRA_LOW_POWER))  
     {
         mBarometerIsWorking = 0;
-        PMM_DEBUG_PRINTLN("PmmImu #3: BAROMETER INIT ERROR");
+        PMM_DEBUG_ADV_PRINTLN("Barometer initialization failed!");
         return 1;
     }
 

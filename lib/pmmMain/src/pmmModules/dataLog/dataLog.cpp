@@ -15,12 +15,12 @@
 
 // These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
 // not listed here can be freely changed.
-const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]           = "packageID";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]         = "packageTime(ms)";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]     = "packageID";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]   = "packageTime(ms)";
 
-const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]             = "altitude(m)";
-const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]         = "gpsLongitude";
-const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]        = "gpsLatitude";
+const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]       = "altitude(m)";
+const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]   = "gpsLatitude";
+const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]  = "gpsLongitude";
 
 
 
@@ -298,63 +298,69 @@ uint8_t**    PmmModuleDataLog::getVariableAdrsArray()    { return mVariableAdrsA
 
 void PmmModuleDataLog::debugPrintLogHeader()
 {
-    unsigned variableIndex;
-    char buffer[512] = {0}; // No static needed, as it is called usually only once.
+    char buffer[512] = {'\0'}; // No static needed, as it is called usually only once.
 
-    // For adding the first variable header to the print
-    if (mNumberVariables > 0)
-        snprintf(buffer, 512, "%s", mVariableNameArray[0]);
-
-    for (variableIndex = 1; variableIndex < mNumberVariables; variableIndex ++)
+    for (unsigned variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
     {
-        snprintf(buffer, 512, "%s | %s", buffer, mVariableNameArray[variableIndex]);
+        if (variableIndex > 0)
+            snprintf(buffer, 512, "%s | ", buffer);
+        snprintf(buffer, 512, "%s%u) %s", buffer, variableIndex, mVariableNameArray[variableIndex]);
     }
+
     Serial.println(buffer);
 }
 
+
+// Float variables are printed with a maximum of 3 decimal digits. You may change it if you like.
 void PmmModuleDataLog::debugPrintLogContent()
 {
-    unsigned variableIndex;
     static char buffer[512]; // Static for optimization
-    buffer[0] = '\0'; // for the snprintf
-    for (variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
+    buffer[0] = {'\0'};      // As the above is static, we need to reset the first char so snprintf will work properly.
+
+    for (unsigned variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
     {
+        if (variableIndex > 0)
+            snprintf(buffer, 512, "%s ", buffer);
+
+        snprintf(buffer, 512, "%s[%u) ", buffer, variableIndex);
+
         switch(mVariableTypeArray[variableIndex])
         {
             case MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%f, ", buffer, *(float*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%.3f", buffer, *(float*)    (mVariableAdrsArray[variableIndex])); // https://stackoverflow.com/a/30658980/10247962
                 break;
             case MODULE_DATA_LOG_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu, ", buffer, *(uint32_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%lu",  buffer, *(uint32_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li, ", buffer, *(int32_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%li",  buffer, *(int32_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u, ", buffer, *(uint8_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u",   buffer, *(uint8_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i, ", buffer, *(int8_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i",   buffer, *(int8_t*)   (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u, ", buffer, *(uint16_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%u",   buffer, *(uint16_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i, ", buffer, *(int16_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%i",   buffer, *(int16_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT64:
-                snprintf(buffer, 512, "%s%llu, ", buffer, *(uint64_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%llu", buffer, *(uint64_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT64:
-                snprintf(buffer, 512, "%s%lli, ", buffer, *(int64_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%lli", buffer, *(int64_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%f, ", buffer, *(double*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, 512, "%s%.3f", buffer, *(double*)   (mVariableAdrsArray[variableIndex]));
                 break;
             default:    // If none above,
-                snprintf(buffer, 512, "%s%s, ",   buffer, ">TYPE ERROR HERE!<");
+                snprintf(buffer, 512, "%s%s",   buffer, ">TYPE ERROR HERE!<");
                 break;
         } // switch end
+        snprintf(buffer, 512, "%s]", buffer);
     } // for loop end
     Serial.println(buffer);
 } // end of function debugPrintLogContent()

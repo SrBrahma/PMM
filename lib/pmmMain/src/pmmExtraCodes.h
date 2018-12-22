@@ -9,13 +9,9 @@
 
 #if PMM_EXTRA_CODES_ENABLE
 
-
-
     #if PMM_SD_EXTRA_CODES
         #include "pmmSd/extraCodes/main.h"
     #endif
-
-
 
     // Extra Codes are codes from Formatting the SD card to testing and calibrating sensors.
     void runExtraCodes()
@@ -29,12 +25,13 @@
 
             while (!Serial && ((millis() - serialDebugTimeout) < 10000));
 
-            Serial.println("=-= PMM Extra Code initialized automatically. You can disable it at pmmConsts.h. =-=\n");
+            Serial.println("=-= PMM Extra Codes initialized automatically. You can disable it at pmmConsts.h. =-=\n");
 
             #if PMM_SD_EXTRA_CODES
                 PmmSdExtraCodes();
             #endif
 
+            Serial.println("=-= End of PMM Extra Codes. =-=");
         #endif
     }
 

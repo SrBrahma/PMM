@@ -70,7 +70,7 @@ private:
 
     unsigned  mSdIsWorking;
 
-    unsigned  mHasCreatedThisSessionDirectory;
+    char      mPmmDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
     uint8_t   mThisSessionId;
 

@@ -54,7 +54,7 @@ int Pmm::init()
         #endif
 
         if (Serial)
-            PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Serial initialized!");
+            PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Serial initialized!");
     #endif
 
 
@@ -136,28 +136,24 @@ void Pmm::update()
 
     mMillis = millis();
 
-
-
     #if PMM_USE_IMU
         mPmmImu.update();
-        //PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Updated Imu!");
+        //PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Updated Imu!");
     #endif
-
 
 
     #if PMM_USE_GPS
         mPmmGps.update();
-        //PMM_DEBUG_PRINTLN_MORE(Pmm [M]: Updated Gps!");
+        //PMM_DEBUG_MORE_PRINTLN(Pmm [M]: Updated Gps!");
     #endif
 
 
-
+    mPmmModuleDataLog.update();
 
     #if PMM_DEBUG
         mPmmModuleDataLog.debugPrintLogContent();
         Serial.println();
     #endif
-
 
 
     #if PMM_USE_TELEMETRY
@@ -169,7 +165,7 @@ void Pmm::update()
         if(mPmmTelemetry.updateReception());
             
             //mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketStatusStructPtr());
-        //PMM_DEBUG_PRINTLN_MORE("Pmm [M]: Updated Telemetry!");
+        //PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Updated Telemetry!");
         if(mPmmTelemetry.updateTransmission());
     #endif
 
@@ -181,7 +177,9 @@ void Pmm::update()
         timePrint = millis();
     }*/
 
-        //mPmmErrorsCentral.updateLedsAndBuzzer();
-    mLoopId ++;
-    delay(500);
+
+    mLoopId++;
+    delay(50);
 }
+
+//void Pmm::

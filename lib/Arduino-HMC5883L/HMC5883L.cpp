@@ -71,7 +71,7 @@ void HMC5883L::readNormalized(float magnetometerArray[3])
 {
     magnetometerArray[0] = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
     magnetometerArray[1] = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
-    magnetometerArray[2] = (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
+    magnetometerArray[2] =  (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
 }
 
 void HMC5883L::setOffset(int xo, int yo)
@@ -225,7 +225,6 @@ uint8_t HMC5883L::fastRegister8(uint8_t reg)
     #else
         value = Wire.receive();
     #endif
-    Wire.endTransmission();
 
     return value;
 }
@@ -250,7 +249,6 @@ uint8_t HMC5883L::readRegister8(uint8_t reg)
     #else
         value = Wire.receive();
     #endif
-    Wire.endTransmission();
 
     return value;
 }
@@ -277,7 +275,6 @@ int16_t HMC5883L::readRegister16(uint8_t reg)
         uint8_t vha = Wire.receive();
         uint8_t vla = Wire.receive();
     #endif
-    Wire.endTransmission();
 
     value = vha << 8 | vla;
 

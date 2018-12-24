@@ -27,13 +27,19 @@
     #define PMM_PIN_LED_ERRORS              99
     #define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
 
-
+    typedef enum
+    {
+        MODE_SLEEP,
+        MODE_READY,
+        MODE_DEPLOYED,
+        MODE_FINISHED
+    } pmmSystemState;
 
 // =======================================================================
 //  Debug
 // =======================================================================
     #define PMM_DEBUG                               1 // Will enable debug messages via Serial. All error messages will be displayed with this, and some minor messages.
-    #define PMM_DEBUG_MORE                          1 // Additional debug messages, like "PmmImu [M]: MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
+    #define PMM_DEBUG_MORE                          1 // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
     // For this to work, PMM_DEBUG must be 1. Also, the main classes usually have another define like PMM_IMU_DEBUG_MORE, so you can activate the additional messages you want.
 
     #define PMM_DEBUG_TIMEOUT_ENABLED               1 // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the

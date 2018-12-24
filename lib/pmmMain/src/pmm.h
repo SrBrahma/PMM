@@ -6,11 +6,7 @@
 
 #include <pmmConsts.h>
 
-
-
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
-
-
 
 #if PMM_USE_TELEMETRY
     #include "pmmTelemetry/pmmTelemetry.h"
@@ -41,14 +37,17 @@ class Pmm
 public:
 
     Pmm();
-    int init();
+
+    int  init();
     void update();
 
 private:
 
-    uint8_t mSessionId;
+    uint8_t  mSessionId;
     uint32_t mMillis, mLoopId;
 
+    pmmSystemState mSystemState;
+    
     #if PMM_USE_IMU
         PmmImu mPmmImu;
     #endif

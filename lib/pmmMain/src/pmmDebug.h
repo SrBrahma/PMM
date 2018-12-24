@@ -9,7 +9,7 @@
     #define DO_PRAGMA(arguments)  _Pragma(#arguments)
     #define REMINDER(string)      DO_PRAGMA(message(string))
 
-    #define PMM_CANCEL_MACRO(x) do {} while (0)
+    #define PMM_CANCEL_MACRO(x)(x) do {} while (0)
 
     // Get only the filename from a __FILE__
     #define FILENAME (__builtin_strrchr("/" __FILE__, '/') + 1)
@@ -22,21 +22,40 @@
     #define PMM_DEBUG_PRINT(string)   Serial.print(string)  ;
     #define PMM_DEBUG_PRINTLN(string) Serial.println(string);
 #else
-    #define PMM_DEBUG_ADV_PRINT(x)   PMM_CANCEL_MACRO
-    #define PMM_DEBUG_ADV_PRINTLN(x) PMM_CANCEL_MACRO
-    #define PMM_DEBUG_PRINT(x)       PMM_CANCEL_MACRO
-    #define PMM_DEBUG_PRINTLN(x)     PMM_CANCEL_MACRO
+    #define PMM_DEBUG_ADV_PRINT(x)      PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_ADV_PRINTLN(x)    PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_PRINT(x)          PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_PRINTLN(x)        PMM_CANCEL_MACRO(x)
 #endif
 
 
 #if PMM_DEBUG_MORE
-    #define PMM_DEBUG_PRINTLN_MORE(x) PMM_DEBUG_PRINTLN(x)
+    #define PMM_DEBUG_MORE_TAG_PRINT()  Serial.print("[M] ");
+    #define PMM_DEBUG_MORE_PRINT(x)     PMM_DEBUG_MORE_TAG_PRINT() Serial.print(x);
+    #define PMM_DEBUG_MORE_PRINTLN(x)   PMM_DEBUG_MORE_PRINT(x) Serial.println();
 #else
-    #define PMM_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO
+    #define PMM_DEBUG_MORE_TAG_PRINT()  PMM_CANCEL_MACRO()
+    #define PMM_DEBUG_MORE_PRINT(x)     PMM_CANCEL_MACRO(x)
+    #define PMM_DEBUG_MORE_PRINTLN(x)   PMM_CANCEL_MACRO(x)
 #endif
 
 
 #define PMM_DEBUG_PRINT_HEX_MAX_BYTES_PER_LINE      49
+
+
+
+
+
+// IMU
+#define PMM_IMU_DEBUG_MORE              0  // Prints additional debug messages.
+
+#if PMM_IMU_DEBUG_MORE
+    #define PMM_IMU_DEBUG_PRINT_MORE(x)   PMM_DEBUG_MORE_PRINT("PmmImu: ") PMM_DEBUG_PRINT(x)
+    #define PMM_IMU_DEBUG_PRINTLN_MORE(x) PMM_DEBUG_MORE_PRINT("PmmImu: ") PMM_DEBUG_PRINTLN(x)
+#else
+    #define PMM_IMU_DEBUG_PRINTLN_MORE(x) PMM_CANCEL_MACRO(x)(x)
+#endif
+
 
 
 void printHexArray(uint8_t arrayToPrint[], unsigned arrayLength);

@@ -5,7 +5,7 @@
 
 #include <MPU6050.h>
 #include <HMC5883L.h>
-#include <BMP085.h>
+#include <Adafruit_BMP085_U.h>
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
@@ -32,7 +32,7 @@ int PmmImu::initMpu()
     mMpu.setSleepEnabled(false);
 
     mMpuIsWorking = 1;
-    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: MPU6050 initialized successfully!");
+    PMM_DEBUG_MORE_PRINTLN("MPU6050 initialized successfully!");
 
     return 0;
 }
@@ -49,7 +49,7 @@ int PmmImu::initMagnetometer()
     }
 
     mMagnetometerIsWorking = 1;
-    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: Magnetometer initialized successfully!");
+    PMM_DEBUG_MORE_PRINTLN("Magnetometer initialized successfully!");
 
     return 0;
 }
@@ -58,22 +58,50 @@ int PmmImu::initMagnetometer()
 
 int PmmImu::initBmp()  //BMP085 Setup
 {
-    // This is ultra low power is actually better, as we will lose less time on delay(), and we do the filtering ourselves. // Read the datasheet.
-    if (!mBarometer.begin(BMP085_ULTRA_LOW_POWER))  
+    if (mBarometer.begin(BMP085_MODE_ULTRAHIGHRES))  
     {
         mBarometerIsWorking = 0;
         PMM_DEBUG_ADV_PRINTLN("Barometer initialization failed!");
         return 1;
     }
 
-    mReferencePressure = mBarometer.readPressure();
+    setReferencePressure();
+
     mBarometerIsWorking = 1;
-    PMM_DEBUG_PRINTLN_MORE("PmmImu [M]: BMP initialized successfully!");
+
+    PMM_DEBUG_MORE_PRINTLN("Barometer initialized successfully!");
     return 0;
 }
 
 
+// Deppending on the number of measures, this may take a little while.
+int PmmImu::setReferencePressure(unsigned samples)
+{
+    float sumPressure = 0;
+    float pressure;
 
+    for (unsigned counter = 0; counter < samples; counter ++)
+    {
+        unsigned counter2 = 0;
+
+        while (mBarometer.isDataReady() != DATA_READY_PRESSURE)
+        {
+            if (counter2++ > 100)
+            {
+                PMM_DEBUG_ADV_PRINTLN("No pressure was obtained after some attempts.")
+                return 1;
+            }
+            delay(5);
+        }
+
+        mBarometer.getPressure(&pressure);
+        sumPressure += pressure;
+
+    }
+    mReferencePressure = sumPressure / samples;
+
+    return 0;
+}
 
 
 int PmmImu::init()
@@ -111,8 +139,8 @@ int PmmImu::updateMpu()
     {
         mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
         mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
-        mPmmImuStruct.temperature = mMpu.readTemperature();
-        PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Mpu updated!");
+        mPmmImuStruct.mpuTemperature = mMpu.readTemperature();
+        PMM_IMU_DEBUG_PRINTLN_MORE("Mpu updated!");
         return 0;
     }
     else
@@ -126,7 +154,7 @@ int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/
     if (mMagnetometerIsWorking)
     {
         mMagnetometer.readNormalized(mPmmImuStruct.magnetometerArray);
-        PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Magnetometer updated!");
+        PMM_IMU_DEBUG_PRINTLN_MORE("Magnetometer updated!");
         return 0;
     }
     else
@@ -141,9 +169,22 @@ int PmmImu::updateBmp()
     // read calibrated pressure value in Pascals (Pa)
     if (mBarometerIsWorking)
     {
-        mPmmImuStruct.pressure = mBarometer.readPressure();
-        mPmmImuStruct.altitudePressure = mBarometer.getAltitude(mPmmImuStruct.pressure, mReferencePressure);
-        PMM_IMU_DEBUG_PRINT_MORE("PmmImu [M]: Barometer updated!");
+
+        switch(mBarometer.isDataReady())
+        {
+            
+            case DATA_READY_TEMPERATURE:
+                mBarometer.getTemperature(&mPmmImuStruct.barometerTemperature);
+                break;
+
+            case DATA_READY_PRESSURE:
+                mBarometer.getPressure(&mPmmImuStruct.pressure);
+
+                mPmmImuStruct.altitudePressure = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+                break;
+        }
+
+        PMM_IMU_DEBUG_PRINTLN_MORE("Barometer updated!");
         return 0;
     }
     else
@@ -173,6 +214,10 @@ void PmmImu::getGyroscope(float destinationArray[3])
 {
     memcpy(destinationArray, mPmmImuStruct.gyroscopeArray, 3);
 }
+float PmmImu::getMpuTemperature()
+{
+    return mPmmImuStruct.mpuTemperature;
+}
 void PmmImu::getMagnetometer(float destinationArray[3])
 {
     memcpy(destinationArray, mPmmImuStruct.magnetometerArray, 3);
@@ -185,9 +230,9 @@ float PmmImu::getAltitudeBarometer()
 {
     return mPmmImuStruct.altitudePressure;
 }
-float PmmImu::getTemperature()
+float PmmImu::getBarometerTemperature()
 {
-    return mPmmImuStruct.temperature;
+    return mPmmImuStruct.barometerTemperature;
 }
 pmmImuStructType PmmImu::getImuStruct()
 {
@@ -204,6 +249,10 @@ float* PmmImu::getGyroscopePtr()
 {
     return mPmmImuStruct.gyroscopeArray;
 }
+float* PmmImu::getMpuTemperaturePtr()
+{
+    return &mPmmImuStruct.mpuTemperature;
+}
 float* PmmImu::getMagnetometerPtr()
 {
     return mPmmImuStruct.magnetometerArray;
@@ -216,9 +265,9 @@ float* PmmImu::getAltitudeBarometerPtr()
 {
     return &mPmmImuStruct.altitudePressure;
 }
-float* PmmImu::getTemperaturePtr()
+float* PmmImu::getBarometerTemperaturePtr()
 {
-    return &mPmmImuStruct.temperature;
+    return &mPmmImuStruct.barometerTemperature;
 }
 pmmImuStructType* PmmImu::getImuStructPtr()
 {

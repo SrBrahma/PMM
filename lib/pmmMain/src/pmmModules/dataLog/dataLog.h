@@ -61,7 +61,7 @@ public:
     PmmModuleDataLog();
 
     int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
-    int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
+    int  update(pmmSystemState systemState);   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
 // Transmission
     int  sendDataLog();
@@ -74,19 +74,20 @@ public:
 
 
 // Add variables to DataLog. Their types are specified in PmmModuleDataLog.cpp.
-    void addMagnetometer     (void* magnetometerArray );
-    void addGyroscope        (void* gyroscopeArray    );
-    void addAccelerometer    (void* accelerometerArray);
-    void addBarometer        (void* barometerPtr      );
-    void addAltitudeBarometer(void* altitudePtr       );
-    void addThermometer      (void* thermometerPtr    );
+    int  addMagnetometer     (void* magnetometerArray );
+    int  addGyroscope        (void* gyroscopeArray    );
+    int  addAccelerometer    (void* accelerometerArray);
+    int  addMpuTemperature   (void* mpuTemperaturePtr);
+    int  addBarometer        (void* barometerPtr      );
+    int  addAltitudeBarometer(void* altitudePtr       );
+    int  addBarometerTemperature(void* barometerTempPtr);
 
-    void addImu(pmmImuStructType* pmmImuStructPtr); // Adds all the sensors above.
-    void addGps(pmmGpsStructType* pmmGpsStruct   );
+    int  addImu(pmmImuStructType* pmmImuStructPtr); // Adds all the sensors above.
+    int  addGps(pmmGpsStructType* pmmGpsStruct   );
 
     // For a quick way to add a variable to the package. Make sure the given variable name and the variable itself is static, global,
     // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like MODULE_DATA_LOG_TYPE_UINT8;
-    void addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
+    int  addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
 
 
     // Getters
@@ -111,7 +112,7 @@ private:
     uint8_t variableTypeToVariableSize(uint8_t variableType);
 
 // Add variables to the Data Log. The types are specified in PmmModuleDataLog.cpp.
-    int  addPackageBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
+    int  addBasicInfo(uint32_t* packageId, uint32_t* packageTimeMs);
 
     int  includeVariableInPackage(const char*  variableName,   uint8_t variableType, void* variableAddress);
     int  includeArrayInPackage   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);

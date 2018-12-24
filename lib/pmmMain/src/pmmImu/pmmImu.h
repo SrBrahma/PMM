@@ -11,36 +11,28 @@
 
 #include <MPU6050.h>
 #include <HMC5883L.h>
-#include <BMP085.h>
+#include <Adafruit_BMP085_U.h>
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
 
 
 
-#define DELAY_MS_BAROMETER  20 //random value
-
-#define PMM_IMU_DEBUG       1
-#define PMM_IMU_DEBUG_MORE  1 // For this to work, 
-
-#if PMM_IMU_DEBUG_MORE
-    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINTLN_MORE(x)
-#else
-    #define PMM_IMU_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
-#endif
-
-
-
 typedef struct
 {
     float accelerometerArray[3];    // Accelerations    of x,y,z, in m/s^2
-    float magnetometerArray[3];     // Magnetic fields  of x,y,z, in ..
     float gyroscopeArray[3];        // Angular velocity of x,y,z, in degrees/sec
-    float pressure;
-    float altitudePressure;         // Relative altitude, to the starting altitude.
-    float temperature;
+    float mpuTemperature;
+
     float headingDegree;
     float headingRadian;
+
+    float magnetometerArray[3];     // Magnetic fields  of x,y,z, in ..
+
+    float pressure;
+    float altitudePressure;         // Relative altitude, to the starting altitude.
+    float barometerTemperature;
+
 } pmmImuStructType;
 
 class PmmImu
@@ -56,38 +48,44 @@ public:
 
     int update(); // Gets all the sensors
 
+    int setReferencePressure(unsigned samples = 5);
+
     /* These returns safely a copy of the variables */
-    void  getAccelerometer(float destinationArray[3]);
-    void  getGyroscope(float destinationArray[3]);
-    void  getMagnetometer(float destinationArray[3]);
-    float getBarometer();
-    float getAltitudeBarometer();
-    float getTemperature();
+    void   getAccelerometer(float destinationArray[3]);
+    void   getGyroscope(float destinationArray[3]);
+    float  getMpuTemperature();
+    void   getMagnetometer(float destinationArray[3]);
+    float  getBarometer();
+    float  getAltitudeBarometer();
+    float  getBarometerTemperature();
     pmmImuStructType getImuStruct();
 
     /* These returns a pointer to the original variables - UNSAFE! Be careful! */
     float* getAccelerometerPtr();
     float* getGyroscopePtr();
+    float* getMpuTemperaturePtr();
     float* getMagnetometerPtr();
     float* getBarometerPtr();
     float* getAltitudeBarometerPtr();
-    float* getTemperaturePtr();
+    float* getBarometerTemperaturePtr();
     pmmImuStructType* getImuStructPtr();
 
 private:
-    BMP085 mBarometer;
-    MPU6050 mMpu;
+    BMP085   mBarometer;
+    MPU6050  mMpu;
     HMC5883L mMagnetometer;
+
+    pmmImuStructType mPmmImuStruct;
 
     unsigned mMpuIsWorking;
     unsigned mBarometerIsWorking;
     unsigned mMagnetometerIsWorking;
 
-    pmmImuStructType mPmmImuStruct;
+    double   mReferencePressure;
 
-    float mMagnetometerDeclinationRad;
+    float    mMagnetometerDeclinationRad;
 
-    double mReferencePressure;
+
 
     int initMpu();
     int initMagnetometer();

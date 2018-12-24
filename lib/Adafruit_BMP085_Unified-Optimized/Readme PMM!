@@ -1,0 +1,4 @@
+Taken from
+https://github.com/JeffyW/Adafruit_BMP085_Unified/tree/Optimized
+
+This is a fork from the default Adafruit lib, but with some new stuff as non blocking readings.

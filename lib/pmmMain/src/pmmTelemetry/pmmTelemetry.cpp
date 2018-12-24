@@ -53,7 +53,7 @@ int PmmTelemetry::init()
     mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
 
     mTelemetryIsWorking = 1;
-    PMM_DEBUG_PRINTLN_MORE("PmmTelemetry [M]: LoRa initialized successfully!");
+    PMM_DEBUG_MORE_PRINTLN("PmmTelemetry [M]: LoRa initialized successfully!");
 
     return 0;
 }

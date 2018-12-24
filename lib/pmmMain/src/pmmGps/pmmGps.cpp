@@ -74,7 +74,7 @@ int PmmGps::init()
 
     if (Serial1)
     {
-        PMM_DEBUG_PRINTLN_MORE("PmmGps [M]: Initialized successfully!");
+        PMM_DEBUG_MORE_PRINTLN("PmmGps [M]: Initialized successfully!");
         mGpsIsWorking = 1;
     }
 

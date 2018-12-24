@@ -17,9 +17,9 @@
 #define PMM_SD_DEBUG_MORE           1
 
 #if PMM_SD_DEBUG_MORE
-    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_PRINTLN_MORE(x)
+    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_MORE_PRINTLN(x)
 #else
-    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)
+    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)(x)
 #endif
 
 

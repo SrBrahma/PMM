@@ -48,6 +48,8 @@ public:
 
     int update(); // Gets all the sensors
 
+    int setSystemMode(pmmSystemState systemMode);
+    
     int setReferencePressure(unsigned samples = 5);
 
     /* These returns safely a copy of the variables */

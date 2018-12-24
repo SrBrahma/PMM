@@ -28,8 +28,8 @@ int PmmImu::initMpu()
 
     // Enable bypass mode, needed to use with HMC5883L (copied from HMC5883L lib)
     mMpu.setI2CMasterModeEnabled(false);
-    mMpu.setI2CBypassEnabled(true);
-    mMpu.setSleepEnabled(false);
+    mMpu.setI2CBypassEnabled    (true );
+    mMpu.setSleepEnabled        (false);
 
     mMpuIsWorking = 1;
     PMM_DEBUG_MORE_PRINTLN("MPU6050 initialized successfully!");
@@ -47,6 +47,9 @@ int PmmImu::initMagnetometer()
         PMM_DEBUG_ADV_PRINTLN("Magnetometer initialization failed!");
         return 1;
     }
+
+    mMagnetometer.setSamples(HMC5883L_SAMPLES_8);
+    mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
 
     mMagnetometerIsWorking = 1;
     PMM_DEBUG_MORE_PRINTLN("Magnetometer initialized successfully!");
@@ -88,7 +91,7 @@ int PmmImu::setReferencePressure(unsigned samples)
         {
             if (counter2++ > 100)
             {
-                PMM_DEBUG_ADV_PRINTLN("No pressure was obtained after some attempts.")
+                PMM_DEBUG_ADV_PRINTLN("No pressure was obtained after various attempts.")
                 return 1;
             }
             delay(5);
@@ -184,7 +187,7 @@ int PmmImu::updateBmp()
                 break;
         }
 
-        PMM_IMU_DEBUG_PRINTLN_MORE("Barometer updated!");
+        PMM_IMU_DEBUG_PRINTLN_MORE("Barometer updated!")
         return 0;
     }
     else
@@ -203,6 +206,35 @@ int PmmImu::update()
 }
 
 
+
+int PmmImu::setSystemMode(pmmSystemState systemMode)
+{
+
+    switch (systemMode)
+    {
+        case MODE_SLEEP:
+            mMpu.setSleepEnabled(true);
+            mMagnetometer.setMeasurementMode(HMC5883L_IDLE);
+            break;
+
+        case MODE_READY:
+            mMpu.setSleepEnabled(false);
+            mMagnetometer.setMeasurementMode(HMC5883L_CONTINOUS);
+            break;
+
+        case MODE_DEPLOYED:
+            mMpu.setSleepEnabled(false);
+            mMagnetometer.setMeasurementMode(HMC5883L_CONTINOUS);
+            break;
+
+        case MODE_FINISHED:
+            mMpu.setSleepEnabled(true);
+            mMagnetometer.setMeasurementMode(HMC5883L_IDLE);
+            break;
+    }
+
+    return 0;
+}
 
 
 

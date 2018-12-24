@@ -46,8 +46,12 @@ class PmmGps
 
 public:
     PmmGps();
+
     int init();
     int update();
+
+    // Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
+    
     pmmGpsStructType* getGpsStructPtr();
     pmmGpsStructType getGpsStruct();
     //void doSomeWork();

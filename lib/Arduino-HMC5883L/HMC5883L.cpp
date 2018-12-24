@@ -33,16 +33,16 @@ bool HMC5883L::begin()
     Wire.begin();
 
     if ((fastRegister8(HMC5883L_REG_IDENT_A) != 0x48)
-    || (fastRegister8(HMC5883L_REG_IDENT_B) != 0x34)
-    || (fastRegister8(HMC5883L_REG_IDENT_C) != 0x33))
+     || (fastRegister8(HMC5883L_REG_IDENT_B) != 0x34)
+     || (fastRegister8(HMC5883L_REG_IDENT_C) != 0x33))
     {
 	return false;
     }
 
     setMagnetometerRange(HMC5883L_RANGE_1_3GA);
-    setMeasurementMode(HMC5883L_CONTINOUS);
-    setDataRate(HMC5883L_DATARATE_15HZ);
-    setSamples(HMC5883L_SAMPLES_1);
+    setMeasurementMode  (HMC5883L_CONTINOUS);
+    setDataRate         (HMC5883L_DATARATE_15HZ);
+    setSamples          (HMC5883L_SAMPLES_1);
 
     mgPerDigit = 0.92f;
 
@@ -62,7 +62,7 @@ Vector HMC5883L::readNormalized(void)
 {
     v.XAxis = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
     v.YAxis = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
-    v.ZAxis = (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
+    v.ZAxis =  (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
 
     return v;
 }
@@ -132,7 +132,7 @@ void HMC5883L::setMeasurementMode(hmc5883l_mode_t mode)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_MODE);
+    value  = readRegister8(HMC5883L_REG_MODE);
     value &= 0b11111100;
     value |= mode;
 
@@ -143,7 +143,7 @@ hmc5883l_mode_t HMC5883L::getMeasurementMode(void)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_MODE);
+    value  = readRegister8(HMC5883L_REG_MODE);
     value &= 0b00000011;
 
     return (hmc5883l_mode_t)value;
@@ -153,7 +153,7 @@ void HMC5883L::setDataRate(hmc5883l_dataRate_t dataRate)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_CONFIG_A);
+    value  = readRegister8(HMC5883L_REG_CONFIG_A);
     value &= 0b11100011;
     value |= (dataRate << 2);
 
@@ -164,8 +164,8 @@ hmc5883l_dataRate_t HMC5883L::getDataRate(void)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_CONFIG_A);
-    value &= 0b00011100;
+    value   = readRegister8(HMC5883L_REG_CONFIG_A);
+    value  &= 0b00011100;
     value >>= 2;
 
     return (hmc5883l_dataRate_t)value;
@@ -175,7 +175,7 @@ void HMC5883L::setSamples(hmc5883l_samples_t samples)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_CONFIG_A);
+    value  = readRegister8(HMC5883L_REG_CONFIG_A);
     value &= 0b10011111;
     value |= (samples << 5);
 
@@ -186,8 +186,8 @@ hmc5883l_samples_t HMC5883L::getSamples(void)
 {
     uint8_t value;
 
-    value = readRegister8(HMC5883L_REG_CONFIG_A);
-    value &= 0b01100000;
+    value   = readRegister8(HMC5883L_REG_CONFIG_A);
+    value  &= 0b01100000;
     value >>= 5;
 
     return (hmc5883l_samples_t)value;

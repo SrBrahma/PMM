@@ -43,11 +43,13 @@ public:
 
 private:
 
+    int setSystemMode(pmmSystemState systemMode);
+
     uint8_t  mSessionId;
     uint32_t mMillis, mLoopId;
 
     pmmSystemState mSystemState;
-    
+
     #if PMM_USE_IMU
         PmmImu mPmmImu;
     #endif

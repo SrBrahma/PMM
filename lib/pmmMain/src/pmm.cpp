@@ -182,4 +182,9 @@ void Pmm::update()
     delay(50);
 }
 
-//void Pmm::
+int Pmm::setSystemMode(pmmSystemState systemMode)
+{
+
+    
+    return 0;
+}

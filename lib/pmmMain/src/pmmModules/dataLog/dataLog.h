@@ -61,7 +61,9 @@ public:
     PmmModuleDataLog();
 
     int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
-    int  update(pmmSystemState systemState);   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
+    int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
+
+    int setSystemMode(pmmSystemState systemMode);
 
 // Transmission
     int  sendDataLog();
@@ -134,12 +136,14 @@ private:
 
 
 // Variables
-    PmmTelemetry* mPmmTelemetry;
-    PmmSd       * mPmmSd;
-    PmmSdSafeLog* mPmmSdSafeLog;
+    PmmTelemetry*  mPmmTelemetry;
+    PmmSd       *  mPmmSd;
+    PmmSdSafeLog*  mPmmSdSafeLog;
+
+    pmmSystemState mSystemMode;
 
 
-// Self
+// Self DataLog
     int      mIsLocked;
     uint8_t  mSystemSession;
     uint8_t  mDataLogId;
@@ -154,6 +158,7 @@ private:
 
     uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
 
+
 // Transmission
     uint8_t  mLogInfoContentArray[MODULE_LOG_INFO_CONTENT_MAX_LENGTH];
     uint16_t mLogInfoContentArrayLength;
@@ -162,13 +167,13 @@ private:
     toBeSentPacketStructType mPacketStruct;
 
 
-// Storage
+// Storage reception
     static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
-    static PmmSdAllocStatus mAllocStatusReceived[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static PmmSdAllocStatus mAllocStatusReceived       [PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
     static uint8_t          mAllocStatusReceivedSession[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
-    static char             mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
+    static char             mTempFilename [PMM_SD_FILENAME_MAX_LENGTH];
     static char             mTempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
-
+// Storage self
     PmmSdAllocStatus mAllocStatusSelfDataLog;
     char   mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 

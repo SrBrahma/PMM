@@ -60,14 +60,10 @@ public:
 
     PmmModuleDataLog();
 
-    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* packageTimeMsPtr);
+    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* mainMillisPtr);
     int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
-    int setSystemMode(pmmSystemState systemMode);
-
-// Transmission
-    int  sendDataLog();
-    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST);
+    int  setSystemMode(pmmSystemState systemMode);
 
 
 // Reception
@@ -109,6 +105,10 @@ public:
 
 
 private:
+
+// Transmission
+    int  sendDataLog(uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_LOW);
+    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
 
 // Auxiliar functions
     uint8_t variableTypeToVariableSize(uint8_t variableType);
@@ -166,6 +166,9 @@ private:
     uint8_t  mDataLogInfoPackets;
     toBeSentPacketStructType mPacketStruct;
 
+    // Update
+    uint8_t  mUpdateModeReadyCounter, mUpdateModeDeployedCounter;
+    uint8_t  mUpdateDataLogInfoCounter;
 
 // Storage reception
     static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962

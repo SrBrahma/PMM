@@ -24,7 +24,7 @@ class PmmSdSafeLog : public PmmSdAllocation
 
 public:
 
-    PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard);
+    PmmSdSafeLog(SdFatSdio* sdFat);
 
     int write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocStatus* statusStruct, uint8_t externalBlockBuffer[PMM_SD_BLOCK_SIZE] = NULL); // Know what you are doing!
 

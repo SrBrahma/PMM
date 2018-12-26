@@ -143,7 +143,7 @@ int PmmImu::updateMpu()
         mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
         mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
         mPmmImuStruct.mpuTemperature = mMpu.readTemperature();
-        PMM_IMU_DEBUG_PRINTLN_MORE("Mpu updated!");
+        PMM_IMU_DEBUG_PRINTLN_MORE("Mpu updated!")
         return 0;
     }
     else

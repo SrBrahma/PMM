@@ -2,6 +2,8 @@
 #include "pmmModules/dataLog/dataLog.h"
 
 
+// This is automatically called by updateLogInfoCombinedPayload().
+// You don't need to call this directly.
 int PmmModuleDataLog::saveOwnDataLogInfo()
 {
     char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
@@ -9,7 +11,7 @@ int PmmModuleDataLog::saveOwnDataLogInfo()
 
     if (!mPmmSd->exists(tempFilename))
     {
-        mPmmSd->open(tempFilename);
+        mPmmSd->createDirsAndOpen(tempFilename);
         mPmmSd->write(mLogInfoContentArray, mLogInfoContentArrayLength);
         mPmmSd->close();
     }

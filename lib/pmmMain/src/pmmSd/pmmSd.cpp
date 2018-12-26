@@ -11,8 +11,8 @@
 
 
 PmmSd::PmmSd()
-    : mSafeLog(getSdFatPtr(), getCardPtr()),
-      mSplit(getSdFatPtr())
+    : mSafeLog(&mSdFat),
+      mSplit(&mSdFat)
 {
 }
 

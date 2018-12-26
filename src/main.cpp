@@ -5,8 +5,11 @@ Pmm pmm;
 
 void setup()
 {
-    runExtraCodes();
-    pmm.init();
+    bool skipPmmDebugDelay;
+
+    skipPmmDebugDelay = runExtraCodes(); // No need to comment this function. To disable it, change PMM_EXTRA_CODES_ENABLE on pmmConsts.h
+
+    pmm.init(skipPmmDebugDelay);
     //expansion.init();
 }
 

@@ -82,7 +82,7 @@ public:
     // Reading
     int  getNumberFileParts(char dirFullRelativePath[], const char filenameExtension[], uint8_t* fileParts);
 
-    void getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
+    int  getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[]);
     int  getFileRange   (char fileFullRelativePath[], uint32_t *beginBlock, uint32_t *endBlock);
 
     int  readBlock(uint32_t blockAddress, uint8_t* destinationArray);
@@ -92,7 +92,6 @@ protected:
     SdFatSdio* mSdFat;
     SdioCard*  mSdioCard;
     File       mFile;
-    char       mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
 
 };
 

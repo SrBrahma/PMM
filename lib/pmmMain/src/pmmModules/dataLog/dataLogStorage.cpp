@@ -32,8 +32,13 @@ int PmmModuleDataLog::saveOwnDataLog()
         updateLogInfoCombinedPayload();
 
     // Build the entire group in a single array
+    unsigned currentLength = 0;
+
     for (unsigned actualVar = 0; actualVar < mNumberVariables; actualVar++)
-        memcpy(mGroupTempData + mPacketStruct.payloadLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
+    {
+        memcpy(mGroupTempData + currentLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
+        currentLength += mVariableSizeArray[actualVar];
+    }
 
     return saveDataLog(mGroupTempData, mDataLogSelfDirPath, &mAllocStatusSelfDataLog);
 }
@@ -49,7 +54,7 @@ int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLeng
         mAllocStatusReceivedSession[sourceAddress] = sourceSession;
     }
 
-    getDataLogDirectory(mTempFilename, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, mGroupLength);
+    getDataLogDirectory(mTempFilename, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength);
     mPmmSd->getReceivedDirectory(mTempFilename2, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, mTempFilename);
 
     return saveDataLog(groupData, mTempFilename2, &mAllocStatusReceived[sourceAddress]);

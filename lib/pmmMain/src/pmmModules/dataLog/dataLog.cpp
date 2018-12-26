@@ -18,21 +18,25 @@ PmmModuleDataLog::PmmModuleDataLog()
 
 
 
-int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
 {
 
     mPmmTelemetry       = pmmTelemetry;
     mPmmSd              = pmmSd;
-    
+    mPmmSdSafeLog       = mPmmSd->getSafeLog();
+
     mIsLocked           = 0;
     mGroupLength        = 0;
     mNumberVariables    = 0;
     mDataLogInfoPackets = 0;
 
+    mUpdateModeReadyCounter   = mUpdateModeDeployedCounter = 0;
+    mUpdateDataLogInfoCounter = 0;
+
     mSystemSession      = systemSession;
 
     // These variables are always added to the package.
-    addBasicInfo(packageIdPtr, packageTimeMsPtr);
+    addBasicInfo(mainLoopCounterPtr, mainMillisPtr);
 
     return 0;
 }
@@ -40,13 +44,49 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
 
 int PmmModuleDataLog::update()
 {
-    // We will only add to the telemetry queue this packet if there are no packets to be sent ahead of this one! We prefer
-    // to send updated logs! Not old ones!
-    // And I might change it on the future!
-    // However, packets from other modules added to the queue with a higher priority still may be added, and will be sent first.
-    // On the future, as always, I may make it better, maybe replacing the old packet on the queue with a new one.
-    if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
-        sendDataLog();
+    switch (mSystemMode)
+    {
+        case MODE_SLEEP:
+            return 0;
+
+        case MODE_READY:
+            if (mUpdateModeReadyCounter < 5)
+            {
+                if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
+                    if(!sendDataLogInfo(mUpdateDataLogInfoCounter++))
+                        mUpdateModeReadyCounter++;
+            }
+            else
+            {
+                if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
+                    if(!sendDataLog())
+                        mUpdateModeReadyCounter = 0;
+            }
+            break;
+
+        case MODE_DEPLOYED:
+        case MODE_FINISHED:
+            if (mUpdateModeDeployedCounter < 20)
+            {
+                // This if is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
+                // higher priority.
+                if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
+                    if (!sendDataLog())
+                        mUpdateModeDeployedCounter++;   // Only increase in successful sents.
+            }
+            else // Every once a while send a DataLogInfo packet!
+            {
+                sendDataLogInfo(mUpdateDataLogInfoCounter++);
+                mUpdateModeDeployedCounter = 0;
+            }
+
+            break;
+    }   // End of switch
+
+    if (mUpdateDataLogInfoCounter >= mDataLogInfoPackets)
+        mUpdateDataLogInfoCounter = 0;
+
+    saveOwnDataLog();
 
     return 0;
 }
@@ -55,7 +95,7 @@ int PmmModuleDataLog::update()
 
 int PmmModuleDataLog::setSystemMode(pmmSystemState systemMode)
 {
-    mSystemSession = systemMode;
+    mSystemMode = systemMode;
 
     return 0;
 }

@@ -16,13 +16,13 @@
 
 // By having the backup blocks always ahead of the current block instead of a fixed place for them, we distribute the SD
 
-
-PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard)
+// Init parent class: https://stackoverflow.com/a/120916/10247962
+PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat)
     : PmmSdAllocation(sdFat)
 {
     // These 3 exists as I an confused of which option to use. This must be improved later.
     mSdFat    = sdFat;
-    mSdioCard = sdioCard;
+    mSdioCard = mSdFat->card();
 }
 
 
@@ -36,11 +36,14 @@ PmmSdSafeLog::PmmSdSafeLog(SdFatSdio* sdFat, SdioCard* sdioCard)
 // When time is available for me, I will write a function in pmmSd for reading and writing without these slowers, and making sure the blockBuffer is aligned to 4.
 int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocStatus* allocStatus, uint8_t externalBlockBuffer[])
 {
-
     // I didn't want to create this variable and keep changing it, and I didn't want to use (PMM_SD_BLOCK_SIZE - allocStatus->currentPositionInBlock),
     // so I will use a define, which certainly I will regret in the future, but now, is the best option I can think.
     // Edit: Actually, now I think it was a very nice decision.
     #define remainingBytesInThisBlock_macro (PMM_SD_BLOCK_SIZE - allocStatus->currentPositionInBlock)
+
+    if (!data)                { PMM_DEBUG_ADV_PRINTLN("No data given"); return 1; }
+    if (!dirFullRelativePath) { PMM_DEBUG_ADV_PRINTLN("No directory given"); return 2; }
+    if (!allocStatus)         { PMM_DEBUG_ADV_PRINTLN("No allocStatus given"); return 3; }
 
     unsigned dataBytesRemaining = allocStatus->groupLength;
     unsigned hadWrittenGroupHeader = false;
@@ -59,7 +62,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
         }
     }
 
-
+    
 // 2) Is the current block full?
     //  The behavior of the (allocStatus->currentPositionInBlock > PMM_SD_BLOCK_SIZE) case is probably horrible. It normally won't happen.
     else if (allocStatus->currentPositionInBlock >= PMM_SD_BLOCK_SIZE)
@@ -87,7 +90,6 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
 // 4) Now we will see if the data needs another block. If the conditional is true, we need another block!
         if ((allocStatus->groupLength + 2) > remainingBytesInThisBlock_macro) // +2 for header and footer
         {
-
             // 4.1) We first add the group header, which will always fit the current block (as the currentPositionInBlock goes from 0 to 511, if >=512,
             //  it was treated on 2).)
             blockBuffer[allocStatus->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
@@ -123,16 +125,13 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
 
 
 // 5) Write the block that fits entirely the block / Write the Partial Final Data.
-
     // 5.1) Write the Written Flag if it is a new block.
     if (allocStatus->currentPositionInBlock == 0)
         blockBuffer[allocStatus->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_BLOCK_WRITTEN;
 
-
     // 5.2) Write the Group Begin Flag, if not done already at 3.1).
     if (!hadWrittenGroupHeader)
         blockBuffer[allocStatus->currentPositionInBlock++] = PMM_SD_ALLOCATION_FLAG_GROUP_BEGIN;
-
 
     // 5.3) Write the Entire Data, or the Partial Final Data. We check if there is still dataBytesRemaining, as the 3)
     // may only needs to write the Group End Flag.
@@ -203,7 +202,6 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
         return 1;
     }
 
-
     // 6.1.7) Return the previous values
     allocStatus->currentBlock           = tempCurrentBlock;
     allocStatus->freeBlocksAfterCurrent = tempFreeBlocks  ;
@@ -223,8 +221,9 @@ int PmmSdSafeLog::getNumberFileParts(char dirFullRelativePath[], uint8_t* filePa
 
 int PmmSdSafeLog::getFileRange(char dirFullRelativePath[], uint8_t filePart, uint32_t *beginBlock, uint32_t *endBlock)
 {
-    getFilePartName(mTempFilename, dirFullRelativePath, filePart, PMM_SD_SAFE_LOG_FILENAME_EXTENSION);
-    return PmmSdAllocation::getFileRange(mTempFilename, beginBlock, endBlock);
+    char filename[PMM_SD_FILENAME_MAX_LENGTH];
+    getFilePartName(filename, dirFullRelativePath, filePart, PMM_SD_SAFE_LOG_FILENAME_EXTENSION);
+    return PmmSdAllocation::getFileRange(filename, beginBlock, endBlock);
 }
 
 

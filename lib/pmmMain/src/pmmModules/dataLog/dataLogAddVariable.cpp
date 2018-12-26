@@ -5,8 +5,8 @@
 
 // These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
 // not listed here can be freely changed.
-const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]     = "packageID";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]   = "packageTime(ms)";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]     = "mainLoopCounter";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]   = "mainTime(ms)";
 
 const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]       = "altitude(m)";
 const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]   = "gpsLatitude";
@@ -74,15 +74,15 @@ int PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t a
 
 
 
-int PmmModuleDataLog::addBasicInfo(uint32_t* packageIdPtr, uint32_t* packageTimeMsPtr)
+int PmmModuleDataLog::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
 {
-    if (!packageIdPtr)
+    if (!mainLoopCounterPtr)
         return 1;
-    if (!packageTimeMsPtr)
+    if (!mainMillisPtr)
         return 2;
 
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, packageIdPtr);
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, packageTimeMsPtr);
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
+    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, mainMillisPtr);
     return 0;
 }
 
@@ -135,14 +135,14 @@ int PmmModuleDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
 {
     int returnVal;
 
-    if ((returnVal = addAccelerometer(pmmImuStructPtr->accelerometerArray))) return returnVal;
-    if ((returnVal = addGyroscope    (pmmImuStructPtr->gyroscopeArray))) return returnVal;
-    if ((returnVal = addMpuTemperature(&pmmImuStructPtr->mpuTemperature))) return returnVal;
+    if ((returnVal = addAccelerometer (pmmImuStructPtr->accelerometerArray)))          return returnVal;
+    if ((returnVal = addGyroscope     (pmmImuStructPtr->gyroscopeArray)))              return returnVal;
+    if ((returnVal = addMpuTemperature(&pmmImuStructPtr->mpuTemperature)))             return returnVal;
 
-    if ((returnVal = addMagnetometer (pmmImuStructPtr->magnetometerArray))) return returnVal;
+    if ((returnVal = addMagnetometer  (pmmImuStructPtr->magnetometerArray)))           return returnVal;
 
-    if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure))) return returnVal;
-    if ((returnVal = addAltitudeBarometer   (&pmmImuStructPtr->altitudePressure))) return returnVal;
+    if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure)))             return returnVal;
+    if ((returnVal = addAltitudeBarometer   (&pmmImuStructPtr->altitudePressure)))     return returnVal;
     if ((returnVal = addBarometerTemperature(&pmmImuStructPtr->barometerTemperature))) return returnVal;
     
     return 0;

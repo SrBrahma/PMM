@@ -4,7 +4,7 @@
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/ports.h"           // For 
 
-int PmmModuleDataLog::sendDataLog()
+int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePriorities priority)
 {
     // --------------- DataLog Header 1.0 ---------------
     // [Positions] : [Function] : [ Length in Bytes ]
@@ -48,8 +48,8 @@ int PmmModuleDataLog::sendDataLog()
 // 5) Add the remaining fields and add it to the queue!
     mPacketStruct.protocol           = PMM_NEO_PROTOCOL_ID;
     mPacketStruct.sourceAddress      = PMM_TELEMETRY_ADDRESS_THIS_SYSTEM;
-    mPacketStruct.destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST;
+    mPacketStruct.destinationAddress = destinationAddress;
     mPacketStruct.port               = PORT_DATA_LOG_ID;
-    mPmmTelemetry->addPacketToQueue(&mPacketStruct, PMM_TELEMETRY_QUEUE_PRIORITY_LOW);
+    mPmmTelemetry->addPacketToQueue(&mPacketStruct, priority);
     return 0;
 }

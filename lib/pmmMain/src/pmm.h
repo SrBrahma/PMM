@@ -38,7 +38,7 @@ public:
 
     Pmm();
 
-    int  init();
+    int  init(bool skipDebugDelay = false);
     void update();
 
 private:
@@ -46,7 +46,7 @@ private:
     int setSystemMode(pmmSystemState systemMode);
 
     uint8_t  mSessionId;
-    uint32_t mMillis, mLoopId;
+    uint32_t mMillis, mMainLoopCounter;
 
     pmmSystemState mSystemState;
 

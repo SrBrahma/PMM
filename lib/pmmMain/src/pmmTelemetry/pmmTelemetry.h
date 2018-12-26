@@ -21,7 +21,7 @@ typedef enum
     PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
     PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
     PMM_TELEMETRY_QUEUE_PRIORITY_LOW
-} telemetryQueuePrioritiesType;
+} telemetryQueuePriorities;
 
 class PmmTelemetry
 {
@@ -35,10 +35,10 @@ public:
     int updateReception();
     int updateTransmission();
 
-    uint8_t availablePositionsInQueue(telemetryQueuePrioritiesType priority);
+    uint8_t availablePositionsInQueue(telemetryQueuePriorities priority);
 
     // As the telemetry will usually be slow, I did a queue system. To send a packet, you must use this.
-    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePrioritiesType priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
+    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
     
     uint8_t getTotalPacketsRemainingOnQueue();
 
@@ -71,7 +71,7 @@ private:
     telemetryQueueStructType mNormalPriorityQueueStruct;
     telemetryQueueStructType mLowPriorityQueueStruct   ;
 
-    int tryToAddToQueue(telemetryQueuePrioritiesType priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
+    int tryToAddToQueue(telemetryQueuePriorities priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
 };
 

@@ -37,18 +37,20 @@
 
 Pmm::Pmm() {}
 
-int Pmm::init()
+int16_t var;
+
+int Pmm::init(bool skipDebugDelay)
 {
     mMillis = 0;
-    mLoopId = 0;
+    mMainLoopCounter = 0;
 
     // Debug
     #if PMM_DEBUG
-        uint32_t serialDebugTimeout = millis();
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         
         #if PMM_DEBUG_TIMEOUT_ENABLED
-            while (!Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));
+            uint32_t serialDebugTimeout = millis();
+            while (!skipDebugDelay && !Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));
         #else
             while (!Serial);
         #endif
@@ -85,7 +87,7 @@ int Pmm::init()
 
 
     // PmmModuleDataLog
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mLoopId, &mMillis);
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
 
         #if PMM_USE_GPS
             mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
@@ -96,7 +98,7 @@ int Pmm::init()
         #endif
 
     // PmmModuleMessageLog
-    mPmmModuleMessageLog.init(&mLoopId, &mMillis, &mPmmTelemetry, &mPmmSd);
+    mPmmModuleMessageLog.init(&mMainLoopCounter, &mMillis, &mPmmTelemetry, &mPmmSd);
 
     // PmmPortsReception
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
@@ -104,25 +106,24 @@ int Pmm::init()
 
     PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
     mPmmModuleDataLog.debugPrintLogHeader();
+    PMM_DEBUG_PRINTLN();
 
     #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
         if (Serial)
         {
-            Serial.print("\nPmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n");
-            for (;!Serial.available();delay(10));
+            Serial.print("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
+            for (; !Serial.available(); delay(10));
         }
 
     #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
-        if (Serial)
-        {
-            Serial.print("\nPmm: System is halted for ");
-            Serial.print(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
-            Serial.println(" ms so you can read the init messages.");
+            PMM_DEBUG_PRINT("\nPmm: System is halted for ")
+            PMM_DEBUG_PRINT(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
+            PMM_DEBUG_PRINTLN(" ms so you can read the init messages.")
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
     #endif
 
-
+    setSystemMode(MODE_DEPLOYED);
 
     return 0;
 }
@@ -178,13 +179,14 @@ void Pmm::update()
     }*/
 
 
-    mLoopId++;
-    delay(50);
+    mMainLoopCounter++;
 }
 
 int Pmm::setSystemMode(pmmSystemState systemMode)
 {
 
-    
+    mPmmModuleDataLog.setSystemMode(systemMode);
+    mPmmImu.setSystemMode(systemMode);
+
     return 0;
 }

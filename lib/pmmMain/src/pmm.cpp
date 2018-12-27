@@ -44,6 +44,8 @@ int Pmm::init(bool skipDebugDelay)
     mMillis = 0;
     mMainLoopCounter = 0;
 
+    PMM_DEBUG_ADV_PRINTF("Hey we got a %i and a %f.\n", 5, 5.3);
+    
     // Debug
     #if PMM_DEBUG
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print

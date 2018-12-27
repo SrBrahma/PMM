@@ -44,6 +44,9 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
 
 int PmmModuleDataLog::update()
 {
+    if (!mNumberVariables)
+        return 0;
+
     switch (mSystemMode)
     {
         case MODE_SLEEP:

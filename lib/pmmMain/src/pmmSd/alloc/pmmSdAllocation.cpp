@@ -23,14 +23,7 @@ int PmmSdAllocation::getFilePartName(char destinationArray[], char dirFullRelati
     if (!dirFullRelativePath) { PMM_DEBUG_ADV_PRINTLN("No directory given");   return 2; }
     if (!filenameExtension)   { PMM_DEBUG_ADV_PRINTLN("No extension given");   return 3; }
 
-    PMM_DEBUG_ADV_PRINTLN("")
-    PMM_DEBUG_ADV_PRINTLN(dirFullRelativePath)
-    PMM_DEBUG_ADV_PRINTLN(filenameExtension)
-    char charr[100];
-    snprintf(charr, 100, "%p", destinationArray);
-    PMM_DEBUG_ADV_PRINTLN(charr);
     snprintf(destinationArray, PMM_SD_FILENAME_MAX_LENGTH, "%s/part-%u.%s", dirFullRelativePath, filePart, filenameExtension);
-    PMM_DEBUG_ADV_PRINTLN("")
     
     return 0;
 }
@@ -87,7 +80,6 @@ int PmmSdAllocation::nextBlockAndAllocIfNeeded(char dirFullRelativePath[], const
 }
 
 
-
 // Handles our PmmSdAllocStatus struct automatically.
 int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char filenameExtension[], PmmSdAllocStatus* allocStatus)
 {
@@ -102,7 +94,6 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
 
     return returnValue;
 }
-
 
 
 // Allocates a file part with a length of X blocks.

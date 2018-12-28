@@ -13,16 +13,6 @@
 #define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
 
 
-// Debug
-#define PMM_SD_DEBUG_MORE           1
-
-#if PMM_SD_DEBUG_MORE
-    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_DEBUG_MORE_PRINTLN(x)
-#else
-    #define PMM_SD_DEBUG_PRINT_MORE(x) PMM_CANCEL_MACRO(x)(x)
-#endif
-
-
 
 class PmmSd
 {
@@ -54,7 +44,8 @@ public:
     int      close();
     uint32_t size();
 
-    bool     getSdIsBusy();
+    unsigned      getSdIsWorking();
+    bool          getSdIsBusy();
 
     SdFatSdio*    getSdFatPtr();
     SdioCard*     getCardPtr ();

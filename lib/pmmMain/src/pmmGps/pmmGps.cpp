@@ -74,13 +74,13 @@ int PmmGps::init()
 
     if (Serial1)
     {
-        PMM_DEBUG_MORE_PRINTLN("PmmGps [M]: Initialized successfully!");
+        sdDebugMorePrintf("Initialized successfully!\n");
         mGpsIsWorking = 1;
     }
 
     else
     {
-        PMM_DEBUG_PRINTLN("PmmGps #1: INIT FAILED!");
+        advPrintf("Initialization failed!\n");
         mGpsIsWorking = 0;
     }
 

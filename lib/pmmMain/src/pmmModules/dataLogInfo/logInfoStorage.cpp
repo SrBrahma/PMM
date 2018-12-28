@@ -22,6 +22,12 @@ int PmmModuleDataLog::saveOwnDataLogInfo()
 
 int PmmModuleDataLog::saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)
 {
+    if (!mPmmSd->getSdIsWorking())
+        return 1;
+
+    if (!data)
+        return 2;
+
     char path[PMM_SD_FILENAME_MAX_LENGTH];
     char pathTemp[PMM_SD_FILENAME_MAX_LENGTH];
 

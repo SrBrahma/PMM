@@ -4,9 +4,8 @@
 
 #include <string.h>                 // For snprintf
 
-#include "pmmConsts.h"              // For Debug prints
-#include "pmmSd/pmmSdConsts.h"
 #include "pmmDebug.h"
+#include "pmmSd/pmmSdConsts.h"
 #include "pmmSd/alloc/pmmSdAllocation.h"
 
 
@@ -19,9 +18,9 @@ PmmSdAllocation::PmmSdAllocation(SdFatSdio* sdFat)
 
 int PmmSdAllocation::getFilePartName(char destinationArray[], char dirFullRelativePath[], uint8_t filePart, const char filenameExtension[])
 {
-    if (!destinationArray)    { PMM_DEBUG_ADV_PRINTLN("No destination given"); return 1; }
-    if (!dirFullRelativePath) { PMM_DEBUG_ADV_PRINTLN("No directory given");   return 2; }
-    if (!filenameExtension)   { PMM_DEBUG_ADV_PRINTLN("No extension given");   return 3; }
+    if (!destinationArray)    { advPrintf("No destination given\n"); return 1; }
+    if (!dirFullRelativePath) { advPrintf("No directory given\n");   return 2; }
+    if (!filenameExtension)   { advPrintf("No extension given\n");   return 3; }
 
     snprintf(destinationArray, PMM_SD_FILENAME_MAX_LENGTH, "%s/part-%u.%s", dirFullRelativePath, filePart, filenameExtension);
     
@@ -85,7 +84,7 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
 {
     uint32_t endBlock;
     int returnValue;
-    PMM_DEBUG_ADV_PRINTLN("")
+
     if (!(returnValue = allocateFilePart(dirFullRelativePath, filenameExtension, allocStatus->nextFilePart, allocStatus->KiBPerPart, &allocStatus->currentBlock, &endBlock)))
     {
         allocStatus->freeBlocksAfterCurrent = endBlock - allocStatus->currentBlock;
@@ -103,35 +102,31 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
 {
     char filename[PMM_SD_FILENAME_MAX_LENGTH];
 
-    PMM_DEBUG_ADV_PRINTLN("")
     // 1) How will be called the new part file?
     getFilePartName(filename, dirFullRelativePath, filePart, filenameExtension);
 
-    PMM_DEBUG_ADV_PRINTLN("")
     // Create directory if missing
     if (!mSdFat->exists(dirFullRelativePath))
     {
         mSdFat->mkdir(dirFullRelativePath);
     }
-    PMM_DEBUG_ADV_PRINTLN("")
+
     // 2) The SafeLog will save its backups blocks on the next file part when the Last Data Block is in the 2 last addresses of the current part,
     //    so we need to check if the filepart already exists.
     if(mSdFat->exists(filename))
     {
-        PMM_DEBUG_ADV_PRINTLN("")
         getFileRange(filename, beginBlock, endBlock);
     }
     
     else // So the file doesn't exists!
     {
-        PMM_DEBUG_ADV_PRINTLN("")
         if (kibibytesToAllocate > PMM_SD_ALLOCATION_PART_MAX_KIB)
             kibibytesToAllocate = PMM_SD_ALLOCATION_PART_MAX_KIB; // Read the comments at PmmSdAllocStatus.
 
         // 2) Allocate the new file!
         if (!mFile.createContiguous(filename, KIBIBYTE_IN_BYTES * kibibytesToAllocate))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at createContiguous()!");
+            advPrintf("Error at createContiguous()!\n");
             return 1;
             // error("createContiguous failed");
         }
@@ -139,14 +134,14 @@ int PmmSdAllocation::allocateFilePart(char dirFullRelativePath[], const char fil
         // 3) Get the address of the blocks of the new file on the SD. [beginBlock, endBlock].
         if (!mFile.contiguousRange(beginBlock, endBlock))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at contiguousRange()!");
+            advPrintf("Error at contiguousRange()!\n");
             return 2;
             // error("contiguousRange failed");
         }
 
         if (!mSdioCard->erase(*beginBlock, *endBlock)) // The erase can be 0 or 1, deppending on the card vendor's!
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at erase()!");
+            advPrintf("Error at erase()!\n");
             return 3;
             // error("erase failed");
         }

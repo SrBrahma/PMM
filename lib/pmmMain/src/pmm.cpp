@@ -12,6 +12,7 @@
 
 #if PMM_USE_TELEMETRY
     #include "pmmTelemetry/pmmTelemetry.h"
+    #include "pmmModules/portsReception.h"
 #endif
 
 #if PMM_USE_SD
@@ -28,10 +29,9 @@
 
 
 
-// Packages
+// Modules
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/messageLog/messageLog.h"
-#include "pmmModules/portsReception.h"
 
 #include "pmmDebug.h"   // For debug prints
 
@@ -44,8 +44,6 @@ int Pmm::init(bool skipDebugDelay)
     mMillis = 0;
     mMainLoopCounter = 0;
 
-    PMM_DEBUG_ADV_PRINTF("Hey we got a %i and a %f.\n", 5, 5.3);
-    
     // Debug
     #if PMM_DEBUG
         Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
@@ -58,7 +56,7 @@ int Pmm::init(bool skipDebugDelay)
         #endif
 
         if (Serial)
-            PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Serial initialized!");
+            debugMorePrintf("Serial initialized!\n");
     #endif
 
 
@@ -106,21 +104,19 @@ int Pmm::init(bool skipDebugDelay)
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
 
 
-    PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=- \n");
+    PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
     mPmmModuleDataLog.debugPrintLogHeader();
     PMM_DEBUG_PRINTLN();
 
     #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
         if (Serial)
         {
-            Serial.print("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
+            PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
             for (; !Serial.available(); delay(10));
         }
 
     #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
-            PMM_DEBUG_PRINT("\nPmm: System is halted for ")
-            PMM_DEBUG_PRINT(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
-            PMM_DEBUG_PRINTLN(" ms so you can read the init messages.")
+            PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
     #endif
@@ -141,13 +137,11 @@ void Pmm::update()
 
     #if PMM_USE_IMU
         mPmmImu.update();
-        //PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Updated Imu!");
     #endif
 
 
     #if PMM_USE_GPS
         mPmmGps.update();
-        //PMM_DEBUG_MORE_PRINTLN(Pmm [M]: Updated Gps!");
     #endif
 
 
@@ -183,6 +177,8 @@ void Pmm::update()
 
     mMainLoopCounter++;
 }
+
+
 
 int Pmm::setSystemMode(pmmSystemState systemMode)
 {

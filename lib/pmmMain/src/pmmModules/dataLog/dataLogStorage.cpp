@@ -28,6 +28,9 @@ int PmmModuleDataLog::saveDataLog(uint8_t groupData[], char dirRelativePath[], P
 
 int PmmModuleDataLog::saveOwnDataLog()
 {
+    if (!mPmmSd->getSdIsWorking())
+        return 1;
+
     if (!mIsLocked)
         updateLogInfoCombinedPayload();
 
@@ -47,6 +50,12 @@ int PmmModuleDataLog::saveOwnDataLog()
 
 int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)
 {
+    if (!mPmmSd->getSdIsWorking())
+        return 1;
+    
+    if (!groupData)
+        return 2;
+
     // 1) Check if needs to set/reset the statusStruct
     if (mAllocStatusReceived[sourceAddress].currentBlock == 0 || mAllocStatusReceivedSession[sourceAddress] != sourceSession)
     {

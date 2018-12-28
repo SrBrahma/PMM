@@ -3,6 +3,7 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include <SdFat.h>
+
 #include "pmmConsts.h"                      // For this system name
 #include "pmmDebug.h"
 #include "pmmSd/pmmSdGeneralFunctions.h"
@@ -22,7 +23,7 @@ int PmmSd::init()
     if (!mSdFat.begin())
     {
         mSdIsWorking = 0;
-        PMM_DEBUG_ADV_PRINTLN("Error at mSdFat.begin()!");
+        advPrintf("Error at mSdFat.begin()!\n");
         return 1;
     }
 
@@ -32,25 +33,26 @@ int PmmSd::init()
         
         mPmmDirPath[0] = '\0';
 
-        PMM_SD_DEBUG_PRINT_MORE("PmmSd: [M] Initialized successfully.");
+        sdDebugMorePrintf("PmmSd: [M] Initialized successfully.\n");
         return 0;
     }
 }
 
 int PmmSd::init(uint8_t sessionId)
 {
-    if (init())
+    int returnValue;
+
+    if ((returnValue = init()))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at init()!")
-        return 1;
+        return returnValue;
     }
 
     mThisSessionId = sessionId;
     
-    if (setPmmCurrentDirectory())
+    if ((returnValue = setPmmCurrentDirectory()))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at setPmmCurrentDirectory()!")
-        return 2;
+        advPrintf("Error at setPmmCurrentDirectory()!\n")
+        return returnValue;
     }
 
     return 0;
@@ -66,7 +68,7 @@ int PmmSd::setPmmCurrentDirectory()
     // 1) Make sure we are at root dir
     if (!mSdFat.chdir())
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at chdir() to root!")
+        advPrintf("Error at chdir() to root!\n")
         return 1;
     }
 
@@ -91,14 +93,14 @@ int PmmSd::setPmmCurrentDirectory()
     // 3) Create the new dir
     if (!mSdFat.mkdir(mPmmDirPath))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at mkdir()!")
+        advPrintf("Error at mkdir()!\n")
         return 3;
     }
     
     // 4) Change to the dir
     if (!mSdFat.chdir(mPmmDirPath))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at chdir() to mPmmDirPath!")
+        advPrintf("Error at chdir() to mPmmDirPath!\n")
         return 4;
     }
 
@@ -236,6 +238,11 @@ PmmSdSplit*   PmmSd::getSplit()
 File*         PmmSd::getFile()
 {
     return &mFile;
+}
+
+unsigned PmmSd::getSdIsWorking()
+{
+    return mSdIsWorking;
 }
 
 bool PmmSd::getSdIsBusy()

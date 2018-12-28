@@ -18,9 +18,7 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
 {
     if (mIsLocked)
     {
-        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
-        PMM_DEBUG_PRINT    (variableName)
-        PMM_DEBUG_PRINTLN  ("\". DataLog is already locked.")
+        advPrintf("Failed to add the variable \"%s\". DataLog is already locked.\n", variableName)
         return 1;
     }
 
@@ -28,21 +26,13 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
 
     if (mNumberVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
-        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
-        PMM_DEBUG_PRINT    (variableName)
-        PMM_DEBUG_PRINTLN  ("\". Exceeds the maximum number of variables in the DataLog.")
+        advPrintf("Failed to add the variable \"%s\". Exceeds the maximum number of variables in the DataLog.", variableName)
         return 2;
     }
 
     if ((mGroupLength + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
     {
-        PMM_DEBUG_ADV_PRINT("Failed to add the variable \"")
-        PMM_DEBUG_PRINT(variableName);
-        PMM_DEBUG_PRINT("\". Exceeds the maximum payload length (tried to be ");
-        PMM_DEBUG_PRINT(mGroupLength + varSize);
-        PMM_DEBUG_PRINT(", maximum is ");
-        PMM_DEBUG_PRINT(PORT_DATA_LOG_MAX_PAYLOAD_LENGTH);
-        PMM_DEBUG_PRINTLN(".");
+        advPrintf("Failed to add the variable \"%s\". Exceeds the maximum content byte size (tried to be %u, max is %u).", variableName, mGroupLength + varSize, PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
         return 3;
     }
 

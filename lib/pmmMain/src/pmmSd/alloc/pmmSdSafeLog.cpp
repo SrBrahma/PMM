@@ -1,9 +1,9 @@
 #include <string.h>
-#include "pmmConsts.h"
+
 #include "pmmDebug.h"
-#include "pmmSd/pmmSd.h"
-#include "pmmSd/alloc/pmmSdSafeLog.h"
 #include "pmmSd/alloc/pmmSdAllocation.h"
+#include "pmmSd/alloc/pmmSdSafeLog.h"
+
 
 // These are files which are:
 // 1) Pre-allocated with a length of X KiB
@@ -41,9 +41,9 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // Edit: Actually, now I think it was a very nice decision.
     #define remainingBytesInThisBlock_macro (PMM_SD_BLOCK_SIZE - allocStatus->currentPositionInBlock)
 
-    if (!data)                { PMM_DEBUG_ADV_PRINTLN("No data given"); return 1; }
-    if (!dirFullRelativePath) { PMM_DEBUG_ADV_PRINTLN("No directory given"); return 2; }
-    if (!allocStatus)         { PMM_DEBUG_ADV_PRINTLN("No allocStatus given"); return 3; }
+    if (!data)                { advPrintf("No data given"); return 1; }
+    if (!dirFullRelativePath) { advPrintf("No directory given"); return 2; }
+    if (!allocStatus)         { advPrintf("No allocStatus given"); return 3; }
 
     unsigned dataBytesRemaining = allocStatus->groupLength;
     unsigned hadWrittenGroupHeader = false;
@@ -57,7 +57,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
         // The function below will also change some struct member values. Read the corresponding function definition.
         if (allocateFilePart(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, allocStatus))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at allocateFilePart(), at First Time!");
+            advPrintf("Error at allocateFilePart(), at First Time!\n");
             return 1;
         }
     }
@@ -69,7 +69,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     {
         if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, allocStatus))
         {
-            PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Partial Final Data!");
+            advPrintf("Error at nextBlockAndAllocIfNeeded(), at Partial Final Data!\n");
             return 2;
         }
         allocStatus->currentPositionInBlock = 0;
@@ -106,7 +106,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
                 // 4.3) Write the Partial Initial Data to the SD.
                 if(!mSdioCard->writeBlock(allocStatus->currentBlock, blockBuffer))
                 {
-                    PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Partial Initial Data!");
+                    advPrintf("Error at writeBlock(), at Partial Initial Data!\n");
                     return 1;
                 }
             }
@@ -116,7 +116,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
             // 4.4) As we filled the current block, we need to move to the next one.
             if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, allocStatus))
             {
-                PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Partial Initial Data!");
+                advPrintf("Error at nextBlockAndAllocIfNeeded(), at Partial Initial Data!\n");
                 return 1;
             }
 
@@ -153,7 +153,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // 5.6) Write the Last Valid Block to the SD.
     if(!mSdioCard->writeBlock(allocStatus->currentBlock, blockBuffer))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Last Valid Block!");
+        advPrintf("Error at writeBlock(), at Last Valid Block!\n");
         return 1;
     }
 
@@ -171,7 +171,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // 6.2) Go to the next block, the Backup Block 0.
     if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, allocStatus))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Backup Block 0!");
+        advPrintf("Error at nextBlockAndAllocIfNeeded(), at Backup Block 0!\n");
         return 1;
     }
 
@@ -182,7 +182,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // 6.4) Go to the next block, the Backup Block 1.
     if (nextBlockAndAllocIfNeeded(dirFullRelativePath, PMM_SD_SAFE_LOG_FILENAME_EXTENSION, allocStatus))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at nextBlockAndAllocIfNeeded(), at Backup Block 1!");
+        advPrintf("Error at nextBlockAndAllocIfNeeded(), at Backup Block 1!\n");
         return 1;
     }
 
@@ -190,7 +190,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // 6.5) Write the Backup Block 1.
     if(!mSdioCard->writeBlock(allocStatus->currentBlock, blockBuffer))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 1!");
+        advPrintf("Error at writeBlock(), at Backup Block 1!\n");
         return 1;
     }
 
@@ -198,7 +198,7 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // 6.6) Write the Backup Block 0.
     if(!mSdioCard->writeBlock(backupBlock0Address, blockBuffer))
     {
-        PMM_DEBUG_ADV_PRINTLN("Error at writeBlock(), at Backup Block 0!");
+        advPrintf("Error at writeBlock(), at Backup Block 0!\n");
         return 1;
     }
 

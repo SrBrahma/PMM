@@ -24,7 +24,7 @@ int createDirsAndOpen(SdFatSdio* sdFat, File* file, char path[], uint8_t mode)
         if (lastDirectoryPosition && (path != lastDirectoryPosition)) // Avoid the last '/', if it's the root.
         {
             snprintf(tempFilename, lastDirectoryPosition - path + 1, "%s", path); // This will copy the string until the last '/', which is replaced with a '\0'.
-            PMM_DEBUG_ADV_PRINTLN(tempFilename)
+            advPrintf(tempFilename)
             // Create directories if doesn't exists
             if (!sdFat->exists(tempFilename))
                 sdFat->mkdir(tempFilename);

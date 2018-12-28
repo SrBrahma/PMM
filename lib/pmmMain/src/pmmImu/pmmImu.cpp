@@ -22,7 +22,7 @@ int PmmImu::initMpu()
     if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {   
         mMpuIsWorking = 0;
-        PMM_DEBUG_ADV_PRINTLN("MPU6050 initialization failed!");
+        advPrintf("MPU6050 initialization failed!\n");
         return 1;
     }
 
@@ -32,7 +32,7 @@ int PmmImu::initMpu()
     mMpu.setSleepEnabled        (false);
 
     mMpuIsWorking = 1;
-    PMM_DEBUG_MORE_PRINTLN("MPU6050 initialized successfully!");
+    debugMorePrintf("MPU6050 initialized successfully!\n");
 
     return 0;
 }
@@ -44,7 +44,7 @@ int PmmImu::initMagnetometer()
     if (!mMagnetometer.begin())
     {
         mMagnetometerIsWorking = 0;
-        PMM_DEBUG_ADV_PRINTLN("Magnetometer initialization failed!");
+        advPrintf("Magnetometer initialization failed!\n");
         return 1;
     }
 
@@ -52,7 +52,7 @@ int PmmImu::initMagnetometer()
     mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
 
     mMagnetometerIsWorking = 1;
-    PMM_DEBUG_MORE_PRINTLN("Magnetometer initialized successfully!");
+    debugMorePrintf("Magnetometer initialized successfully!\n");
 
     return 0;
 }
@@ -64,7 +64,7 @@ int PmmImu::initBmp()  //BMP085 Setup
     if (mBarometer.begin(BMP085_MODE_ULTRAHIGHRES))  
     {
         mBarometerIsWorking = 0;
-        PMM_DEBUG_ADV_PRINTLN("Barometer initialization failed!");
+        advPrintf("Barometer initialization failed!\n");
         return 1;
     }
 
@@ -72,7 +72,7 @@ int PmmImu::initBmp()  //BMP085 Setup
 
     mBarometerIsWorking = 1;
 
-    PMM_DEBUG_MORE_PRINTLN("Barometer initialized successfully!");
+    debugMorePrintf("Barometer initialized successfully!\n");
     return 0;
 }
 
@@ -91,7 +91,7 @@ int PmmImu::setReferencePressure(unsigned samples)
         {
             if (counter2++ > 100)
             {
-                PMM_DEBUG_ADV_PRINTLN("No pressure was obtained after various attempts.")
+                advPrintf("No pressure was obtained after various attempts.\n")
                 return 1;
             }
             delay(5);
@@ -143,7 +143,7 @@ int PmmImu::updateMpu()
         mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
         mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
         mPmmImuStruct.mpuTemperature = mMpu.readTemperature();
-        PMM_IMU_DEBUG_PRINTLN_MORE("Mpu updated!")
+        imuDebugMorePrintf("Mpu updated!\n")
         return 0;
     }
     else
@@ -157,7 +157,7 @@ int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/
     if (mMagnetometerIsWorking)
     {
         mMagnetometer.readNormalized(mPmmImuStruct.magnetometerArray);
-        PMM_IMU_DEBUG_PRINTLN_MORE("Magnetometer updated!");
+        imuDebugMorePrintf("Magnetometer updated!\n");
         return 0;
     }
     else
@@ -187,7 +187,7 @@ int PmmImu::updateBmp()
                 break;
         }
 
-        PMM_IMU_DEBUG_PRINTLN_MORE("Barometer updated!")
+        imuDebugMorePrintf("Barometer updated!\n")
         return 0;
     }
     else

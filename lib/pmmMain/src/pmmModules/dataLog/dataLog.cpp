@@ -130,7 +130,7 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
         case MODULE_DATA_LOG_TYPE_DOUBLE:
             return 8;
         default:    // Maybe will avoid internal crashes?
-            PMM_DEBUG_ADV_PRINT("Invalid variable type to size!");
+            advPrintf("Invalid variable type to size!\n");
             return 1;
     }
 }
@@ -174,56 +174,57 @@ void PmmModuleDataLog::debugPrintLogHeader()
 }
 
 
+#define DATA_LOG_DEBUG_BUFFER_LEN 512
 // Float variables are printed with a maximum of 3 decimal digits. You may change it if you like.
 void PmmModuleDataLog::debugPrintLogContent()
 {
-    static char buffer[512]; // Static for optimization
+    static char buffer[DATA_LOG_DEBUG_BUFFER_LEN]; // Static for optimization
     buffer[0] = {'\0'};      // As the above is static, we need to reset the first char so snprintf will work properly.
 
     for (unsigned variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
     {
         if (variableIndex > 0)
-            snprintf(buffer, 512, "%s ", buffer);
+            snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s ", buffer);
 
-        snprintf(buffer, 512, "%s[%u) ", buffer, variableIndex);
+        snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s[%u) ", buffer, variableIndex);
 
         switch(mVariableTypeArray[variableIndex])
         {
             case MODULE_DATA_LOG_TYPE_FLOAT: // first as it is more common
-                snprintf(buffer, 512, "%s%.3f", buffer, *(float*)    (mVariableAdrsArray[variableIndex])); // https://stackoverflow.com/a/30658980/10247962
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(float*)    (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT32:
-                snprintf(buffer, 512, "%s%lu",  buffer, *(uint32_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lu",  buffer, *(uint32_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT32:
-                snprintf(buffer, 512, "%s%li",  buffer, *(int32_t*)  (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%li",  buffer, *(int32_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT8:
-                snprintf(buffer, 512, "%s%u",   buffer, *(uint8_t*)  (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint8_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT8:
-                snprintf(buffer, 512, "%s%i",   buffer, *(int8_t*)   (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int8_t*)   (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT16:
-                snprintf(buffer, 512, "%s%u",   buffer, *(uint16_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%u",   buffer, *(uint16_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT16:
-                snprintf(buffer, 512, "%s%i",   buffer, *(int16_t*)  (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%i",   buffer, *(int16_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_UINT64:
-                snprintf(buffer, 512, "%s%llu", buffer, *(uint64_t*) (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%llu", buffer, *(uint64_t*) (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_INT64:
-                snprintf(buffer, 512, "%s%lli", buffer, *(int64_t*)  (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%lli", buffer, *(int64_t*)  (mVariableAdrsArray[variableIndex]));
                 break;
             case MODULE_DATA_LOG_TYPE_DOUBLE:
-                snprintf(buffer, 512, "%s%.3f", buffer, *(double*)   (mVariableAdrsArray[variableIndex]));
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%.2f", buffer, *(double*)   (mVariableAdrsArray[variableIndex]));
                 break;
             default:    // If none above,
-                snprintf(buffer, 512, "%s%s",   buffer, ">TYPE ERROR HERE!<");
+                snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s%s",   buffer, "ERROR HERE!");
                 break;
         } // switch end
-        snprintf(buffer, 512, "%s]", buffer);
+        snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s]", buffer);
     } // for loop end
     Serial.println(buffer);
 } // end of function debugPrintLogContent()

@@ -37,13 +37,12 @@ int PmmTelemetry::init()
     while (!mRf95.init()) // Keep trying! ...
     {
         initCounter++;
-        PMM_DEBUG_ADV_PRINT("Fail at initialize, attempt ") PMM_DEBUG_PRINT(initCounter) PMM_DEBUG_PRINT(" of ")
-        PMM_DEBUG_PRINT(PMM_RF_INIT_MAX_TRIES) PMM_DEBUG_PRINTLN(".")
+        advPrintf("Fail at initialize, attempt %i of %i.", initCounter,PMM_RF_INIT_MAX_TRIES)
 
         if (initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
         {
             mTelemetryIsWorking = 0;
-            PMM_DEBUG_ADV_PRINT("Max attempts reached, LoRa didn't initialize.");
+            advPrintf("Max attempts reached, LoRa didn't initialize.");
             return 1;
         }
     }
@@ -53,7 +52,7 @@ int PmmTelemetry::init()
     mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
 
     mTelemetryIsWorking = 1;
-    PMM_DEBUG_MORE_PRINTLN("PmmTelemetry [M]: LoRa initialized successfully!");
+    tlmDebugMorePrintf("LoRa initialized successfully!\n");
 
     return 0;
 }

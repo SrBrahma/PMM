@@ -31,6 +31,7 @@ typedef struct
 
     float pressure;
     float altitudePressure;         // Relative altitude, to the starting altitude.
+    float filteredAltitudePressure;
     float barometerTemperature;
 
 } pmmImuStructType;

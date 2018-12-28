@@ -27,7 +27,8 @@
     #define PMM_PIN_LED_ERRORS              99
     #define PMM_PIN_ALL_OK_AND_TELEMETRY    LED_BUILTIN
 
-    #define PMM_MAX_ACCELERATION_M_S_2      300 // Used in the filtering of the altitude. 300m/s^2 is ~30g.
+    #define PMM_MAX_UP_ACCELERATION_M_S_2      250.0 // Used in the filtering of the altitude. 300m/s^2 is ~30g.
+    #define PMM_MAX_DOWN_ACCELERATION_M_S_2    20.0  // 25m/s^2 to avoid any problem.  
     typedef enum
     {
         MODE_SLEEP,

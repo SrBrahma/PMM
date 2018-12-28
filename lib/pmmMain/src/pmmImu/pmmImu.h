@@ -83,6 +83,7 @@ private:
     Plotter mPlotter;
 
     SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
+    
 
     pmmImuStructType mPmmImuStruct;
 
@@ -96,7 +97,9 @@ private:
 
     uint32_t mBarometerLastMillis;
 
-    float mFiltered2;
+    float    mFiltered2;
+    float    mSemiFilteredAltitude;
+    uint32_t mFilteredAltitudeLastMillis;
 
     int initMpu();
     int initMagnetometer();

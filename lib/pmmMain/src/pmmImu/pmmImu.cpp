@@ -15,8 +15,8 @@
 
 
 PmmImu::PmmImu()
-    : mAltitudeKalmanFilter (5, 5, 0.007),
-      mAltitudeKalmanFilter2(5, 5, 0.007)
+    : mAltitudeKalmanFilter (5, 5, 0.035),
+      mAltitudeKalmanFilter2(5, 5, 0.035)
 {
 }
 
@@ -106,6 +106,7 @@ int PmmImu::setReferencePressure(unsigned samples)
 
     }
     mReferencePressure = sumPressure / samples;
+    mPmmImuStruct.filteredAltitude = 0;
 
     return 0;
 }
@@ -137,6 +138,7 @@ int PmmImu::init()
   
     mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
     mPlotter.SetColor(0, "red", "blue", "yellow");
+    mFilteredAltitudeLastMillis = millis();
     return foundError;
 }
 
@@ -191,23 +193,35 @@ int PmmImu::updateBmp()
             case DATA_READY_PRESSURE:
                 mBarometer.getPressure(&mPmmImuStruct.pressure);
                 //mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
-                float altitude = (3000 * sin(2 * PI * (millis() - 2000) / 30000.0 )) + random(-10, 10);
+                mPmmImuStruct.altitude = (3000 * sin(2 * PI * (millis() - 2000) / 30000.0 )) + random(-10, 10);
+                if (random(100) > 98)
+                    mPmmImuStruct.altitude += random(-10000, 10000);
                 if (random(100) > 95)
-                    altitude += random(-10000, 10000);
-                if (random(100) > 80)
-                    altitude += random(-1000, 1000);
+                    mPmmImuStruct.altitude += random(-1000, 1000);
 
                 // Avoid any big spikes before filtering
-                if ((altitude - mPmmImuStruct.altitude) / (pow(millis() - mBarometerLastMillis, 2) / 1000.0) < PMM_MAX_ACCELERATION_M_S_2);
-                    mPmmImuStruct.filteredAltitude = mAltitudeKalmanFilter.updateEstimate(altitude);
+                if (mPmmImuStruct.altitude > mPmmImuStruct.filteredAltitude)
+                {
+                    if ((mPmmImuStruct.altitude - mPmmImuStruct.filteredAltitude) / (pow(millis() - mFilteredAltitudeLastMillis, 2) / 1000.0) < PMM_MAX_UP_ACCELERATION_M_S_2)
+                    {
+                        mPmmImuStruct.filteredAltitude = mAltitudeKalmanFilter.updateEstimate(mPmmImuStruct.altitude);
+                        mFilteredAltitudeLastMillis = millis();
+                    }
+                }
+                else
+                {
+                    if ((mPmmImuStruct.filteredAltitude - mPmmImuStruct.altitude) / (pow(millis() - mFilteredAltitudeLastMillis, 2) / 1000.0) < PMM_MAX_DOWN_ACCELERATION_M_S_2)
+                    {
+                        mPmmImuStruct.filteredAltitude = mAltitudeKalmanFilter.updateEstimate(mPmmImuStruct.altitude);
+                        mFilteredAltitudeLastMillis = millis();
+                    }
+                }
                 
-                mFiltered2 = mAltitudeKalmanFilter.updateEstimate(altitude);
-                mPmmImuStruct.altitude = altitude;
+                mFiltered2 = mAltitudeKalmanFilter2.updateEstimate(mPmmImuStruct.altitude);
 
                 mPlotter.Plot();
-                delay(10);
+                delay(1);
 
-                mBarometerLastMillis = millis();
                 break;
         }
 

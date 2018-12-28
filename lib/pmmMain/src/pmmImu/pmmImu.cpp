@@ -6,6 +6,8 @@
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <Adafruit_BMP085_U.h>
+#include <SimpleKalmanFilter.h>
+#include <Plotter.h>
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
@@ -13,6 +15,8 @@
 
 
 PmmImu::PmmImu()
+    : mAltitudeKalmanFilter (5, 5, 0.007),
+      mAltitudeKalmanFilter2(5, 5, 0.007)
 {
 }
 
@@ -22,7 +26,7 @@ int PmmImu::initMpu()
     if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {   
         mMpuIsWorking = 0;
-        advPrintf("MPU6050 initialization failed!\n");
+        advPrintf("MPU6050 initialization failed!\n")
         return 1;
     }
 
@@ -32,7 +36,7 @@ int PmmImu::initMpu()
     mMpu.setSleepEnabled        (false);
 
     mMpuIsWorking = 1;
-    debugMorePrintf("MPU6050 initialized successfully!\n");
+    debugMorePrintf("MPU6050 initialized successfully!\n")
 
     return 0;
 }
@@ -44,7 +48,7 @@ int PmmImu::initMagnetometer()
     if (!mMagnetometer.begin())
     {
         mMagnetometerIsWorking = 0;
-        advPrintf("Magnetometer initialization failed!\n");
+        advPrintf("Magnetometer initialization failed!\n")
         return 1;
     }
 
@@ -52,7 +56,7 @@ int PmmImu::initMagnetometer()
     mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
 
     mMagnetometerIsWorking = 1;
-    debugMorePrintf("Magnetometer initialized successfully!\n");
+    debugMorePrintf("Magnetometer initialized successfully!\n")
 
     return 0;
 }
@@ -64,15 +68,15 @@ int PmmImu::initBmp()  //BMP085 Setup
     if (mBarometer.begin(BMP085_MODE_ULTRAHIGHRES))  
     {
         mBarometerIsWorking = 0;
-        advPrintf("Barometer initialization failed!\n");
+        advPrintf("Barometer initialization failed!\n")
         return 1;
     }
 
-    setReferencePressure();
+    setReferencePressure(20);
 
     mBarometerIsWorking = 1;
 
-    debugMorePrintf("Barometer initialized successfully!\n");
+    debugMorePrintf("Barometer initialized successfully!\n")
     return 0;
 }
 
@@ -129,6 +133,10 @@ int PmmImu::init()
         foundError |= 0b100;
     }
 
+    mPlotter.Begin(); // start plotter
+  
+    mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
+    mPlotter.SetColor(0, "red", "blue", "yellow");
     return foundError;
 }
 
@@ -142,7 +150,7 @@ int PmmImu::updateMpu()
     {
         mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
         mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
-        mPmmImuStruct.mpuTemperature = mMpu.readTemperature();
+        mPmmImuStruct.temperatureMpu = mMpu.readTemperature();
         imuDebugMorePrintf("Mpu updated!\n")
         return 0;
     }
@@ -177,13 +185,29 @@ int PmmImu::updateBmp()
         {
             
             case DATA_READY_TEMPERATURE:
-                mBarometer.getTemperature(&mPmmImuStruct.barometerTemperature);
+                mBarometer.getTemperature(&mPmmImuStruct.temperatureBmp);
                 break;
 
             case DATA_READY_PRESSURE:
                 mBarometer.getPressure(&mPmmImuStruct.pressure);
+                //mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+                float altitude = (3000 * sin(2 * PI * (millis() - 2000) / 30000.0 )) + random(-10, 10);
+                if (random(100) > 95)
+                    altitude += random(-10000, 10000);
+                if (random(100) > 80)
+                    altitude += random(-1000, 1000);
 
-                mPmmImuStruct.altitudePressure = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+                // Avoid any big spikes before filtering
+                if ((altitude - mPmmImuStruct.altitude) / (pow(millis() - mBarometerLastMillis, 2) / 1000.0) < PMM_MAX_ACCELERATION_M_S_2);
+                    mPmmImuStruct.filteredAltitude = mAltitudeKalmanFilter.updateEstimate(altitude);
+                
+                mFiltered2 = mAltitudeKalmanFilter.updateEstimate(altitude);
+                mPmmImuStruct.altitude = altitude;
+
+                mPlotter.Plot();
+                delay(10);
+
+                mBarometerLastMillis = millis();
                 break;
         }
 
@@ -248,7 +272,7 @@ void PmmImu::getGyroscope(float destinationArray[3])
 }
 float PmmImu::getMpuTemperature()
 {
-    return mPmmImuStruct.mpuTemperature;
+    return mPmmImuStruct.temperatureMpu;
 }
 void PmmImu::getMagnetometer(float destinationArray[3])
 {
@@ -260,11 +284,11 @@ float PmmImu::getBarometer()
 }
 float PmmImu::getAltitudeBarometer()
 {
-    return mPmmImuStruct.altitudePressure;
+    return mPmmImuStruct.altitude;
 }
 float PmmImu::getBarometerTemperature()
 {
-    return mPmmImuStruct.barometerTemperature;
+    return mPmmImuStruct.temperatureBmp;
 }
 pmmImuStructType PmmImu::getImuStruct()
 {
@@ -283,7 +307,7 @@ float* PmmImu::getGyroscopePtr()
 }
 float* PmmImu::getMpuTemperaturePtr()
 {
-    return &mPmmImuStruct.mpuTemperature;
+    return &mPmmImuStruct.temperatureMpu;
 }
 float* PmmImu::getMagnetometerPtr()
 {
@@ -295,11 +319,11 @@ float* PmmImu::getBarometerPtr()
 }
 float* PmmImu::getAltitudeBarometerPtr()
 {
-    return &mPmmImuStruct.altitudePressure;
+    return &mPmmImuStruct.altitude;
 }
 float* PmmImu::getBarometerTemperaturePtr()
 {
-    return &mPmmImuStruct.barometerTemperature;
+    return &mPmmImuStruct.temperatureBmp;
 }
 pmmImuStructType* PmmImu::getImuStructPtr()
 {

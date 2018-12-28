@@ -10,7 +10,7 @@
 void printHexArray(uint8_t arrayToPrint[], unsigned arrayLength);
 
 
-#define PMM_CANCEL_MACRO() do {} while (0)
+#define PMM_CANCEL_MACRO() { do {} while (0); }
 
 
 #define STR(value)            #value                // https://stackoverflow.com/a/5966717/10247962

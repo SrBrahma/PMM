@@ -5,12 +5,14 @@
 
 // These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
 // not listed here can be freely changed.
-const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]     = "mainLoopCounter";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]   = "mainTime(ms)";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]         = "mainLoopCounter";
+const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]       = "mainTime(ms)";
 
-const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]       = "altitude(m)";
-const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]   = "gpsLatitude";
-const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]  = "gpsLongitude";
+const PROGMEM char PMM_DATA_LOG_RAW_ALTITUDE_STRING[]       = "rawAltitudeBarometer(m)";
+const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]           = "AltitudeBarometer(m)";
+
+const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]       = "gpsLatitude";
+const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]      = "gpsLongitude";
 
 
 
@@ -90,10 +92,10 @@ int PmmModuleDataLog::addGyroscope(void* array)
     return includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLog::addMpuTemperature(void* mpuTemperature)
+int PmmModuleDataLog::addTemperatureMpu(void* temperatureMpu)
 {
-    const PROGMEM char* mpuTemperatureString = "mpuTemperature(C)";
-    return includeVariableInPackage(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, mpuTemperature);
+    const PROGMEM char* mpuTemperatureString = "temperatureMpu(C)";
+    return includeVariableInPackage(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
 }
 
 int PmmModuleDataLog::addMagnetometer(void* array)
@@ -108,14 +110,20 @@ int PmmModuleDataLog::addBarometer(void* barometer)
     return includeVariableInPackage(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
 }
 
-int PmmModuleDataLog::addAltitudeBarometer(void* altitudePressure)
+// Without filtering
+int PmmModuleDataLog::addRawAltitudeBarometer(void* rawAltitudePressure)
 {
-    return includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitudePressure);
+    return includeVariableInPackage(PMM_DATA_LOG_RAW_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, rawAltitudePressure);
 }
 
-int PmmModuleDataLog::addBarometerTemperature(void* barometerTempPtr)
+int PmmModuleDataLog::addAltitudeBarometer(void* altitude)
 {
-    const PROGMEM char* barometerTempString = "barometerTemperature(C)";
+    return includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
+}
+
+int PmmModuleDataLog::addTemperatureBmp(void* barometerTempPtr)
+{
+    const PROGMEM char* barometerTempString = "temperatureBmp(C)";
     return includeVariableInPackage(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
 }
 
@@ -125,15 +133,16 @@ int PmmModuleDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
 {
     int returnVal;
 
-    if ((returnVal = addAccelerometer (pmmImuStructPtr->accelerometerArray)))          return returnVal;
-    if ((returnVal = addGyroscope     (pmmImuStructPtr->gyroscopeArray)))              return returnVal;
-    if ((returnVal = addMpuTemperature(&pmmImuStructPtr->mpuTemperature)))             return returnVal;
+    if ((returnVal = addAccelerometer       (pmmImuStructPtr->accelerometerArray))) return returnVal;
+    if ((returnVal = addGyroscope           (pmmImuStructPtr->gyroscopeArray)))     return returnVal;
+    if ((returnVal = addTemperatureMpu      (&pmmImuStructPtr->temperatureMpu)))    return returnVal;
 
-    if ((returnVal = addMagnetometer  (pmmImuStructPtr->magnetometerArray)))           return returnVal;
+    if ((returnVal = addMagnetometer        (pmmImuStructPtr->magnetometerArray)))  return returnVal;
 
-    if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure)))             return returnVal;
-    if ((returnVal = addAltitudeBarometer   (&pmmImuStructPtr->altitudePressure)))     return returnVal;
-    if ((returnVal = addBarometerTemperature(&pmmImuStructPtr->barometerTemperature))) return returnVal;
+    if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure)))          return returnVal;
+    if ((returnVal = addRawAltitudeBarometer(&pmmImuStructPtr->altitude)))          return returnVal;
+    if ((returnVal = addAltitudeBarometer   (&pmmImuStructPtr->filteredAltitude)))  return returnVal;
+    if ((returnVal = addTemperatureBmp      (&pmmImuStructPtr->temperatureBmp)))    return returnVal;
     
     return 0;
 }

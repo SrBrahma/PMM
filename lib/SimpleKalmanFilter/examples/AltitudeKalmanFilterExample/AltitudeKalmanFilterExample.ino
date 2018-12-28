@@ -12,7 +12,7 @@
  e_est: Estimation Uncertainty 
  q: Process Noise
  */
-SimpleKalmanFilter pressureKalmanFilter(1, 1, 0.01);
+SimpleKalmanFilter mAltitudeKalmanFilter(1, 1, 0.01);
 
 SFE_BMP180 pressure;
 
@@ -59,7 +59,7 @@ void loop() {
   
   float p = getPressure();
   float altitude = pressure.altitude(p,baseline);
-  float estimated_altitude = pressureKalmanFilter.updateEstimate(altitude);
+  float estimated_altitude = mAltitudeKalmanFilter.updateEstimate(altitude);
 
   if (millis() > refresh_time) {
     Serial.print(altitude,6);

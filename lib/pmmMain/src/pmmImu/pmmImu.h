@@ -12,6 +12,8 @@
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <Adafruit_BMP085_U.h>
+#include <SimpleKalmanFilter.h>
+#include <Plotter.h>
 
 #include "pmmConsts.h"
 #include "pmmDebug.h"
@@ -22,7 +24,7 @@ typedef struct
 {
     float accelerometerArray[3];    // Accelerations    of x,y,z, in m/s^2
     float gyroscopeArray[3];        // Angular velocity of x,y,z, in degrees/sec
-    float mpuTemperature;
+    float temperatureMpu;
 
     float headingDegree;
     float headingRadian;
@@ -30,9 +32,9 @@ typedef struct
     float magnetometerArray[3];     // Magnetic fields  of x,y,z, in ..
 
     float pressure;
-    float altitudePressure;         // Relative altitude, to the starting altitude.
-    float filteredAltitudePressure;
-    float barometerTemperature;
+    float altitude;         // Relative altitude, to the starting altitude.
+    float filteredAltitude;
+    float temperatureBmp;
 
 } pmmImuStructType;
 
@@ -51,7 +53,7 @@ public:
 
     int setSystemMode(pmmSystemState systemMode);
     
-    int setReferencePressure(unsigned samples = 5);
+    int setReferencePressure(unsigned samples = 10);
 
     /* These returns safely a copy of the variables */
     void   getAccelerometer(float destinationArray[3]);
@@ -78,6 +80,10 @@ private:
     MPU6050  mMpu;
     HMC5883L mMagnetometer;
 
+    Plotter mPlotter;
+
+    SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
+
     pmmImuStructType mPmmImuStruct;
 
     unsigned mMpuIsWorking;
@@ -88,7 +94,9 @@ private:
 
     float    mMagnetometerDeclinationRad;
 
+    uint32_t mBarometerLastMillis;
 
+    float mFiltered2;
 
     int initMpu();
     int initMagnetometer();

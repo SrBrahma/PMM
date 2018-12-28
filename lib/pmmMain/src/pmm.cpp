@@ -105,7 +105,9 @@ int Pmm::init(bool skipDebugDelay)
 
 
     PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
+
     mPmmModuleDataLog.debugPrintLogHeader();
+    
     PMM_DEBUG_PRINTLN();
 
     #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
@@ -116,9 +118,10 @@ int Pmm::init(bool skipDebugDelay)
         }
 
     #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
+    {
             PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
-        }
+    }
     #endif
 
     setSystemMode(MODE_DEPLOYED);

@@ -35,7 +35,7 @@
 
 // DataLog AND DataLogInfo Defines (Which I will call as DATA_LOG)
 #define MODULE_DATA_LOG_MAX_VARIABLES               50  // This must be the same value for the transmitter and the receptor.
-#define MODULE_DATA_LOG_MAX_STRING_LENGTH           30  // The maximum Variable String. Includes the '\0'.
+#define MODULE_DATA_LOG_MAX_STRING_LENGTH           30  // The maximum Variable String. Includes the '\0', so the max valid chars is this - 1.
 
 
 // DataLog Defines
@@ -72,13 +72,14 @@ public:
 
 
 // Add variables to DataLog. Their types are specified in PmmModuleDataLog.cpp.
-    int  addMagnetometer     (void* magnetometerArray );
-    int  addGyroscope        (void* gyroscopeArray    );
-    int  addAccelerometer    (void* accelerometerArray);
-    int  addMpuTemperature   (void* mpuTemperaturePtr);
-    int  addBarometer        (void* barometerPtr      );
-    int  addAltitudeBarometer(void* altitudePtr       );
-    int  addBarometerTemperature(void* barometerTempPtr);
+    int  addMagnetometer        (void* magnetometerArray );
+    int  addGyroscope           (void* gyroscopeArray    );
+    int  addAccelerometer       (void* accelerometerArray);
+    int  addTemperatureMpu      (void* mpuTemperaturePtr );
+    int  addBarometer           (void* barometerPtr      );
+    int  addRawAltitudeBarometer(void* rawAltitudePressure); // Without filtering
+    int  addAltitudeBarometer   (void* altitudePtr       );
+    int  addTemperatureBmp(void* barometerTempPtr  );
 
     int  addImu(pmmImuStructType* pmmImuStructPtr); // Adds all the sensors above.
     int  addGps(pmmGpsStructType* pmmGpsStruct   );
@@ -95,13 +96,9 @@ public:
     uint8_t*     getVariableSizeArray();
     uint8_t**    getVariableAdrsArray();
 
-
     // Debug!
-    #if PMM_DEBUG
-        void debugPrintLogHeader ();
-        void debugPrintLogContent();
-    #endif
-
+    void debugPrintLogHeader ();
+    void debugPrintLogContent();
 
 
 private:

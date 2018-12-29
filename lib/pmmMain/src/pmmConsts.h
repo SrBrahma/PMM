@@ -40,18 +40,22 @@
 // =======================================================================
 //  Debug
 // =======================================================================
-    #define PMM_DEBUG                               0 // Will enable debug messages via Serial. All error messages will be displayed with this, and some minor messages.
-    #define PMM_DEBUG_MORE                          0 // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
-    // For this to work, PMM_DEBUG must be 1. Also, the main classes usually have another define like PMM_IMU_DEBUG_MORE, so you can activate the additional messages you want.
+    #define PMM_DEBUG                               1  // Will enable debug messages via Serial. All error messages will be displayed with this, and some minor messages.
+    #define PMM_DATA_LOG_DEBUG                      1  // Prints the values of the data of the DataLog; = Prints the main variables of your system.
 
-    #define PMM_DEBUG_TIMEOUT_ENABLED               1 // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
+    #define PMM_DEBUG_MORE                          1  // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
+        #define PMM_IMU_DEBUG_MORE                  0  // Prints IMU additional debug messages.
+        #define PMM_GPS_DEBUG_MORE                  1  // Prints GPS additional debug messages.
+        #define PMM_TLM_DEBUG_MORE                  0  // Prints Telemetry additional debug messages.
+
+    #define PMM_DEBUG_TIMEOUT_ENABLED               1  // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
     // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
     // the code will proceed, without Serial debugging. It's great if you forgot to disable the Debug before launching your rocket!
     #define PMM_DEBUG_TIMEOUT_MILLIS                15000 // The maximum wait time for the above option. Default is 10 seconds (10000ms).
 
     // These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
     // The PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
-    #define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED      0
+    #define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED      1
     #define PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT      5000
 
 
@@ -113,55 +117,7 @@
 // =======================================================================
     #define PMM_USE_GPS                         1
 
-    #if PMM_USE_GPS
+    #define PMM_GPS_PORT                        Serial1
 
-        #define PMM_GPS_EXTERNAL_CONFIGURATION  1 // To activate the lines below. Also changed the neoGps/GPSfix_cfg.h file.
-        // External change of the neoGps/GPSfix_cfg.h file.
-        // Comment / Uncomment which GPS informations you want to obtain. They will also be included in your logs and on the RF
-        // package automatically.
-
-                    // these comments are which variables are added if the #define is enabled.
-        #if PMM_GPS_EXTERNAL_CONFIGURATION
-
-            //#define GPS_FIX_DATE // Not implemented yet on PMM.
-            //#define GPS_FIX_TIME // Not implemented yet on PMM.
-
-            #define GPS_FIX_LOCATION // Latitude and longitude
-                    // float gpsLat
-                    // float gpsLon
-
-            //#define GPS_FIX_LOCATION_DMS // Advanced and not implemented on PMM.
-
-            #define GPS_FIX_ALTITUDE
-                    // float gpsAltitude
-
-            #define GPS_FIX_SPEED // need GPS_FIX_ALTITUDE activated
-                    // unsigned long lastReadMillis;
-                    // float horizontalSpeed;
-                    // float speedNorth;
-                    // float speedEast;
-                    // float speedUp;
-                    // float headingDegree;
-
-            #ifdef GPS_FIX_SPEED // PMM: Automatically adds these following needed defines, if #define GPS_FIX_SPEED is uncommented.
-                #define GPS_FIX_VELNED
-                #define GPS_FIX_HEADING
-            #endif
-
-            #define GPS_FIX_SATELLITES
-                    // uint8_t satellites;
-
-            //#define GPS_FIX_HDOP // Advanced and not implemented on PMM.
-            //#define GPS_FIX_VDOP // Advanced and not implemented on PMM.
-            //#define GPS_FIX_PDOP // Advanced and not implemented on PMM.
-            //#define GPS_FIX_LAT_ERR // Advanced and not implemented on PMM.
-            //#define GPS_FIX_LON_ERR // Advanced and not implemented on PMM.
-            //#define GPS_FIX_ALT_ERR // Advanced and not implemented on PMM.
-            //#define GPS_FIX_GEOID_HEIGHT // Advanced and not implemented on PMM: But should we?
-
-
-        #endif // #if PMM_GPS_EXTERNAL_CONFIGURATION
-
-    #endif // #if PMM_USE_GPS
 
 #endif // #ifndef PMM_CONSTS_h

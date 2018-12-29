@@ -154,33 +154,36 @@ int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
     int returnVal;
 
     #ifdef GPS_FIX_LOCATION
-        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->latitude))) return returnVal;;
-        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->longitude))) return returnVal;;
+        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->latitude ))) return returnVal;
+        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->longitude))) return returnVal;
     #endif
 
     #ifdef GPS_FIX_ALTITUDE
-        const PROGMEM char* gpsAltitudeString = "gpsAltitude(m)";
-        if ((returnVal = includeVariableInPackage(gpsAltitudeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->altitude))) return returnVal;;
+        const PROGMEM char* gpsAltitudeString        = "gpsAltitude(m)";
+        if ((returnVal = includeVariableInPackage(gpsAltitudeString,      MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->altitude)))      return returnVal;
     #endif
 
     #ifdef GPS_FIX_SATELLITES
-        const PROGMEM char* gpsSatellitesString = "gpsSatellites";
-        if ((returnVal = includeVariableInPackage(gpsSatellitesString, MODULE_DATA_LOG_TYPE_UINT8, &pmmGpsStruct->satellites))) return returnVal;;
+        const PROGMEM char* gpsSatellitesString      = "gpsSatellites";
+        if ((returnVal = includeVariableInPackage(gpsSatellitesString,    MODULE_DATA_LOG_TYPE_UINT8, &pmmGpsStruct->satellites)))    return returnVal;
     #endif
     
-    #ifdef GPS_FIX_SPEED
-        const PROGMEM char* gpsHorizontalSpeedString = "gpsHorSpeed(m/s)";
-        const PROGMEM char* gpsNorthSpeedString = "gpsNorthSpeed(m/s)";
-        const PROGMEM char* gpsEastSpeedString = "gpsEastSpeed(m/s)";
-        const PROGMEM char* gpsHeadingDegreeString = "gpsHeadingDegree";
-        if ((returnVal = includeVariableInPackage(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;;
-        if ((returnVal = includeVariableInPackage(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;;
-        if ((returnVal = includeVariableInPackage(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->eastSpeed))) return returnVal;;
-        if ((returnVal = includeVariableInPackage(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;;
+    #ifdef GPS_FIX_HEADING
+        const PROGMEM char* gpsHeadingDegreeString   = "gpsHeadingDegree";
+        if ((returnVal = includeVariableInPackage(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;
+    #endif
 
-        #ifdef GPS_FIX_ALTITUDE
-            const PROGMEM char* gpsUpSpeedString = "gpsSpeedUp(m/s)";
-            if ((returnVal = includeVariableInPackage(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;;
+    #ifdef GPS_FIX_SPEED
+        const PROGMEM char* gpsUpSpeedString         = "gpsSpeedUp(m/s)";
+        const PROGMEM char* gpsHorizontalSpeedString = "gpsHorSpeed(m/s)";
+        if ((returnVal = includeVariableInPackage(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
+        if ((returnVal = includeVariableInPackage(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
+
+        #ifdef GPS_FIX_HEADING
+            const PROGMEM char* gpsNorthSpeedString  = "gpsNorthSpeed(m/s)";
+            const PROGMEM char* gpsEastSpeedString   = "gpsEastSpeed(m/s)";
+            if ((returnVal = includeVariableInPackage(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;
+            if ((returnVal = includeVariableInPackage(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->eastSpeed))) return returnVal;
         #endif
     #endif
 

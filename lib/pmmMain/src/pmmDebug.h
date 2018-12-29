@@ -47,10 +47,6 @@ void printHexArray(uint8_t arrayToPrint[], unsigned arrayLength);
 
 #define PMM_DEBUG_MORE_TAG              "[M] "
 
-#define PMM_IMU_DEBUG_MORE              0  // Prints IMU additional debug messages.
-#define PMM_GPS_DEBUG_MORE              0  // Prints GPS additional debug messages.
-#define PMM_TLM_DEBUG_MORE              0  // Prints Telemetry additional debug messages.
-
 // PMM
 #define PMM_DEBUG_MORE_BASE             "Pmm: "
 #if PMM_DEBUG_MORE

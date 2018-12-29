@@ -104,24 +104,29 @@ int Pmm::init(bool skipDebugDelay)
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
 
 
-    PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
 
-    mPmmModuleDataLog.debugPrintLogHeader();
     
-    PMM_DEBUG_PRINTLN();
+    #if PMM_DEBUG
+        PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
 
-    #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
-        if (Serial)
+        #if PMM_DATA_LOG_DEBUG
+            mPmmModuleDataLog.debugPrintLogHeader();
+            PMM_DEBUG_PRINTLN();
+        #endif
+
+        #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
+            if (Serial)
+            {
+                PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
+                for (; !Serial.available(); delay(10));
+            }
+
+        #elif PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
         {
-            PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
-            for (; !Serial.available(); delay(10));
+                PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
+                delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         }
-
-    #elif PMM_DEBUG && PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
-    {
-            PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
-            delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
-    }
+        #endif
     #endif
 
     setSystemMode(MODE_DEPLOYED);
@@ -150,7 +155,7 @@ void Pmm::update()
 
     mPmmModuleDataLog.update();
 
-    #if PMM_DEBUG
+    #if PMM_DEBUG && PMM_DATA_LOG_DEBUG
         mPmmModuleDataLog.debugPrintLogContent();
         Serial.println();
     #endif
@@ -171,9 +176,9 @@ void Pmm::update()
 
 
 
-    /*if (packetIDul % 100 == 0)
+    /*if (mMainLoopCounter % 100 == 0)
     {
-        Serial.print("timeMsBetween 100 cycles = "); Serial.println(millis() - timePrint);
+        debugMorePrintf("Time between 100 cycles = millis() - timePrint")
         timePrint = millis();
     }*/
 

@@ -261,17 +261,17 @@ private:
 static const int CONFIG_INTERVAL = 50;
 
 // Transmission Keys
-static const char * OUTER_KEY = "#";
-static const char * TIME_KEY = "t";
-static const char * NUM_GRAPH_KEY = "ng";
-static const char * LAST_UPDATED_KEY = "lu";
-static const char * GRAPHS_KEY = "g";
-static const char * TITLE_KEY = "t";
-static const char * XVY_KEY = "xvy";
-static const char * POINTS_DISPLAYED_KEY = "pd";
-static const char * SIZE_KEY = "sz";
-static const char * LABELS_KEY = "l";
-static const char * COLORS_KEY = "c";
-static const char * DATA_KEY = "d";
+#define OUTER_KEY               "#"
+#define TIME_KEY                "t"
+#define NUM_GRAPH_KEY           "ng"
+#define LAST_UPDATED_KEY        "lu"
+#define GRAPHS_KEY              "g"
+#define TITLE_KEY               "t"
+#define XVY_KEY                 "xvy"
+#define POINTS_DISPLAYED_KEY    "pd"
+#define SIZE_KEY                "sz"
+#define LABELS_KEY              "l"
+#define COLORS_KEY              "c"
+#define DATA_KEY                "d"
 
 #endif

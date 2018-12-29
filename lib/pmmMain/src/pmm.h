@@ -47,7 +47,7 @@ private:
 
     uint8_t  mSessionId;
     uint32_t mMillis, mMainLoopCounter;
-
+    
     pmmSystemState mSystemState;
 
     #if PMM_USE_IMU

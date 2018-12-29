@@ -9,9 +9,12 @@
 #include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
 
+
+
 PmmTelemetry::PmmTelemetry()
     : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT) // https://stackoverflow.com/a/12927220
 {}
+
 
 
 int PmmTelemetry::init()
@@ -58,6 +61,7 @@ int PmmTelemetry::init()
 }
 
 
+
 int PmmTelemetry::updateTransmission()
 {
     telemetryQueueStructType* queueStructPtr;
@@ -91,7 +95,7 @@ int PmmTelemetry::updateTransmission()
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
     if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
-        queueStructPtr->actualIndex = 0;                            // (the > in >= is just to fix eventual mystical bugs.)
+        queueStructPtr->actualIndex = 0;
 
     queueStructPtr->remainingPacketsOnQueue--;
 
@@ -99,6 +103,7 @@ int PmmTelemetry::updateTransmission()
     return 0;
 
 } // end of updateTransmission()
+
 
 
 // Returns 1 if received anything, else, 0.
@@ -111,6 +116,7 @@ int PmmTelemetry::updateReception()
     }
     return 0;
 }
+
 
 
 receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()

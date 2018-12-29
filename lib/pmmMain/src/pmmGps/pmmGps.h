@@ -27,16 +27,19 @@ typedef struct
         uint8_t satellites;
     #endif
 
+    #ifdef GPS_FIX_HEADING
+        float headingDegree;
+    #endif
+
     #ifdef GPS_FIX_SPEED
         float horizontalSpeed;
-        float northSpeed;
-        float eastSpeed;
-        float headingDegree;
-
-        #ifdef GPS_FIX_ALTITUDE
-            float upSpeed;
+        float upSpeed;
+        #ifdef GPS_FIX_HEADING
+            float northSpeed;
+            float eastSpeed;
         #endif
     #endif
+
 } pmmGpsStructType;
 
 

@@ -20,6 +20,9 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
     if (!mIsLocked)
         updateLogInfoCombinedPayload();
 
+    if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
+        return 2;
+
 // 1) Add the Header
     // 1.1) The CRC-8 is added after the other fields
     // 1.2) Add the Session Identifier

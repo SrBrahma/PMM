@@ -160,7 +160,6 @@ uint8_t**    PmmModuleDataLog::getVariableAdrsArray()    { return mVariableAdrsA
 
 void PmmModuleDataLog::debugPrintLogHeader()
 {
-    #if PMM_DEBUG
     char buffer[2048] = {'\0'}; // No static needed, as it is called usually only once.
 
     for (unsigned variableIndex = 0; variableIndex < mNumberVariables; variableIndex ++)
@@ -172,7 +171,6 @@ void PmmModuleDataLog::debugPrintLogHeader()
     }
 
     Serial.println(buffer);
-    #endif
 }
 
 
@@ -180,7 +178,6 @@ void PmmModuleDataLog::debugPrintLogHeader()
 // Float variables are printed with a maximum of 3 decimal digits. You may change it if you like.
 void PmmModuleDataLog::debugPrintLogContent()
 {
-    #if PMM_DEBUG
     static char buffer[DATA_LOG_DEBUG_BUFFER_LEN]; // Static for optimization
     buffer[0] = {'\0'};      // As the above is static, we need to reset the first char so snprintf will work properly.
 
@@ -230,5 +227,4 @@ void PmmModuleDataLog::debugPrintLogContent()
         snprintf(buffer, DATA_LOG_DEBUG_BUFFER_LEN, "%s]", buffer);
     } // for loop end
     Serial.println(buffer);
-    #endif
 } // end of function debugPrintLogContent()

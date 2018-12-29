@@ -71,6 +71,7 @@ private:
     telemetryQueueStructType mNormalPriorityQueueStruct;
     telemetryQueueStructType mLowPriorityQueueStruct   ;
 
+    int getQueueStruct(telemetryQueuePriorities priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
     int tryToAddToQueue(telemetryQueuePriorities priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
 
 };

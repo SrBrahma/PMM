@@ -40,26 +40,14 @@
 
 #include "pmmGps/pmmGps.h"
 
-//-------------------------------------------------------------------------
-//  The GPSport.h include file tries to choose a default serial port
-//  for the GPS device.  If you know which serial port you want to use, edit the GPSport.h file.
-#include <GPSport.h>
-
 //------------------------------------------------------------
-// For the NeoGPS example programs, "Streamers" is common set of printing and formatting routines for GPS data, in a
-//   Comma-Separated Values text format (aka CSV).  The CSV data will be printed to the "debug output device".
-// If you don't need these formatters, simply delete this section.
-// #include <Streamers.h>
-
-/* example from "trace_all(DEBUG_PORT, mGps, mFix);"
- Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
-3,2018-04-25 16:32:02.840,-228587517,-432291933,4830,5200,,,5,0,356,
-3,2018-04-25 16:32:03.840,-228588150,-432292417,4930,3900,630,3,12,0,791,
-3,2018-04-25 16:32:04.840,-228588617,-432292883,4600,2800,630,3,19,0,1226,
-3,2018-04-25 16:32:05.840,-228588867,-432293117,4330,1700,630,3,26,0,1661,
-*/
-
-/* Also change GPSfix_cfg.h in neoGps Lib */
+#if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
+    #include <Streamers.h>
+    // example from "trace_all(DEBUG_PORT, mGps, mFix);"
+    // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
+    // 3,2018-04-25 16:32:02.840,-228587517,-432291933,4830,5200,,,5,0,356,
+    // 3,2018-04-25 16:32:05.840,-228588867,-432293117,4330,1700,630,3,26,0,1661,
+#endif
 
 PmmGps::PmmGps(){}
 
@@ -74,7 +62,7 @@ int PmmGps::init()
 
     if (Serial1)
     {
-        sdDebugMorePrintf("Initialized successfully!\n");
+        gpsDebugMorePrintf("Initialized successfully!\n");
         mGpsIsWorking = 1;
     }
 
@@ -92,7 +80,7 @@ int PmmGps::update()
     if (mGpsIsWorking)
     {
         int hadUpdate = 0;
-        while (mGps.available(gpsPort))
+        while (mGps.available(PMM_GPS_PORT))
         {
             mFix = mGps.read();
             //doSomeWork();
@@ -102,8 +90,10 @@ int PmmGps::update()
 
         if (hadUpdate)
         {
-            mPmmGpsStruct.latitude = mFix.latitude();
-            mPmmGpsStruct.longitude = mFix.longitude();
+            #ifdef GPS_FIX_LOCATION
+                mPmmGpsStruct.latitude = mFix.latitude();
+                mPmmGpsStruct.longitude = mFix.longitude();
+            #endif
 
             #ifdef GPS_FIX_ALTITUDE
                 mPmmGpsStruct.altitude = mFix.altitude();
@@ -113,22 +103,26 @@ int PmmGps::update()
                 mPmmGpsStruct.satellites = mFix.satellites;
             #endif
 
-            #ifdef GPS_FIX_SPEED
-                mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
-                mPmmGpsStruct.horizontalSpeed = mFix.speed_metersps();
-                mPmmGpsStruct.northSpeed = mFix.velocity_northF();
-                mPmmGpsStruct.eastSpeed = mFix.velocity_eastF();
-                mPmmGpsStruct.headingDegree = mFix.heading();
+            #ifdef GPS_FIX_HEADING
+                mPmmGpsStruct.headingDegree   = mFix.heading();
+            #endif
 
-                #ifdef GPS_FIX_ALTITUDE
-                    mTempLastReadMillis = millis();
-                    mLastAltitude = mPmmGpsStruct.altitude;
-                    mPmmGpsStruct.upSpeed = ((mPmmGpsStruct.altitude - mLastAltitude) / ((mTempLastReadMillis - mLastReadMillis) / 1000.0)); // mFix.velocity_downF();
-                    mLastReadMillis = mTempLastReadMillis;
+            #ifdef GPS_FIX_SPEED
+                mPmmGpsStruct.upSpeed           = mFix.velocity_down    / (-100.0);  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
+                mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
+                mPmmGpsStruct.horizontalSpeed   = mFix.speed_metersph() / 3600.0  ;  // In m/s
+                #ifdef GPS_FIX_HEADING
+                    mPmmGpsStruct.northSpeed    = mFix.velocity_north   / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
+                    mPmmGpsStruct.eastSpeed     = mFix.velocity_east    / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
                 #endif
             #endif
-        }
 
+        }
+        #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
+            gpsDebugMorePrintf("trace_all():")
+            trace_all(Serial, mGps, mFix);
+            delay(10000);
+        #endif
         return hadUpdate;
     }
     else

@@ -11,11 +11,13 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
 {
 
     if (requestedPacket >= mDataLogInfoPackets)
-        return 2;
+        return 1;
 
     if (!mIsLocked) // So we won't be able to change the variables anymore in this LogData Identifier!
         updateLogInfoCombinedPayload();
 
+    if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
+        return 2;
 
     mPacketStruct.payloadLength = 0;
 

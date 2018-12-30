@@ -10,7 +10,11 @@
 
 #include "pmmModules/dataLog/dataLog.h"
 
-
+// https://stackoverflow.com/a/9110535/10247962. We can't do the inline option, as the C++ version isn't the 17.
+PmmSdAllocStatus PmmModuleDataLog::mAllocStatusReceived[];
+uint8_t          PmmModuleDataLog::mAllocStatusReceivedSession[];
+char             PmmModuleDataLog::mTempFilename [];
+char             PmmModuleDataLog::mTempFilename2[];
 
 PmmModuleDataLog::PmmModuleDataLog()
 {
@@ -69,9 +73,9 @@ int PmmModuleDataLog::update()
 
         case MODE_DEPLOYED:
         case MODE_FINISHED:
-            if (mUpdateModeDeployedCounter < 20)
+            if (mUpdateModeDeployedCounter < 20) // Send lots of DataLog before the DataLogInfo!
             {
-                // This if is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
+                // This 'if' is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
                 // higher priority.
                 if (mPmmTelemetry->getTotalPacketsRemainingOnQueue() == 0)
                     if (!sendDataLog())

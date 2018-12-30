@@ -6,6 +6,9 @@
 // You don't need to call this directly.
 int PmmModuleDataLog::saveOwnDataLogInfo()
 {
+    if (!mPmmSd->getSdIsWorking())
+        return 1;
+
     char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
     snprintf(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s", mDataLogSelfDirPath, LOG_INFO_FILENAME);
 

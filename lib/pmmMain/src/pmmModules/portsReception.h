@@ -6,17 +6,18 @@
 #ifndef PMM_PORTS_RECEPTION_h
 #define PMM_PORTS_RECEPTION_h
 
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/messageLog/messageLog.h"
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
 
 class PmmPortsReception
 {
 
 private:
 
-    PmmModuleDataLog *mPmmModuleDataLog;
-    PmmModuleMessageLog *mPmmModuleMessageLog;
+    PmmModuleDataLog   * mPmmModuleDataLog;
+    PmmModuleMessageLog* mPmmModuleMessageLog;
 
 public:
     PmmPortsReception();

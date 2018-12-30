@@ -3,9 +3,10 @@
 // Copyright (C) 2011 Mike McCauley
 // $Id: RH_RF95.cpp,v 1.18 2018/01/06 23:50:45 mikem Exp $
 
-
 #include <RH_RF95.h>
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
+
+
 
 
 // Interrupt vectors for the 3 Arduino interrupt pins
@@ -129,6 +130,7 @@ int RH_RF95::sendIfAvailable(uint8_t packet[], uint8_t packetLength)
 // 1) Test the pointer
     if (!packet)
         return 1;
+
 // 2) Check if the length is valid
     if (packetLength > RH_RF95_MAX_PACKET_LENGTH || !packetLength) // If invalid length
         return 2;
@@ -138,6 +140,7 @@ int RH_RF95::sendIfAvailable(uint8_t packet[], uint8_t packetLength)
         return 3;
     if (isChannelActive())
         return 4;  // Check channel activity
+
 // 4) Start sending the data to LoRa!
     // 4.1) Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);

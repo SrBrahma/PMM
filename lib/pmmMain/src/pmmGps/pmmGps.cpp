@@ -91,16 +91,16 @@ int PmmGps::update()
         if (hadUpdate)
         {
             #ifdef GPS_FIX_LOCATION
-                mPmmGpsStruct.latitude = mFix.latitude();
-                mPmmGpsStruct.longitude = mFix.longitude();
+                mPmmGpsStruct.latitude        = mFix.latitude();
+                mPmmGpsStruct.longitude       = mFix.longitude();
             #endif
 
             #ifdef GPS_FIX_ALTITUDE
-                mPmmGpsStruct.altitude = mFix.altitude();
+                mPmmGpsStruct.altitude        = mFix.altitude();
             #endif
 
             #ifdef GPS_FIX_SATELLITES
-                mPmmGpsStruct.satellites = mFix.satellites;
+                mPmmGpsStruct.satellites      = mFix.satellites;
             #endif
 
             #ifdef GPS_FIX_HEADING
@@ -108,22 +108,22 @@ int PmmGps::update()
             #endif
 
             #ifdef GPS_FIX_SPEED
-                mPmmGpsStruct.upSpeed           = mFix.velocity_down    / (-100.0);  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
+                mPmmGpsStruct.upSpeed         = mFix.velocity_down    / (-100.0);  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
                 mFix.calculateNorthAndEastVelocityFromSpeedAndHeading();
-                mPmmGpsStruct.horizontalSpeed   = mFix.speed_metersph() / 3600.0  ;  // In m/s
+                mPmmGpsStruct.horizontalSpeed = mFix.speed_metersph() / 3600.0  ;  // In m/s
                 #ifdef GPS_FIX_HEADING
-                    mPmmGpsStruct.northSpeed    = mFix.velocity_north   / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
-                    mPmmGpsStruct.eastSpeed     = mFix.velocity_east    / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
+                    mPmmGpsStruct.northSpeed  = mFix.velocity_north   / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
+                    mPmmGpsStruct.eastSpeed   = mFix.velocity_east    / 100.0   ;  // As NeoGps outputs this in cm/s, we divide by 100 to get in m/s.
                 #endif
             #endif
 
+            #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
+                gpsDebugMorePrintf("GPS updated. trace_all(): ")
+                trace_all(Serial, mGps, mFix);
+            #endif
         }
-        #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
-            gpsDebugMorePrintf("trace_all():")
-            trace_all(Serial, mGps, mFix);
-            delay(10000);
-        #endif
-        return hadUpdate;
+
+        return 1; // Had update!
     }
     else
         return 0;

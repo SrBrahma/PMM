@@ -53,6 +53,8 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
     mPacketStruct.sourceAddress      = PMM_TELEMETRY_ADDRESS_THIS_SYSTEM;
     mPacketStruct.destinationAddress = destinationAddress;
     mPacketStruct.port               = PORT_DATA_LOG_ID;
+
     mPmmTelemetry->addPacketToQueue(&mPacketStruct, priority);
+
     return 0;
 }

@@ -540,7 +540,7 @@ NMEAGPS::decode_t NMEAGPS::parseCommand
       const bool    check_this_table = true;
     #endif
     decode_t res              = DECODE_CHR_INVALID;
-    uint8_t  entry;
+    uint8_t  entry = 0;
 
     if (nmeaMessage == NMEA_UNKNOWN) {
       // We're just starting

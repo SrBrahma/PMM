@@ -23,108 +23,6 @@ static uint8_t           _bmp085Mode;
 
 
 
-// Write byte to register
-int BMP085::write8(uint8_t reg, uint8_t value)
-{
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.write(reg);
-    Wire.write(value);
-
-    Wire.endTransmission();
-
-    return 0;
-}
-
-
-// Read byte from register
-int BMP085::read8(uint8_t reg, uint8_t* value)
-{
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.write(reg);
-
-    Wire.endTransmission();
-
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 1);
-
-    while(!Wire.available()) {};
-
-    *value = Wire.read();
-
-    return 0;
-}
-
-// Read word from register
-int BMP085::read16(uint8_t reg, uint16_t* value)
-{
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.write(reg);
-
-    Wire.endTransmission();
-
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
-
-    while(!Wire.available()) {};
-
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
-
-    *value = vha << 8 | vla;
-
-    return 0;
-}
-
-int BMP085::readS16(uint8_t reg, int16_t* value)
-{
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.write(reg);
-
-    Wire.endTransmission();
-
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
-    while(!Wire.available()) {};
-
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
-
-    *value = (int16_t) (vha << 8 | vla);
-
-    return 0;
-}
-
-int BMP085::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse)
-{
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.write(reg);
-
-    Wire.endTransmission();
-
-    Wire.beginTransmission(BMP085_ADDRESS);
-
-    Wire.requestFrom(BMP085_ADDRESS, numberBytes);
-
-    while(!Wire.available()) {};
-
-    if (!reverse)
-        while (numberBytes--)
-            *(buffer++) = Wire.read();
-
-    else
-        while (numberBytes--)
-            buffer[numberBytes] = Wire.read();
-
-    return 0;
-}
-
-
-
 BMP085::BMP085(){}
 
 
@@ -135,17 +33,17 @@ BMP085::BMP085(){}
 /**************************************************************************/
 void BMP085::readCoefficients(void)
 {
-    readS16(BMP085_REGISTER_CAL_AC1, &_bmp085_coeffs.ac1);
-    readS16(BMP085_REGISTER_CAL_AC2, &_bmp085_coeffs.ac2);
-    readS16(BMP085_REGISTER_CAL_AC3, &_bmp085_coeffs.ac3);
+    read16S(BMP085_REGISTER_CAL_AC1, &_bmp085_coeffs.ac1);
+    read16S(BMP085_REGISTER_CAL_AC2, &_bmp085_coeffs.ac2);
+    read16S(BMP085_REGISTER_CAL_AC3, &_bmp085_coeffs.ac3);
     read16(BMP085_REGISTER_CAL_AC4, &_bmp085_coeffs.ac4);
     read16(BMP085_REGISTER_CAL_AC5, &_bmp085_coeffs.ac5);
     read16(BMP085_REGISTER_CAL_AC6, &_bmp085_coeffs.ac6);
-    readS16(BMP085_REGISTER_CAL_B1, &_bmp085_coeffs.b1);
-    readS16(BMP085_REGISTER_CAL_B2, &_bmp085_coeffs.b2);
-    readS16(BMP085_REGISTER_CAL_MB, &_bmp085_coeffs.mb);
-    readS16(BMP085_REGISTER_CAL_MC, &_bmp085_coeffs.mc);
-    readS16(BMP085_REGISTER_CAL_MD, &_bmp085_coeffs.md);
+    read16S(BMP085_REGISTER_CAL_B1, &_bmp085_coeffs.b1);
+    read16S(BMP085_REGISTER_CAL_B2, &_bmp085_coeffs.b2);
+    read16S(BMP085_REGISTER_CAL_MB, &_bmp085_coeffs.mb);
+    read16S(BMP085_REGISTER_CAL_MC, &_bmp085_coeffs.mc);
+    read16S(BMP085_REGISTER_CAL_MD, &_bmp085_coeffs.md);
 }
 
 
@@ -158,15 +56,11 @@ int BMP085::isDataReady()
         {
             // Temperature is ready
             if (readTemperature(&lastTemperature))
-            {
                 return -1;
-            }
 
             // Kick off the pressure reading
             if (requestPressure())
-            {
                 return -2;
-            }
 
             return DATA_READY_TEMPERATURE;
         }
@@ -178,15 +72,11 @@ int BMP085::isDataReady()
         {
             // Pressure is ready
             if (readPressure(&lastPressure))
-            {
                 return -3;
-            }
 
             // Kick off the temperature reading
             if (requestTemperature())
-            {
                 return -4;
-            }
 
             return DATA_READY_PRESSURE;
         }
@@ -196,20 +86,17 @@ int BMP085::isDataReady()
     {
         // We haven't started anything, so initialize
         if (requestTemperature())
-        {
             return -4;
-        }
     }
+
     // Nothing is ready
     return 0;
 }
 
 int BMP085::requestTemperature()
 {
-    int result = write8(BMP085_REGISTER_CONTROL, BMP085_REGISTER_READTEMPCMD);
-
-    if (result)
-        return result;
+    if (write8(BMP085_REGISTER_CONTROL, BMP085_REGISTER_READTEMPCMD))
+        return 1;
 
     readingTemperature = true;
     readyStart         = micros();
@@ -220,10 +107,8 @@ int BMP085::requestTemperature()
 
 int BMP085::requestPressure()
 {
-    int result = write8(BMP085_REGISTER_CONTROL, BMP085_REGISTER_READPRESSURECMD + (_bmp085Mode << 6));
-
-    if (result)
-        return result;
+    if (write8(BMP085_REGISTER_CONTROL, BMP085_REGISTER_READPRESSURECMD + (_bmp085Mode << 6)))
+        return 1;
 
     readingPressure = true;
     readyStart      = micros();
@@ -252,10 +137,8 @@ int BMP085::readTemperature(int16_t *temperature)
 {
     uint16_t rawTemperature;
 
-    int result = read16(BMP085_REGISTER_TEMPDATA, &rawTemperature);
-
-    if (result)
-        return result;
+    if (read16(BMP085_REGISTER_TEMPDATA, &rawTemperature))
+        return 1;
 
     *temperature       = computeB5(rawTemperature);
     readingTemperature = false;
@@ -266,10 +149,8 @@ int BMP085::readTemperature(int16_t *temperature)
 
 int BMP085::readPressure(int32_t *pressure)
 {
-    int result = read(BMP085_REGISTER_PRESSUREDATA, 3, (uint8_t*)pressure, true);
-
-    if (result)
-        return result;
+    if (read(BMP085_REGISTER_PRESSUREDATA, 3, (uint8_t*)pressure, true))
+        return 1;
 
     *pressure       = *pressure >> (8 - _bmp085Mode);
     readingPressure = false;
@@ -310,9 +191,11 @@ int BMP085::begin(bmp085_mode_t mode)
 
     /* Make sure we have the right device */
     uint8_t id;
-    read8(BMP085_REGISTER_CHIPID, &id);
-    if (id != 0x55)
+    if (read8(BMP085_REGISTER_CHIPID, &id))
         return 1;
+
+    if (id != 0x55)
+        return 2;
 
 
     /* Set the mode indicator */
@@ -431,4 +314,127 @@ float BMP085::seaLevelForAltitude(float altitude, float atmospheric)
     //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
 
     return atmospheric / pow(1.0 - (altitude / 44330.0), 5.255);
+}
+
+
+
+// Write byte to register
+int BMP085::write8(uint8_t reg, uint8_t value)
+{
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.write(reg);
+    Wire.write(value);
+
+    Wire.endTransmission();
+
+    return 0;
+}
+
+
+// Read byte from register
+int BMP085::read8(uint8_t reg, uint8_t* value)
+{
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.write(reg);
+
+    Wire.endTransmission();
+
+    Wire.beginTransmission(BMP085_ADDRESS);
+    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 1);
+
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    *value = Wire.read();
+
+    return 0;
+}
+
+// Read word from register
+int BMP085::read16(uint8_t reg, uint16_t* value)
+{
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.write(reg);
+
+    Wire.endTransmission();
+
+    Wire.beginTransmission(BMP085_ADDRESS);
+    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
+
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    uint8_t vha = Wire.read();
+    uint8_t vla = Wire.read();
+
+    *value = vha << 8 | vla;
+
+    return 0;
+}
+
+int BMP085::read16S(uint8_t reg, int16_t* value)
+{
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.write(reg);
+
+    Wire.endTransmission();
+
+    Wire.beginTransmission(BMP085_ADDRESS);
+    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
+
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    uint8_t vha = Wire.read();
+    uint8_t vla = Wire.read();
+
+    *value = vha << 8 | vla;
+
+    return 0;
+}
+
+int BMP085::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse)
+{
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.write(reg);
+
+    Wire.endTransmission();
+
+    Wire.beginTransmission(BMP085_ADDRESS);
+
+    Wire.requestFrom(BMP085_ADDRESS, numberBytes);
+
+    uint32_t startMillis = millis();
+    while(Wire.available() < numberBytes)
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    if (!reverse)
+        while (numberBytes--)
+            *(buffer++) = Wire.read();
+
+    else
+        while (numberBytes--)
+            buffer[numberBytes] = Wire.read();
+
+    return 0;
 }

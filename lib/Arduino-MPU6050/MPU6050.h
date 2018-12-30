@@ -170,27 +170,29 @@ public:
     void    calibrateGyroscope(uint16_t samples = 1000);
     void    calibrateAccelerometer(uint16_t samples = 1000);
 
-    Vector  readRawGyroscope(void);
-    Vector  readNormalizedGyroscope(void);
-    void    readNormalizedGyroscope(float gyroscopeArray[3]);
+    Vector  readRawGyroscope();
+    int     readRawGyroscope(float rawGyroscope[3]);
+    Vector  readNormalizedGyroscope();
+    int     readNormalizedGyroscope(float gyroscopeArray[3]);
 
-    Vector  readRawAccelerometer(void);
-    Vector  readScaledAccelerometer(void);
-    Vector  readNormalizedAccelerometer(void);
-    void    readNormalizedAccelerometer(float accelerometerArray[3]);
+    Vector  readRawAccelerometer();
+    int     readRawAccelerometer(float rawAccelerometer[3]);
+    Vector  readScaledAccelerometer();                                  // in g's
+    Vector  readNormalizedAccelerometer();
+    int     readNormalizedAccelerometer(float accelerometerArray[3]);   // in m/s^2
     
 
     void    getPitchAndRoll(Vector normAccel, float *pitch, float *roll);
 
     void    setClockSource(mpu6050_clockSource_t source);
 
-    mpu6050_dps_t getGyroscopeScale(void);
+    mpu6050_dps_t getGyroscopeScale();
     void    setGyroscopeScale(mpu6050_dps_t scale);
 
-    mpu6050_range_t getAccelerometerRange(void);
+    mpu6050_range_t getAccelerometerRange();
     void    setAccelerometerRange(mpu6050_range_t range);
 
-    mpu6050_clockSource_t getClockSource(void);
+    mpu6050_clockSource_t getClockSource();
     
     void    setDHPFMode(mpu6050_dhpf_t dhpf);
     void    setDLPFMode(mpu6050_dlpf_t dlpf);
@@ -198,72 +200,73 @@ public:
     mpu6050_onDelay_t getAccelerometerPowerOnDelay();
     void    setAccelerometerPowerOnDelay(mpu6050_onDelay_t delay);
 
-    uint8_t getIntStatus(void);
+    uint8_t getIntStatus();
 
-    bool    getIntZeroMotionEnabled(void);
+    bool    getIntZeroMotionEnabled();
     void    setIntZeroMotionEnabled(bool state);
 
-    bool    getIntMotionEnabled(void);
+    bool    getIntMotionEnabled();
     void    setIntMotionEnabled(bool state);
 
-    bool    getIntFreeFallEnabled(void);
+    bool    getIntFreeFallEnabled();
     void    setIntFreeFallEnabled(bool state);
 
-    uint8_t getMotionDetectionThreshold(void);
+    uint8_t getMotionDetectionThreshold();
     void    setMotionDetectionThreshold(uint8_t threshold);
 
-    uint8_t getMotionDetectionDuration(void);
+    uint8_t getMotionDetectionDuration();
     void    setMotionDetectionDuration(uint8_t duration);
 
-    uint8_t getZeroMotionDetectionThreshold(void);
+    uint8_t getZeroMotionDetectionThreshold();
     void    setZeroMotionDetectionThreshold(uint8_t threshold);
 
-    uint8_t getZeroMotionDetectionDuration(void);
+    uint8_t getZeroMotionDetectionDuration();
     void    setZeroMotionDetectionDuration(uint8_t duration);
 
-    uint8_t getFreeFallDetectionThreshold(void);
+    uint8_t getFreeFallDetectionThreshold();
     void    setFreeFallDetectionThreshold(uint8_t threshold);
 
-    uint8_t getFreeFallDetectionDuration(void);
+    uint8_t getFreeFallDetectionDuration();
     void    setFreeFallDetectionDuration(uint8_t duration);
 
-    bool    getSleepEnabled(void);
+    bool    getSleepEnabled();
     void    setSleepEnabled(bool state);
 
-    bool    getI2CMasterModeEnabled(void);
+    bool    getI2CMasterModeEnabled();
     void    setI2CMasterModeEnabled(bool state);
 
-    bool    getI2CBypassEnabled(void);
+    bool    getI2CBypassEnabled();
     void    setI2CBypassEnabled(bool state);
 
-    float   readTemperature(void);
+    float   readTemperature();
 
-    Activities readActivites(void);
+    Activities readActivites();
 
-    int16_t getGyroscopeOffsetX(void);
+    int16_t getGyroscopeOffsetX();
     void    setGyroscopeOffsetX(int16_t offset);
 
-    int16_t getGyroscopeOffsetY(void);
+    int16_t getGyroscopeOffsetY();
     void    setGyroscopeOffsetY(int16_t offset);
 
-    int16_t getGyroscopeOffsetZ(void);
+    int16_t getGyroscopeOffsetZ();
     void    setGyroscopeOffsetZ(int16_t offset);
 
-    int16_t getAccelerometerOffsetX(void);
+    int16_t getAccelerometerOffsetX();
     void    setAccelerometerOffsetX(int16_t offset);
 
-    int16_t getAccelerometerOffsetY(void);
+    int16_t getAccelerometerOffsetY();
     void    setAccelerometerOffsetY(int16_t offset);
 
-    int16_t getAccelerometerOffsetZ(void);
+    int16_t getAccelerometerOffsetZ();
     void    setAccelerometerOffsetZ(int16_t offset);
 
+    float   getGyroscopeThreshold();
     void    setGyroscopeThreshold(float percentOfMaximumValue);
-    float   getGyroscopeThreshold(void);
+
 
 private:
 
-    int     mMpuAddress;
+    uint8_t    mMpuAddress;
     Activities mActivities;   // Activities
 
     Vector  mRawAccelerometer, mRawGyroscope; // Raw vectors
@@ -272,15 +275,15 @@ private:
 
     float   mGyroscopeThreshold; // Threshold and Delta for Gyro
 
-    void    writeRegisterBit(uint8_t reg, uint8_t pos, bool state);
-    bool    readRegisterBit (uint8_t reg, uint8_t pos);
+    int  write1(uint8_t reg, uint8_t pos, bool state);
+    int  read1 (uint8_t reg, uint8_t pos, uint8_t* value);
 
-    uint8_t fastRegister8 (uint8_t reg);
-    uint8_t readRegister8 (uint8_t reg);
-    int16_t readRegister16(uint8_t reg);
+    int  read8  (uint8_t reg, uint8_t* value);
+    int  read16S(uint8_t reg, int16_t* value);
+    int  read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse = false);
 
-    void    writeRegister8 (uint8_t reg, uint8_t value);
-    void    writeRegister16(uint8_t reg, int16_t value);
+    int  write8 (uint8_t reg, uint8_t value);
+    int  write16(uint8_t reg, int16_t value);
 
 };
 

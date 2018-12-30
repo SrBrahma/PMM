@@ -46,10 +46,12 @@ bool MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpu
     mGyroscopeThreshold = 0;
 
     // Check MPU6050 Who Am I Register
-    if (readRegister8(MPU6050_REG_WHO_AM_I) != 0x68 && readRegister8(MPU6050_REG_WHO_AM_I) != 0x72) // For some reason my device returns 0x72
-    {
+    uint8_t whoAmI;
+    if (read8(MPU6050_REG_WHO_AM_I, &whoAmI))
+        return 1;
+
+    if (!(whoAmI == 0x68 || whoAmI == 0x72)) // For some reason my device returns 0x72
         return false;
-    }
 
     // Set Clock Source
     setClockSource(MPU6050_CLOCK_PLL_XGYRO);
@@ -66,8 +68,6 @@ bool MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpu
 
 void MPU6050::setAccelerometerRange(mpu6050_range_t range)
 {
-    uint8_t value;
-
     switch (range)
     {
         case MPU6050_RANGE_2G:
@@ -86,16 +86,18 @@ void MPU6050::setAccelerometerRange(mpu6050_range_t range)
             break;
     }
 
-    value = readRegister8(MPU6050_REG_ACCEL_CONFIG);
+    uint8_t value;
+
+    read8(MPU6050_REG_ACCEL_CONFIG, &value);
     value &= 0b11100111;
     value |= (range << 3);
-    writeRegister8(MPU6050_REG_ACCEL_CONFIG, value);
+    write8(MPU6050_REG_ACCEL_CONFIG, value);
 }
 
-mpu6050_range_t MPU6050::getAccelerometerRange(void)
+mpu6050_range_t MPU6050::getAccelerometerRange()
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_ACCEL_CONFIG);
+    read8(MPU6050_REG_ACCEL_CONFIG, &value);
     value &= 0b00011000;
     value >>= 3;
     return (mpu6050_range_t)value;
@@ -103,8 +105,6 @@ mpu6050_range_t MPU6050::getAccelerometerRange(void)
 
 void MPU6050::setGyroscopeScale(mpu6050_dps_t scale)
 {
-    uint8_t value;
-
     switch (scale)
     {
         case MPU6050_SCALE_250DPS:
@@ -123,16 +123,17 @@ void MPU6050::setGyroscopeScale(mpu6050_dps_t scale)
             break;
     }
 
-    value = readRegister8(MPU6050_REG_GYRO_CONFIG);
+    uint8_t value;
+    read8(MPU6050_REG_GYRO_CONFIG, &value);
     value &= 0b11100111;
     value |= (scale << 3);
-    writeRegister8(MPU6050_REG_GYRO_CONFIG, value);
+    write8(MPU6050_REG_GYRO_CONFIG, value);
 }
 
-mpu6050_dps_t MPU6050::getGyroscopeScale(void)
+mpu6050_dps_t MPU6050::getGyroscopeScale()
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_GYRO_CONFIG);
+    read8(MPU6050_REG_GYRO_CONFIG, &value);
     value &= 0b00011000;
     value >>= 3;
     return (mpu6050_dps_t)value;
@@ -225,65 +226,34 @@ void MPU6050::calibrateGyroscope(uint16_t samples)
     setGyroscopeScale(previousGyroscopeScale); // Restore previous range
 }
 
-Vector MPU6050::readRawAccelerometer(void)
+
+
+Vector MPU6050::readRawAccelerometer()
 {
-    Wire.beginTransmission(mMpuAddress);
-    #if ARDUINO >= 100
-        Wire.write(MPU6050_REG_ACCEL_XOUT_H);
-    #else
-        Wire.send(MPU6050_REG_ACCEL_XOUT_H);
-    #endif
-    Wire.endTransmission();
+    uint8_t buffer[6];
+    read(MPU6050_REG_ACCEL_XOUT_H, 6, buffer);
 
-    Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, 6);
-
-    while (Wire.available() < 6);
-
-    #if ARDUINO >= 100
-        uint8_t xha = Wire.read();
-        uint8_t xla = Wire.read();
-            uint8_t yha = Wire.read();
-        uint8_t yla = Wire.read();
-        uint8_t zha = Wire.read();
-        uint8_t zla = Wire.read();
-    #else
-        uint8_t xha = Wire.receive();
-        uint8_t xla = Wire.receive();
-        uint8_t yha = Wire.receive();
-        uint8_t yla = Wire.receive();
-        uint8_t zha = Wire.receive();
-        uint8_t zla = Wire.receive();
-    #endif
-
-    mRawAccelerometer.XAxis = (int16_t) (xha << 8 | xla);
-    mRawAccelerometer.YAxis = (int16_t) (yha << 8 | yla);
-    mRawAccelerometer.ZAxis = (int16_t) (zha << 8 | zla);
+    mRawAccelerometer.XAxis = (int16_t) (buffer[0] << 8 | buffer[1]);
+    mRawAccelerometer.YAxis = (int16_t) (buffer[2] << 8 | buffer[3]);
+    mRawAccelerometer.ZAxis = (int16_t) (buffer[4] << 8 | buffer[5]);
 
     return mRawAccelerometer;
 }
 
-Vector MPU6050::readNormalizedAccelerometer(void)
+int MPU6050::readRawAccelerometer(float rawAccelerometer[3])
 {
-    readRawAccelerometer();
+    uint8_t buffer[6];
+    if (read(MPU6050_REG_ACCEL_XOUT_H, 6, buffer))
+        return 1;
 
-    mNormalizedAccelerometer.XAxis = mRawAccelerometer.XAxis * mRangePerDigit * GRAVITY_VALUE;
-    mNormalizedAccelerometer.YAxis = mRawAccelerometer.YAxis * mRangePerDigit * GRAVITY_VALUE;
-    mNormalizedAccelerometer.ZAxis = mRawAccelerometer.ZAxis * mRangePerDigit * GRAVITY_VALUE;
+    rawAccelerometer[0] = (int16_t) (buffer[0] << 8 | buffer[1]); // The (int16_t) is necessary as the *buffer is uint8_t
+    rawAccelerometer[1] = (int16_t) (buffer[2] << 8 | buffer[3]);
+    rawAccelerometer[2] = (int16_t) (buffer[4] << 8 | buffer[5]);
 
-    return mNormalizedAccelerometer;
+    return 0;
 }
 
-void MPU6050::readNormalizedAccelerometer(float accelerometerArray[3])
-{
-    readRawAccelerometer();
-
-    accelerometerArray[0] = mRawAccelerometer.XAxis * mRangePerDigit * GRAVITY_VALUE;
-    accelerometerArray[1] = mRawAccelerometer.YAxis * mRangePerDigit * GRAVITY_VALUE;
-    accelerometerArray[2] = mRawAccelerometer.ZAxis * mRangePerDigit * GRAVITY_VALUE;
-}
-
-Vector MPU6050::readScaledAccelerometer(void)
+Vector MPU6050::readScaledAccelerometer()
 {
     readRawAccelerometer();
 
@@ -294,267 +264,301 @@ Vector MPU6050::readScaledAccelerometer(void)
     return mNormalizedAccelerometer;
 }
 
-
-Vector MPU6050::readRawGyroscope(void)
+Vector MPU6050::readNormalizedAccelerometer()
 {
-    Wire.beginTransmission(mMpuAddress);
-    #if ARDUINO >= 100
-    Wire.write(MPU6050_REG_GYRO_XOUT_H);
-    #else
-    Wire.send(MPU6050_REG_GYRO_XOUT_H);
-    #endif
-    Wire.endTransmission();
+    readRawAccelerometer();
 
-    Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, 6);
+    mNormalizedAccelerometer.XAxis = mRawAccelerometer.XAxis * mRangePerDigit * GRAVITY_VALUE;
+    mNormalizedAccelerometer.YAxis = mRawAccelerometer.YAxis * mRangePerDigit * GRAVITY_VALUE;
+    mNormalizedAccelerometer.ZAxis = mRawAccelerometer.ZAxis * mRangePerDigit * GRAVITY_VALUE;
 
-    while (Wire.available() < 6);
+    return mNormalizedAccelerometer;
+}
 
-    #if ARDUINO >= 100
-        uint8_t xha = Wire.read();
-        uint8_t xla = Wire.read();
-        uint8_t yha = Wire.read();
-        uint8_t yla = Wire.read();
-        uint8_t zha = Wire.read();
-        uint8_t zla = Wire.read();
-    #else
-        uint8_t xha = Wire.receive();
-        uint8_t xla = Wire.receive();
-        uint8_t yha = Wire.receive();
-        uint8_t yla = Wire.receive();
-        uint8_t zha = Wire.receive();
-        uint8_t zla = Wire.receive();
-    #endif
+int MPU6050::readNormalizedAccelerometer(float accelerometerArray[3])
+{
+    if (readRawAccelerometer(accelerometerArray))
+        return 1;
 
-    mRawGyroscope.XAxis = (int16_t) (xha << 8 | xla);
-    mRawGyroscope.YAxis = (int16_t) (yha << 8 | yla);
-    mRawGyroscope.ZAxis = (int16_t) (zha << 8 | zla);
+    accelerometerArray[0] *= mRangePerDigit * GRAVITY_VALUE;
+    accelerometerArray[1] *= mRangePerDigit * GRAVITY_VALUE;
+    accelerometerArray[2] *= mRangePerDigit * GRAVITY_VALUE;
+
+    return 0;
+}
+
+Vector MPU6050::readRawGyroscope()
+{
+    uint8_t buffer[6];
+    read(MPU6050_REG_GYRO_XOUT_H, 6, buffer);
+
+    mRawGyroscope.XAxis = (int16_t) (buffer[0] << 8 | buffer[1]);
+    mRawGyroscope.YAxis = (int16_t) (buffer[2] << 8 | buffer[3]);
+    mRawGyroscope.ZAxis = (int16_t) (buffer[4] << 8 | buffer[5]);
 
     return mRawGyroscope;
 }
+int MPU6050::readRawGyroscope(float rawGyroscope[3])
+{
+    uint8_t buffer[6];
+    if (read(MPU6050_REG_GYRO_XOUT_H, 6, buffer))
+        return 1;
 
-Vector MPU6050::readNormalizedGyroscope(void)
+    rawGyroscope[0] = (int16_t) (buffer[0] << 8 | buffer[1]);
+    rawGyroscope[1] = (int16_t) (buffer[2] << 8 | buffer[3]);
+    rawGyroscope[2] = (int16_t) (buffer[4] << 8 | buffer[5]);
+
+    return 0;
+}
+
+
+
+Vector MPU6050::readNormalizedGyroscope()
 {
     readRawGyroscope();
 
     if (mGyroscopeThreshold)
     {
-        if (abs(mRawGyroscope.XAxis) < mGyroscopeThreshold)
-            mRawGyroscope.XAxis = 0;
-        if (abs(mRawGyroscope.YAxis) < mGyroscopeThreshold)
-            mRawGyroscope.YAxis = 0;
-        if (abs(mRawGyroscope.ZAxis) < mGyroscopeThreshold)
-            mRawGyroscope.ZAxis = 0;
+        if (abs(mRawGyroscope.XAxis) < mGyroscopeThreshold)     mRawGyroscope.XAxis = 0;
+        if (abs(mRawGyroscope.YAxis) < mGyroscopeThreshold)     mRawGyroscope.YAxis = 0;
+        if (abs(mRawGyroscope.ZAxis) < mGyroscopeThreshold)     mRawGyroscope.ZAxis = 0;
     }
 
     mNormalizedGyroscope.XAxis = mRawGyroscope.XAxis * mDegreesPerDigit;
     mNormalizedGyroscope.YAxis = mRawGyroscope.YAxis * mDegreesPerDigit;
     mNormalizedGyroscope.ZAxis = mRawGyroscope.ZAxis * mDegreesPerDigit;
 
-    
-
     return mNormalizedGyroscope;
 }
 
-void MPU6050::readNormalizedGyroscope(float gyroscopeArray[3])
+int MPU6050::readNormalizedGyroscope(float gyroscopeArray[3])
 {
-    readRawGyroscope();
+    if (readRawGyroscope(gyroscopeArray))
+        return 1;
+
+    gyroscopeArray[0] *= mDegreesPerDigit;
+    gyroscopeArray[1] *= mDegreesPerDigit;
+    gyroscopeArray[2] *= mDegreesPerDigit;
 
     if (mGyroscopeThreshold)
     {
-        if (abs(mRawGyroscope.XAxis) < mGyroscopeThreshold)
-            mRawGyroscope.XAxis = 0;
-        if (abs(mRawGyroscope.YAxis) < mGyroscopeThreshold)
-            mRawGyroscope.YAxis = 0;
-        if (abs(mRawGyroscope.ZAxis) < mGyroscopeThreshold)
-            mRawGyroscope.ZAxis = 0;
+        if (abs(gyroscopeArray[0]) < mGyroscopeThreshold)     gyroscopeArray[0] = 0;
+        if (abs(gyroscopeArray[1]) < mGyroscopeThreshold)     gyroscopeArray[1] = 0;
+        if (abs(gyroscopeArray[2]) < mGyroscopeThreshold)     gyroscopeArray[2] = 0;
     }
 
-    gyroscopeArray[0] = mRawGyroscope.XAxis * mDegreesPerDigit;
-    gyroscopeArray[1] = mRawGyroscope.YAxis * mDegreesPerDigit;
-    gyroscopeArray[2] = mRawGyroscope.ZAxis * mDegreesPerDigit;
+    return 0;
 }
 
 void MPU6050::setDHPFMode(mpu6050_dhpf_t dhpf)
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_ACCEL_CONFIG);
+    read8(MPU6050_REG_ACCEL_CONFIG, &value);
     value &= 0b11111000;
     value |= dhpf;
-    writeRegister8(MPU6050_REG_ACCEL_CONFIG, value);
+    write8(MPU6050_REG_ACCEL_CONFIG, value);
 }
 
 void MPU6050::setDLPFMode(mpu6050_dlpf_t dlpf)
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_CONFIG);
+    read8(MPU6050_REG_CONFIG, &value);
     value &= 0b11111000;
     value |= dlpf;
-    writeRegister8(MPU6050_REG_CONFIG, value);
+    write8(MPU6050_REG_CONFIG, value);
 }
 
 void MPU6050::setClockSource(mpu6050_clockSource_t source)
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_PWR_MGMT_1);
+    read8(MPU6050_REG_PWR_MGMT_1, &value);
     value &= 0b11111000;
     value |= source;
-    writeRegister8(MPU6050_REG_PWR_MGMT_1, value);
+    write8(MPU6050_REG_PWR_MGMT_1, value);
 }
 
-mpu6050_clockSource_t MPU6050::getClockSource(void)
+mpu6050_clockSource_t MPU6050::getClockSource()
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_PWR_MGMT_1);
+    read8(MPU6050_REG_PWR_MGMT_1, &value);
     value &= 0b00000111;
     return (mpu6050_clockSource_t)value;
 }
 
-bool MPU6050::getSleepEnabled(void)
+bool MPU6050::getSleepEnabled()
 {
-    return readRegisterBit(MPU6050_REG_PWR_MGMT_1, 6);
+    uint8_t value;
+    read1(MPU6050_REG_PWR_MGMT_1, 6, &value);
+    return value;
 }
 
 void MPU6050::setSleepEnabled(bool state)
 {
-    writeRegisterBit(MPU6050_REG_PWR_MGMT_1, 6, state);
+    write1(MPU6050_REG_PWR_MGMT_1, 6, state);
 }
 
-bool MPU6050::getIntZeroMotionEnabled(void)
+bool MPU6050::getIntZeroMotionEnabled()
 {
-    return readRegisterBit(MPU6050_REG_INT_ENABLE, 5);
+    uint8_t value;
+    read1(MPU6050_REG_INT_ENABLE, 5, &value);
+    return value;
 }
 
 void MPU6050::setIntZeroMotionEnabled(bool state)
 {
-    writeRegisterBit(MPU6050_REG_INT_ENABLE, 5, state);
+    write1(MPU6050_REG_INT_ENABLE, 5, state);
 }
 
-bool MPU6050::getIntMotionEnabled(void)
+bool MPU6050::getIntMotionEnabled()
 {
-    return readRegisterBit(MPU6050_REG_INT_ENABLE, 6);
+    uint8_t value;
+    read1(MPU6050_REG_INT_ENABLE, 6, &value);
+    return value;
 }
 
 void MPU6050::setIntMotionEnabled(bool state)
 {
-    writeRegisterBit(MPU6050_REG_INT_ENABLE, 6, state);
+    write1(MPU6050_REG_INT_ENABLE, 6, state);
 }
 
-bool MPU6050::getIntFreeFallEnabled(void)
+bool MPU6050::getIntFreeFallEnabled()
 {
-    return readRegisterBit(MPU6050_REG_INT_ENABLE, 7);
+    uint8_t value;
+    read1(MPU6050_REG_INT_ENABLE, 7, &value);
+    return value;
 }
 
 void MPU6050::setIntFreeFallEnabled(bool state)
 {
-    writeRegisterBit(MPU6050_REG_INT_ENABLE, 7, state);
+    write1(MPU6050_REG_INT_ENABLE, 7, state);
 }
 
-uint8_t MPU6050::getMotionDetectionThreshold(void)
+uint8_t MPU6050::getMotionDetectionThreshold()
 {
-    return readRegister8(MPU6050_REG_MOT_THRESHOLD);
+    uint8_t value;
+    read8(MPU6050_REG_MOT_THRESHOLD, &value);
+    return value;
 }
 
 void MPU6050::setMotionDetectionThreshold(uint8_t threshold)
 {
-    writeRegister8(MPU6050_REG_MOT_THRESHOLD, threshold);
+    write8(MPU6050_REG_MOT_THRESHOLD, threshold);
 }
 
-uint8_t MPU6050::getMotionDetectionDuration(void)
+uint8_t MPU6050::getMotionDetectionDuration()
 {
-    return readRegister8(MPU6050_REG_MOT_DURATION);
+    uint8_t value;
+    read8(MPU6050_REG_MOT_DURATION, &value);
+    return value;
 }
 
 void MPU6050::setMotionDetectionDuration(uint8_t duration)
 {
-    writeRegister8(MPU6050_REG_MOT_DURATION, duration);
+    write8(MPU6050_REG_MOT_DURATION, duration);
 }
 
-uint8_t MPU6050::getZeroMotionDetectionThreshold(void)
+uint8_t MPU6050::getZeroMotionDetectionThreshold()
 {
-    return readRegister8(MPU6050_REG_ZMOT_THRESHOLD);
+    uint8_t value;
+    read8(MPU6050_REG_ZMOT_THRESHOLD, &value);
+    return value;
 }
 
 void MPU6050::setZeroMotionDetectionThreshold(uint8_t threshold)
 {
-    writeRegister8(MPU6050_REG_ZMOT_THRESHOLD, threshold);
+    write8(MPU6050_REG_ZMOT_THRESHOLD, threshold);
 }
 
-uint8_t MPU6050::getZeroMotionDetectionDuration(void)
+uint8_t MPU6050::getZeroMotionDetectionDuration()
 {
-    return readRegister8(MPU6050_REG_ZMOT_DURATION);
+    uint8_t value;
+    read8(MPU6050_REG_ZMOT_DURATION, &value);
+    return value;
 }
 
 void MPU6050::setZeroMotionDetectionDuration(uint8_t duration)
 {
-    writeRegister8(MPU6050_REG_ZMOT_DURATION, duration);
+    write8(MPU6050_REG_ZMOT_DURATION, duration);
 }
 
-uint8_t MPU6050::getFreeFallDetectionThreshold(void)
+uint8_t MPU6050::getFreeFallDetectionThreshold()
 {
-    return readRegister8(MPU6050_REG_FF_THRESHOLD);
+    uint8_t value;
+    read8(MPU6050_REG_FF_THRESHOLD, &value);
+    return value;
 }
 
 void MPU6050::setFreeFallDetectionThreshold(uint8_t threshold)
 {
-    writeRegister8(MPU6050_REG_FF_THRESHOLD, threshold);
+    write8(MPU6050_REG_FF_THRESHOLD, threshold);
 }
 
-uint8_t MPU6050::getFreeFallDetectionDuration(void)
+uint8_t MPU6050::getFreeFallDetectionDuration()
 {
-    return readRegister8(MPU6050_REG_FF_DURATION);
+    uint8_t value;
+    read8(MPU6050_REG_FF_DURATION, &value);
+    return value;
 }
 
 void MPU6050::setFreeFallDetectionDuration(uint8_t duration)
 {
-    writeRegister8(MPU6050_REG_FF_DURATION, duration);
+    write8(MPU6050_REG_FF_DURATION, duration);
 }
 
-bool MPU6050::getI2CMasterModeEnabled(void)
+bool MPU6050::getI2CMasterModeEnabled()
 {
-    return readRegisterBit(MPU6050_REG_USER_CTRL, 5);
+    uint8_t value;
+    read1(MPU6050_REG_USER_CTRL, 5, &value);
+    return value;
 }
 
 void MPU6050::setI2CMasterModeEnabled(bool state)
 {
-    writeRegisterBit(MPU6050_REG_USER_CTRL, 5, state);
+    write1(MPU6050_REG_USER_CTRL, 5, state);
+}
+
+bool MPU6050::getI2CBypassEnabled()
+{
+    uint8_t value;
+    read1(MPU6050_REG_INT_PIN_CFG, 1, &value);
+    return value;
 }
 
 void MPU6050::setI2CBypassEnabled(bool state)
 {
-    return writeRegisterBit(MPU6050_REG_INT_PIN_CFG, 1, state);
+    write1(MPU6050_REG_INT_PIN_CFG, 1, state);
 }
 
-bool MPU6050::getI2CBypassEnabled(void)
-{
-    return readRegisterBit(MPU6050_REG_INT_PIN_CFG, 1);
-}
+
 
 void MPU6050::setAccelerometerPowerOnDelay(mpu6050_onDelay_t delay)
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_MOT_DETECT_CTRL);
+    read8(MPU6050_REG_MOT_DETECT_CTRL, &value);
     value &= 0b11001111;
     value |= (delay << 4);
-    writeRegister8(MPU6050_REG_MOT_DETECT_CTRL, value);
+    write8(MPU6050_REG_MOT_DETECT_CTRL, value);
 }
 
-mpu6050_onDelay_t MPU6050::getAccelerometerPowerOnDelay(void)
+mpu6050_onDelay_t MPU6050::getAccelerometerPowerOnDelay()
 {
     uint8_t value;
-    value = readRegister8(MPU6050_REG_MOT_DETECT_CTRL);
+    read8(MPU6050_REG_MOT_DETECT_CTRL, &value);
     value &= 0b00110000;
     return (mpu6050_onDelay_t)(value >> 4);
 }
 
-uint8_t MPU6050::getIntStatus(void)
+uint8_t MPU6050::getIntStatus()
 {
-    return readRegister8(MPU6050_REG_INT_STATUS);
+    uint8_t value;
+    read8(MPU6050_REG_INT_STATUS, &value);
+    return value;
 }
 
-Activities MPU6050::readActivites(void)
+Activities MPU6050::readActivites()
 {
-    uint8_t data = readRegister8(MPU6050_REG_INT_STATUS);
+    uint8_t data;
+    read8(MPU6050_REG_INT_STATUS, &data);
 
     mActivities.isOverflow =   ((data >> 4) & 1);
     mActivities.isFreeFall =   ((data >> 7) & 1);
@@ -562,7 +566,7 @@ Activities MPU6050::readActivites(void)
     mActivities.isActivity =   ((data >> 6) & 1);
     mActivities.isDataReady =  ((data >> 0) & 1);
 
-    data = readRegister8(MPU6050_REG_MOT_DETECT_STATUS);
+    read8(MPU6050_REG_MOT_DETECT_STATUS, &data);
 
     mActivities.isNegActivityOnX = ((data >> 7) & 1);
     mActivities.isPosActivityOnX = ((data >> 6) & 1);
@@ -578,75 +582,87 @@ Activities MPU6050::readActivites(void)
 
 
 
-float MPU6050::readTemperature(void)
+float MPU6050::readTemperature()
 {
     int16_t T;
-    T = readRegister16(MPU6050_REG_TEMP_OUT_H);
+    read16S(MPU6050_REG_TEMP_OUT_H, &T);
     return (float)T/340 + 36.53;
 }
 
-int16_t MPU6050::getGyroscopeOffsetX(void)
+int16_t MPU6050::getGyroscopeOffsetX()
 {
-    return readRegister16(MPU6050_REG_GYRO_XOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_GYRO_XOFFS_H, &value);
+    return value;
 }
 
-int16_t MPU6050::getGyroscopeOffsetY(void)
+int16_t MPU6050::getGyroscopeOffsetY()
 {
-    return readRegister16(MPU6050_REG_GYRO_YOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_GYRO_YOFFS_H, &value);
+    return value;
 }
 
-int16_t MPU6050::getGyroscopeOffsetZ(void)
+int16_t MPU6050::getGyroscopeOffsetZ()
 {
-    return readRegister16(MPU6050_REG_GYRO_ZOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_GYRO_ZOFFS_H, &value);
+    return value;
 }
 
 void MPU6050::setGyroscopeOffsetX(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_GYRO_XOFFS_H, offset);
+    write16(MPU6050_REG_GYRO_XOFFS_H, offset);
 }
 
 void MPU6050::setGyroscopeOffsetY(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_GYRO_YOFFS_H, offset);
+    write16(MPU6050_REG_GYRO_YOFFS_H, offset);
 }
 
 void MPU6050::setGyroscopeOffsetZ(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_GYRO_ZOFFS_H, offset);
+    write16(MPU6050_REG_GYRO_ZOFFS_H, offset);
 }
 
-int16_t MPU6050::getAccelerometerOffsetX(void)
+int16_t MPU6050::getAccelerometerOffsetX()
 {
-    return readRegister16(MPU6050_REG_ACCEL_XOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_ACCEL_XOFFS_H, &value);
+    return value;
 }
 
-int16_t MPU6050::getAccelerometerOffsetY(void)
+int16_t MPU6050::getAccelerometerOffsetY()
 {
-    return readRegister16(MPU6050_REG_ACCEL_YOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_ACCEL_YOFFS_H, &value);
+    return value;
 }
 
-int16_t MPU6050::getAccelerometerOffsetZ(void)
+int16_t MPU6050::getAccelerometerOffsetZ()
 {
-    return readRegister16(MPU6050_REG_ACCEL_ZOFFS_H);
+    int16_t value;
+    read16S(MPU6050_REG_ACCEL_ZOFFS_H, &value);
+    return value;
 }
 
 void MPU6050::setAccelerometerOffsetX(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_ACCEL_XOFFS_H, offset);
+    write16(MPU6050_REG_ACCEL_XOFFS_H, offset);
 }
 
 void MPU6050::setAccelerometerOffsetY(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_ACCEL_YOFFS_H, offset);
+    write16(MPU6050_REG_ACCEL_YOFFS_H, offset);
 }
 
 void MPU6050::setAccelerometerOffsetZ(int16_t offset)
 {
-    writeRegister16(MPU6050_REG_ACCEL_ZOFFS_H, offset);
+    write16(MPU6050_REG_ACCEL_ZOFFS_H, offset);
 }
 
 // Get current threshold value
-float MPU6050::getGyroscopeThreshold(void)
+float MPU6050::getGyroscopeThreshold()
 {
     return mGyroscopeThreshold;
 }
@@ -660,154 +676,148 @@ void MPU6050::setGyroscopeThreshold(float percentOfMaximumValue) // Argument is 
         mGyroscopeThreshold = 0;
 }
 
-// Fast read 8-bit from register
-uint8_t MPU6050::fastRegister8(uint8_t reg)
+
+
+// Write byte to register
+int MPU6050::write8(uint8_t reg, uint8_t value)
 {
-    uint8_t value;
-
     Wire.beginTransmission(mMpuAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+
+    Wire.write(reg);
+    Wire.write(value);
 
     Wire.endTransmission();
 
-    Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, 1);
-
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif
-
-    Wire.endTransmission();
-
-    return value;
+    return 0;
 }
 
-// Read 8-bit from register
-uint8_t MPU6050::readRegister8(uint8_t reg)
+// Read byte from register
+int MPU6050::read8(uint8_t reg, uint8_t* value)
 {
-    uint8_t value;
-
     Wire.beginTransmission(mMpuAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+
+    Wire.write(reg);
+
     Wire.endTransmission();
 
     Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, 1);
+    Wire.requestFrom(mMpuAddress, (uint8_t) 1);
 
-    while(!Wire.available()) {};
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
 
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif
+    *value = Wire.read();
 
-    Wire.endTransmission();
-
-    return value;
+    return 0;
 }
 
-// Write 8-bit to register
-void MPU6050::writeRegister8(uint8_t reg, uint8_t value)
+// Read word from register
+int MPU6050::read16S(uint8_t reg, int16_t* value) // S is for Signed (int16_t)
 {
     Wire.beginTransmission(mMpuAddress);
 
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write(value);
-    #else
-        Wire.send(reg);
-        Wire.send(value);
-    #endif
+    Wire.write(reg);
 
     Wire.endTransmission();
+
+    Wire.beginTransmission(mMpuAddress);
+    Wire.requestFrom(mMpuAddress, (uint8_t) 2);
+
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    uint8_t vha = Wire.read();
+    uint8_t vla = Wire.read();
+
+    *value = vha << 8 | vla;
+
+    return 0;
 }
 
-int16_t MPU6050::readRegister16(uint8_t reg)
+int MPU6050::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse)
 {
-    int16_t value;
     Wire.beginTransmission(mMpuAddress);
 
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+    Wire.write(reg);
 
     Wire.endTransmission();
 
     Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, 2);
 
-    while(!Wire.available()) {};
+    Wire.requestFrom(mMpuAddress, numberBytes);
 
-    #if ARDUINO >= 100
-        uint8_t vha = Wire.read();
-        uint8_t vla = Wire.read();
-    #else
-        uint8_t vha = Wire.receive();
-        uint8_t vla = Wire.receive();
-    #endif
+    uint32_t startMillis = millis();
+    while(Wire.available() < numberBytes)
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
 
-    Wire.endTransmission();
+    if (!reverse)
+        while (numberBytes--)
+            *(buffer++) = Wire.read();
 
-    value = vha << 8 | vla;
+    else
+        while (numberBytes--)
+            buffer[numberBytes] = Wire.read();
 
-    return value;
+    return 0;
 }
 
-void MPU6050::writeRegister16(uint8_t reg, int16_t value)
+int MPU6050::write16(uint8_t reg, int16_t value)
 {
     Wire.beginTransmission(mMpuAddress);
 
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write((uint8_t)(value >> 8));
-        Wire.write((uint8_t)value);
-    #else
-        Wire.send(reg);
-        Wire.send((uint8_t)(value >> 8));
-        Wire.send((uint8_t)value);
-    #endif
+    Wire.write(reg);
+    Wire.write((uint8_t)(value >> 8));
+    Wire.write((uint8_t)value);
 
     Wire.endTransmission();
+
+    return 0;
 }
 
 // Read register bit
-bool MPU6050::readRegisterBit(uint8_t reg, uint8_t pos)
+int MPU6050::read1(uint8_t reg, uint8_t pos, uint8_t* value)
 {
-    uint8_t value;
-    value = readRegister8(reg);
-    return ((value >> pos) & 1);
+    if (read8(reg, value))
+        return 1;
+
+    *value = (*value >> pos) & 1;
+
+    return 0;
 }
 
 // Write register bit
-void MPU6050::writeRegisterBit(uint8_t reg, uint8_t pos, bool state)
+int MPU6050::write1(uint8_t reg, uint8_t pos, bool state)
 {
     uint8_t value;
-    value = readRegister8(reg);
+    if (read8(reg, &value))
+        return 1;
 
     if (state)
         value |= (1 << pos);
     else 
         value &= ~(1 << pos);
 
-    writeRegister8(reg, value);
+    write8(reg, value);
+
+    return 0;
 }
+
+
 
 void MPU6050::resetDevice(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpuAddress)
 {
-    writeRegisterBit(MPU6050_REG_PWR_MGMT_1, 7, 1); // as seen in the register map
+    write1(MPU6050_REG_PWR_MGMT_1, 7, 1); // as seen in the register map
     delay(100);
 
     // Reset threshold values

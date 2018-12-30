@@ -6,21 +6,22 @@
 #include <RH_RF95.h>                    // Our current RF module
 #include "pmmConsts.h"                  // For the pinout of the RF module and RF frequency
 #include "pmmDebug.h"
-#include "pmmTelemetry/pmmTelemetry.h"
 #include "pmmTelemetry/pmmTelemetryProtocols.h"
-
+#include "pmmTelemetry/pmmTelemetry.h"
 
 
 PmmTelemetry::PmmTelemetry()
     : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT) // https://stackoverflow.com/a/12927220
-{}
+{
+    mHighPriorityQueueStruct.thisPriority   = PMM_TELEMETRY_QUEUE_PRIORITY_HIGH  ;
+    mNormalPriorityQueueStruct.thisPriority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL;
+    mLowPriorityQueueStruct.thisPriority    = PMM_TELEMETRY_QUEUE_PRIORITY_LOW   ;
+}
 
 
 
 int PmmTelemetry::init()
 {
-    int initCounter = 0;
-
     // Reset the priority queues
     mHighPriorityQueueStruct.actualIndex = 0;
     mHighPriorityQueueStruct.remainingPacketsOnQueue = 0;
@@ -36,6 +37,7 @@ int PmmTelemetry::init()
     digitalWrite(PMM_PIN_RFM95_RST, HIGH);
     delay(10);                               // >5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
 
+    int initCounter = 0;
     // mRf95.init() returns false if didn't initialized successfully.
     while (!mRf95.init()) // Keep trying! ...
     {
@@ -64,17 +66,15 @@ int PmmTelemetry::init()
 
 int PmmTelemetry::updateTransmission()
 {
-    telemetryQueueStructType* queueStructPtr;
-
     // 1) Is the telemetry working?
     if (!mTelemetryIsWorking)
         return 1;
 
- 
     // 2) Is there any packet being sent?
     if (mRf95.isAnyPacketBeingSent())
         return 2;
 
+    telemetryQueueStructType* queueStructPtr;
 
     // 3) Check the queues, following the priorities. What should the PMM send now?
     if (mHighPriorityQueueStruct.remainingPacketsOnQueue)
@@ -88,10 +88,13 @@ int PmmTelemetry::updateTransmission()
 
 
     // 4) Send it!
-    if (mRf95.sendIfAvailable(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]))
+    int returnVal;
+    if ((returnVal = mRf95.sendIfAvailable(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex])))
+    {
+        tlmDebugMorePrintf("Return value of sendIfAvailable() is <%i>.\n", returnVal)
         return 3;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
-
-
+    }
+    tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex)
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
     if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
@@ -119,7 +122,7 @@ int PmmTelemetry::updateReception()
 
 
 
-receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketStatusStructPtr()
+receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketAllInfoStructPtr()
 {
     return mReceivedPacketAllInfoStructPtr;
 }

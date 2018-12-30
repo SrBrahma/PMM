@@ -2,8 +2,6 @@
 
 // https://forum.pjrc.com/threads/39158-Using-SdFat-to-acces-Teensy-3-6-SD-internal-card-(-amp-with-audio-board)
 
-#include "pmm.h"
-
 #include "pmmConsts.h"
 
 #include "pmmHealthBasicSignals/pmmHealthBasicSignals.h"
@@ -27,17 +25,19 @@
     #include "pmmGps/pmmGps.h"
 #endif
 
-
-
 // Modules
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/messageLog/messageLog.h"
 
 #include "pmmDebug.h"   // For debug prints
 
+#include "pmm.h"
+
+
+
 Pmm::Pmm() {}
 
-int16_t var;
+
 
 int Pmm::init(bool skipDebugDelay)
 {
@@ -123,8 +123,11 @@ int Pmm::init(bool skipDebugDelay)
 
         #elif PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
         {
+            if (Serial)
+            {
                 PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
                 delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
+            }
         }
         #endif
     #endif
@@ -162,16 +165,13 @@ void Pmm::update()
 
 
     #if PMM_USE_TELEMETRY
-        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the PmmPortsXYZ includes the pmmTelemetry, and if pmmTelemetry included the
-        // PmmPortzXYZ, that would causa a circular dependency, and the code wouldn't compile. I had the idea to use the address of the functions, but that
-        // would make the code a little messy. Give me better alternatives! (but this current alternative isn't THAT bad at all)
+        // This happens here, at "pmm.cpp" and not in the pmmTelemetry, because the PmmPortsXYZ includes the pmmTelemetry, and if pmmTelemetry
+        // included the PmmPortzXYZ, that would causa a circular dependency, and the code wouldn't compile.
+        if(mPmmTelemetry.updateReception())
+            mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
+        int returnVal = mPmmTelemetry.updateTransmission();
+        tlmDebugMorePrintf("Return value of updateTransmission is <%i>.\n", returnVal)
 
-        // The Packages objects may/will automatically use the pmmSd and the pmmTelemetry objects.
-        if(mPmmTelemetry.updateReception());
-            
-            //mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketArray(), mPmmTelemetry.getReceivedPacketStatusStructPtr());
-        //PMM_DEBUG_MORE_PRINTLN("Pmm [M]: Updated Telemetry!");
-        if(mPmmTelemetry.updateTransmission());
     #endif
 
 
@@ -184,13 +184,13 @@ void Pmm::update()
 
 
     mMainLoopCounter++;
+    delay(100);
 }
 
 
 
 int Pmm::setSystemMode(pmmSystemState systemMode)
 {
-
     mPmmModuleDataLog.setSystemMode(systemMode);
     mPmmImu.setSystemMode(systemMode);
 

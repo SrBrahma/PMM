@@ -42,7 +42,7 @@ public:
     
     uint8_t getTotalPacketsRemainingOnQueue();
 
-    receivedPacketAllInfoStructType* getReceivedPacketStatusStructPtr();
+    receivedPacketAllInfoStructType* getReceivedPacketAllInfoStructPtr();
 
 
 
@@ -50,6 +50,7 @@ private:
 
     typedef struct
     {
+        telemetryQueuePriorities thisPriority;  // For getting the priority by the struct.
         uint8_t   packet      [PMM_TELEMETRY_QUEUE_LENGTH][PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];  // The packet data, ready to be sent.
         uint8_t   packetLength[PMM_TELEMETRY_QUEUE_LENGTH];
         unsigned* feedback    [PMM_TELEMETRY_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
@@ -57,6 +58,8 @@ private:
         uint8_t   remainingPacketsOnQueue; // How many items on this queue not sent yet.
     } telemetryQueueStructType;
 
+    int         getQueueStruct(telemetryQueuePriorities priority, telemetryQueueStructType** pmmTelemetryQueueStructPtr);
+    const char* getQueuePriorityString(telemetryQueuePriorities priority);
 
     RH_RF95  mRf95;
 
@@ -70,10 +73,6 @@ private:
     telemetryQueueStructType mHighPriorityQueueStruct  ;
     telemetryQueueStructType mNormalPriorityQueueStruct;
     telemetryQueueStructType mLowPriorityQueueStruct   ;
-
-    int getQueueStruct(telemetryQueuePriorities priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
-    int tryToAddToQueue(telemetryQueuePriorities priority, telemetryQueueStructType *pmmTelemetryQueueStructPtr);
-
 };
 
 

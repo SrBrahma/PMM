@@ -121,7 +121,7 @@ private:
     int  write8 (uint8_t reg, uint8_t   value);
     int  read8  (uint8_t reg, uint8_t*  value);
     int  read16 (uint8_t reg, uint16_t* value);
-    int  readS16(uint8_t reg, int16_t*  value);
+    int  read16S(uint8_t reg, int16_t*  value);
     int  read   (uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse);
 
 

@@ -37,6 +37,7 @@ void printHexArray(uint8_t arrayToPrint[], unsigned arrayLength);
 
 
 #define advOnlyPrint()    { PMM_DEBUG_PRINT(FILENAME) PMM_DEBUG_PRINT(" (") PMM_DEBUG_PRINT(__func__) PMM_DEBUG_PRINT(", ln " STR2(__LINE__) "): ") }
+#define advOnlyPrintln()  { advOnlyPrint() PMM_DEBUG_PRINTLN("") }
 #define advPrintf(...)    { advOnlyPrint() PMM_DEBUG_PRINTF(__VA_ARGS__)  }
 
 

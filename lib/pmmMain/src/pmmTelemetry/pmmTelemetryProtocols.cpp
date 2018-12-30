@@ -21,14 +21,15 @@ uint8_t protocolHeaderLength(uint8_t protocol)
 
 // Adds the corresponding header depending on the protocol.
 // It assumes you already checked the total length of the packet to be sent.
-int addProtocolHeader(uint8_t destinationArray[], toBeSentPacketStructType* toBeSentTelemetryPacketStruct)
+int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentPacketStruct)
 {
     // 1) Test the given array
-    if (!destinationArray || !toBeSentTelemetryPacketStruct)    // If given array or struct is NULL, error!
-        return 1;
+    if (!destinationArray)  return 1;
+    if (!packetLength)      return 2;
+    if (!toBeSentPacketStruct) return 3;
 
     // 2) Which protocol are we using?
-    switch (toBeSentTelemetryPacketStruct->protocol)
+    switch (toBeSentPacketStruct->protocol)
     {
         // NEO
         case PMM_NEO_PROTOCOL_ID:
@@ -36,39 +37,43 @@ int addProtocolHeader(uint8_t destinationArray[], toBeSentPacketStructType* toBe
             // NEO, 3) Write the Protocol ID.
             destinationArray[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]          = toBeSentTelemetryPacketStruct->sourceAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]          = toBeSentPacketStruct->sourceAddress;
             // NEO, 5) Write the Destination Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]     = toBeSentTelemetryPacketStruct->destinationAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]     = toBeSentPacketStruct->destinationAddress;
             // NEO, 6) Write the Port
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]            = toBeSentTelemetryPacketStruct->port;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]            = toBeSentPacketStruct->port;
             // NEO, 7) Write the Payload Length.
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]   = toBeSentTelemetryPacketStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]   = toBeSentPacketStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
             // NEO, 8) Write the CRC of this header
             uint16_t crcVar = crc16(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
             destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]  = LSB0(crcVar);
             destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]  = LSB1(crcVar);
+
+            *packetLength = PMM_NEO_PROTOCOL_HEADER_LENGTH;
+
             break;
         }
 
         default:
-            return 2;   // Invalid given protocol
+            return 4;   // Invalid given protocol
     }
 
     return 0;
 }
 
-int addProtocolPayload(uint8_t destinationArray[], toBeSentPacketStructType* toBeSentTelemetryPacketStruct)
+int addProtocolPayload(uint8_t destinationArray[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentPacketStruct)
 {
     // 1) Test the given array
-    if (!destinationArray || !toBeSentTelemetryPacketStruct)    // If given array or struct is NULL, error!
+    if (!destinationArray || !toBeSentPacketStruct)    // If given array or struct is NULL, error!
         return 1;
 
     // 2) Which protocol are we using?
-    switch (toBeSentTelemetryPacketStruct->protocol)
+    switch (toBeSentPacketStruct->protocol)
     {
         // NEO
         case PMM_NEO_PROTOCOL_ID:
-            memcpy(destinationArray + PMM_NEO_PROTOCOL_HEADER_LENGTH, toBeSentTelemetryPacketStruct->payload, toBeSentTelemetryPacketStruct->payloadLength);
+            memcpy(destinationArray + PMM_NEO_PROTOCOL_HEADER_LENGTH, toBeSentPacketStruct->payload, toBeSentPacketStruct->payloadLength);
+            *packetLength += toBeSentPacketStruct->payloadLength;
             break;
 
         default:

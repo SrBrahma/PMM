@@ -134,10 +134,10 @@ int PmmImu::init()
         foundError |= 0b100;
     }
 
-    mPlotter.Begin(); // start plotter
+    //mPlotter.Begin(); // start plotter
   
-    mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
-    mPlotter.SetColor(0, "red", "blue", "yellow");
+    //mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
+    //mPlotter.SetColor(0, "red", "blue", "yellow");
     mFilteredAltitudeLastMillis = millis();
     return foundError;
 }
@@ -192,13 +192,17 @@ int PmmImu::updateBmp()
 
             case DATA_READY_PRESSURE:
                 mBarometer.getPressure(&mPmmImuStruct.pressure);
-                //mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+
+                mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+
+                /* Simulation
                 mPmmImuStruct.altitude = (3000 * sin(2 * PI * (millis() - 2000) / 30000.0 )) + random(-10, 10);
                 if (random(100) > 98)
                     mPmmImuStruct.altitude += random(-10000, 10000);
                 if (random(100) > 95)
                     mPmmImuStruct.altitude += random(-1000, 1000);
-
+                */
+               
                 // Avoid any big spikes before filtering
                 if (mPmmImuStruct.altitude > mPmmImuStruct.filteredAltitude)
                 {
@@ -219,7 +223,7 @@ int PmmImu::updateBmp()
                 
                 mFiltered2 = mAltitudeKalmanFilter2.updateEstimate(mPmmImuStruct.altitude);
 
-                mPlotter.Plot();
+                //mPlotter.Plot();
                 delay(1);
 
                 break;

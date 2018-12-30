@@ -32,12 +32,14 @@ bool HMC5883L::begin()
 {
     Wire.begin();
 
-    if ((fastRegister8(HMC5883L_REG_IDENT_A) != 0x48)
-     || (fastRegister8(HMC5883L_REG_IDENT_B) != 0x34)
-     || (fastRegister8(HMC5883L_REG_IDENT_C) != 0x33))
-    {
-	return false;
-    }
+    uint8_t valueA, valueB, valueC;
+
+    read8(HMC5883L_REG_IDENT_A, &valueA);
+    read8(HMC5883L_REG_IDENT_B, &valueB);
+    read8(HMC5883L_REG_IDENT_C, &valueC);
+
+    if ((valueA != 0x48) || (valueB != 0x34) || (valueC != 0x33))
+        return false;
 
     setMagnetometerRange(HMC5883L_RANGE_1_3GA);
     setMeasurementMode  (HMC5883L_CONTINOUS);
@@ -49,101 +51,137 @@ bool HMC5883L::begin()
     return true;
 }
 
-Vector HMC5883L::readRaw(void)
+Vector HMC5883L::readRaw()
 {
-    v.XAxis = readRegister16(HMC5883L_REG_OUT_X_M);
-    v.YAxis = readRegister16(HMC5883L_REG_OUT_Y_M);
-    v.ZAxis = readRegister16(HMC5883L_REG_OUT_Z_M);
+    int16_t value;
+
+    read16S(HMC5883L_REG_OUT_X_M, &value);
+    v.XAxis = value;
+    read16S(HMC5883L_REG_OUT_Y_M, &value);
+    v.YAxis = value;
+    read16S(HMC5883L_REG_OUT_Z_M, &value);
+    v.ZAxis = value;
 
     return v;
 }
 
-Vector HMC5883L::readNormalized(void)
+int HMC5883L::readRaw(float magnetometerArray[3])
 {
-    v.XAxis = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
-    v.YAxis = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
-    v.ZAxis =  (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
+    int16_t value[3];
+
+    if (read16S(HMC5883L_REG_OUT_X_M, &value[0]))
+        return 1;
+    if (read16S(HMC5883L_REG_OUT_Y_M, &value[1]))
+        return 1;
+    if (read16S(HMC5883L_REG_OUT_Z_M, &value[2]))
+        return 1;
+
+    // Only transfer the values if no errors.
+    magnetometerArray[0] = value[0];
+    magnetometerArray[1] = value[1];
+    magnetometerArray[2] = value[2];
+
+    return 0;
+}
+
+Vector HMC5883L::readNormalized()
+{
+    int16_t value;
+
+    read16S(HMC5883L_REG_OUT_X_M, &value);
+    v.XAxis = ((float)value - xOffset) * mgPerDigit;
+    read16S(HMC5883L_REG_OUT_Y_M, &value);
+    v.YAxis = ((float)value - yOffset) * mgPerDigit;
+    read16S(HMC5883L_REG_OUT_Z_M, &value);
+    v.ZAxis = (float)value * mgPerDigit;
 
     return v;
 }
 
-void HMC5883L::readNormalized(float magnetometerArray[3])
+int HMC5883L::readNormalized(float magnetometerArray[3])
 {
-    magnetometerArray[0] = ((float)readRegister16(HMC5883L_REG_OUT_X_M) - xOffset) * mgPerDigit;
-    magnetometerArray[1] = ((float)readRegister16(HMC5883L_REG_OUT_Y_M) - yOffset) * mgPerDigit;
-    magnetometerArray[2] =  (float)readRegister16(HMC5883L_REG_OUT_Z_M) * mgPerDigit;
+    if (readRaw(magnetometerArray))
+        return 1;
+
+    magnetometerArray[0] = (magnetometerArray[0] - xOffset) * mgPerDigit;
+    magnetometerArray[1] = (magnetometerArray[1] - yOffset) * mgPerDigit;
+    magnetometerArray[2] =  magnetometerArray[2] * mgPerDigit;
+
+    return 0;
 }
 
-void HMC5883L::setOffset(int xo, int yo)
+void HMC5883L::setOffset(int xO, int yO)
 {
-    xOffset = xo;
-    yOffset = yo;
+    xOffset = xO;
+    yOffset = yO;
 }
 
 void HMC5883L::setMagnetometerRange(hmc5883l_range_t range)
 {
     switch(range)
     {
-	case HMC5883L_RANGE_0_88GA:
-	    mgPerDigit = 0.073f;
-	    break;
+        case HMC5883L_RANGE_0_88GA:
+            mgPerDigit = 0.073f;
+            break;
 
-	case HMC5883L_RANGE_1_3GA:
-	    mgPerDigit = 0.92f;
-	    break;
+        case HMC5883L_RANGE_1_3GA:
+            mgPerDigit = 0.92f;
+            break;
 
-	case HMC5883L_RANGE_1_9GA:
-	    mgPerDigit = 1.22f;
-	    break;
+        case HMC5883L_RANGE_1_9GA:
+            mgPerDigit = 1.22f;
+            break;
 
-	case HMC5883L_RANGE_2_5GA:
-	    mgPerDigit = 1.52f;
-	    break;
+        case HMC5883L_RANGE_2_5GA:
+            mgPerDigit = 1.52f;
+            break;
 
-	case HMC5883L_RANGE_4GA:
-	    mgPerDigit = 2.27f;
-	    break;
+        case HMC5883L_RANGE_4GA:
+            mgPerDigit = 2.27f;
+            break;
 
-	case HMC5883L_RANGE_4_7GA:
-	    mgPerDigit = 2.56f;
-	    break;
+        case HMC5883L_RANGE_4_7GA:
+            mgPerDigit = 2.56f;
+            break;
 
-	case HMC5883L_RANGE_5_6GA:
-	    mgPerDigit = 3.03f;
-	    break;
+        case HMC5883L_RANGE_5_6GA:
+            mgPerDigit = 3.03f;
+            break;
 
-	case HMC5883L_RANGE_8_1GA:
-	    mgPerDigit = 4.35f;
-	    break;
+        case HMC5883L_RANGE_8_1GA:
+            mgPerDigit = 4.35f;
+            break;
 
-	default:
-	    break;
+        default:
+            break;
     }
 
-    writeRegister8(HMC5883L_REG_CONFIG_B, range << 5);
+    write8(HMC5883L_REG_CONFIG_B, range << 5);
 }
 
 hmc5883l_range_t HMC5883L::getMagnetometerRange(void)
 {
-    return (hmc5883l_range_t)((readRegister8(HMC5883L_REG_CONFIG_B) >> 5));
+    uint8_t value;
+    read8(HMC5883L_REG_CONFIG_B, &value);
+    return (hmc5883l_range_t)(value >> 5);
 }
 
 void HMC5883L::setMeasurementMode(hmc5883l_mode_t mode)
 {
     uint8_t value;
 
-    value  = readRegister8(HMC5883L_REG_MODE);
+    read8(HMC5883L_REG_MODE, &value);
     value &= 0b11111100;
     value |= mode;
 
-    writeRegister8(HMC5883L_REG_MODE, value);
+    write8(HMC5883L_REG_MODE, value);
 }
 
 hmc5883l_mode_t HMC5883L::getMeasurementMode(void)
 {
     uint8_t value;
 
-    value  = readRegister8(HMC5883L_REG_MODE);
+    read8(HMC5883L_REG_MODE, &value);
     value &= 0b00000011;
 
     return (hmc5883l_mode_t)value;
@@ -153,18 +191,18 @@ void HMC5883L::setDataRate(hmc5883l_dataRate_t dataRate)
 {
     uint8_t value;
 
-    value  = readRegister8(HMC5883L_REG_CONFIG_A);
+    read8(HMC5883L_REG_CONFIG_A, &value);
     value &= 0b11100011;
     value |= (dataRate << 2);
 
-    writeRegister8(HMC5883L_REG_CONFIG_A, value);
+    write8(HMC5883L_REG_CONFIG_A, value);
 }
 
 hmc5883l_dataRate_t HMC5883L::getDataRate(void)
 {
     uint8_t value;
 
-    value   = readRegister8(HMC5883L_REG_CONFIG_A);
+    read8(HMC5883L_REG_CONFIG_A, &value);
     value  &= 0b00011100;
     value >>= 2;
 
@@ -175,108 +213,84 @@ void HMC5883L::setSamples(hmc5883l_samples_t samples)
 {
     uint8_t value;
 
-    value  = readRegister8(HMC5883L_REG_CONFIG_A);
+    read8(HMC5883L_REG_CONFIG_A, &value);
     value &= 0b10011111;
     value |= (samples << 5);
 
-    writeRegister8(HMC5883L_REG_CONFIG_A, value);
+    write8(HMC5883L_REG_CONFIG_A, value);
 }
 
 hmc5883l_samples_t HMC5883L::getSamples(void)
 {
     uint8_t value;
 
-    value   = readRegister8(HMC5883L_REG_CONFIG_A);
+    read8(HMC5883L_REG_CONFIG_A, &value);
     value  &= 0b01100000;
     value >>= 5;
 
     return (hmc5883l_samples_t)value;
 }
 
+
+
 // Write byte to register
-void HMC5883L::writeRegister8(uint8_t reg, uint8_t value)
+void HMC5883L::write8(uint8_t reg, uint8_t value)
 {
     Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write(value);
-    #else
-        Wire.send(reg);
-        Wire.send(value);
-    #endif
+
+    Wire.write(reg);
+    Wire.write(value);
+
     Wire.endTransmission();
-}
-
-// Read byte to register
-uint8_t HMC5883L::fastRegister8(uint8_t reg)
-{
-    uint8_t value;
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
-    Wire.endTransmission();
-
-    Wire.requestFrom(HMC5883L_ADDRESS, 1);
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif
-
-    return value;
 }
 
 // Read byte from register
-uint8_t HMC5883L::readRegister8(uint8_t reg)
+int HMC5883L::read8(uint8_t reg, uint8_t* value)
 {
-    uint8_t value;
     Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+
+    Wire.write(reg);
+
     Wire.endTransmission();
 
     Wire.beginTransmission(HMC5883L_ADDRESS);
     Wire.requestFrom(HMC5883L_ADDRESS, 1);
-    while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif
 
-    return value;
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
+
+    *value = Wire.read();
+
+    return 0;
 }
 
 // Read word from register
-int16_t HMC5883L::readRegister16(uint8_t reg)
+int HMC5883L::read16S(uint8_t reg, int16_t* value) // S is for Signed (int16_t)
 {
-    int16_t value;
     Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+
+    Wire.write(reg);
+
     Wire.endTransmission();
 
     Wire.beginTransmission(HMC5883L_ADDRESS);
     Wire.requestFrom(HMC5883L_ADDRESS, 2);
-    while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        uint8_t vha = Wire.read();
-        uint8_t vla = Wire.read();
-    #else
-        uint8_t vha = Wire.receive();
-        uint8_t vla = Wire.receive();
-    #endif
 
-    value = vha << 8 | vla;
+    uint32_t startMillis = millis();
+    while(!Wire.available())
+    {
+        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+            return 1;
+    }
 
-    return value;
+    uint8_t vha = Wire.read();
+    uint8_t vla = Wire.read();
+
+    *value = vha << 8 | vla;
+
+    return 0;
 }

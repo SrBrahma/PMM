@@ -113,13 +113,13 @@ typedef struct
 // Ok return value is 0.
 // If any of these checks fails, another value will be returned and the packet, discarded.
 // These steps can be slightly different from protocol to protocol.
-int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisAddress, int promiscuousMode);
+int  validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisAddress, int promiscuousMode);
 
 void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
 
 // ===== Transmissin functions =====
-int addProtocolHeader(uint8_t packet[], toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
-int addProtocolPayload(uint8_t packet[], toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
+int  addProtocolHeader (uint8_t packet[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
+int  addProtocolPayload(uint8_t packet[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
 
 uint8_t protocolHeaderLength(uint8_t protocol);
 

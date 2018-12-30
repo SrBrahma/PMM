@@ -4,10 +4,12 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #include "pmmModules/ports.h"
-#include "pmmModules/portsReception.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h" // To know how to decompose the Port field from the received packet
+
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/messageLog/messageLog.h"
-#include "pmmTelemetry/pmmTelemetryProtocols.h" // To know how to decompose the Port field from the received packet
+
+#include "pmmModules/portsReception.h"
 
 
 PmmPortsReception::PmmPortsReception()
@@ -24,18 +26,18 @@ int PmmPortsReception::init(PmmModuleDataLog* pmmPackageDataLog, PmmModuleMessag
 void PmmPortsReception::receivedPacket(receivedPacketAllInfoStructType* packetInfo)
 {
     // 1) Which kind of packet is it?
-    switch(packetInfo->protocol)
+    switch(packetInfo->port)
     {
         case PORT_DATA_LOG_ID:
             mPmmModuleDataLog->receivedDataLog(packetInfo);
             return;
-        case PMM_PORT_LOG_INFO_ID:
+        case PORT_DATA_LOG_INFO_ID:
             mPmmModuleDataLog->receivedLogInfo(packetInfo);
             return;
-        case PMM_PORT_MESSAGE_LOG_ID:
+        case PORT_MESSAGE_LOG_ID:
             mPmmModuleMessageLog->receivedPackageString(packetInfo);
             return;
-        case PMM_PORT_REQUEST_ID:
+        case PORT_REQUEST_ID:
             return;
     }
 }

@@ -81,13 +81,13 @@ typedef enum
 } hmc5883l_mode_t;
 
 #ifndef VECTOR_STRUCT_H
-#define VECTOR_STRUCT_H
-struct Vector
-{
-    float XAxis;
-    float YAxis;
-    float ZAxis;
-};
+    #define VECTOR_STRUCT_H
+    struct Vector
+    {
+        float XAxis;
+        float YAxis;
+        float ZAxis;
+    };
 #endif
 
 class HMC5883L
@@ -97,8 +97,9 @@ class HMC5883L
 	bool begin(void);
 
 	Vector readRaw(void);
+    int    readRaw(float magnetometerArray[3]);
 	Vector readNormalized(void);
-    void   readNormalized(float magnetometerArray[3]);
+    int    readNormalized(float magnetometerArray[3]);
 
 	void  setOffset(int xo, int yo);
 
@@ -120,10 +121,9 @@ class HMC5883L
 	Vector v;
 	int xOffset, yOffset;
 
-	void writeRegister8(uint8_t reg, uint8_t value);
-	uint8_t readRegister8(uint8_t reg);
-	uint8_t fastRegister8(uint8_t reg);
-	int16_t readRegister16(uint8_t reg);
+	void write8 (uint8_t reg, uint8_t  value);
+	int  read8  (uint8_t reg, uint8_t* value);
+	int  read16S(uint8_t reg, int16_t* value);
 };
 
 #endif

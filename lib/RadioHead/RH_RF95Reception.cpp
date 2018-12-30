@@ -4,9 +4,11 @@
 // $Id: RH_RF95.cpp,v 1.18 2018/01/06 23:50:45 mikem Exp $
 
 #include <RH_RF95.h>
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
-#include <crc.h>
+#include "crc.h"
 #include "byteSelection.h"
+#include "pmmTelemetry/pmmTelemetryProtocols.h"
+
+
 
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PACKET_LENGTH!
 // This version retuns by reference a receivedPacketPhysicalLayerInfoStructType, which includes the packetLength, the SNR and the RSSI.
@@ -29,6 +31,7 @@ bool RH_RF95::receivePayloadAndInfoStruct(uint8_t* payload, receivedPacketPhysic
     ATOMIC_BLOCK_END;
 
     clearRxBuf(); // This message accepted and cleared
+
     return true;
 }
 

@@ -80,7 +80,7 @@ private:
     MPU6050  mMpu;
     HMC5883L mMagnetometer;
 
-    Plotter mPlotter;
+    //Plotter mPlotter;
 
     SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
     

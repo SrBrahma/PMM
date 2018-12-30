@@ -13,7 +13,7 @@
 /// \class RHGenericSPI RHGenericSPI.h <RHGenericSPI.h>
 /// \brief Base class for SPI interfaces
 ///
-/// This generic abstract class is used to encapsulate hardware or software SPI interfaces for
+/// This generic abstract class is used to encapsulate hardware or software SPI interfaces for 
 /// a variety of platforms.
 /// The intention is so that driver classes can be configured to use hardware or software SPI
 /// without changing the main code.
@@ -22,12 +22,12 @@
 /// A concrete subclass that encapsualates the standard Arduino hardware SPI and a bit-banged
 /// software implementation is included.
 ///
-/// Do not directly use this class: it must be subclassed and the following abstract functions at least
+/// Do not directly use this class: it must be subclassed and the following abstract functions at least 
 /// must be implmented:
 /// - begin()
-/// - end()
+/// - end() 
 /// - transfer()
-class RHGenericSPI
+class RHGenericSPI 
 {
 public:
 
@@ -75,11 +75,11 @@ public:
 
     /// Constructor
     /// Creates an instance of an abstract SPI interface.
-    /// Do not use this contructor directly: you must instead use on of the concrete subclasses provided
+    /// Do not use this contructor directly: you must instead use on of the concrete subclasses provided 
     /// such as RHHardwareSPI or RHSoftwareSPI
     /// \param[in] frequency One of RHGenericSPI::Frequency to select the SPI bus frequency. The frequency
     /// is mapped to the closest available bus frequency on the platform.
-    /// \param[in] bitOrder Select the SPI bus bit order, one of RHGenericSPI::BitOrderMSBFirst or
+    /// \param[in] bitOrder Select the SPI bus bit order, one of RHGenericSPI::BitOrderMSBFirst or 
     /// RHGenericSPI::BitOrderLSBFirst.
     /// \param[in] dataMode Selects the SPI bus data mode. One of RHGenericSPI::DataMode
     RHGenericSPI(Frequency frequency = Frequency1MHz, BitOrder bitOrder = BitOrderMSBFirst, DataMode dataMode = DataMode0);
@@ -102,25 +102,25 @@ public:
     /// Call this after configuring and before using the SPI library
     virtual void begin() = 0;
 
-    /// Disables the SPI bus (leaving pin modes unchanged).
+    /// Disables the SPI bus (leaving pin modes unchanged). 
     /// Call this after you have finished using the SPI interface
     virtual void end() = 0;
 
     /// Sets the bit order the SPI interface will use
-    /// Sets the order of the bits shifted out of and into the SPI bus, either
-    /// LSBFIRST (least-significant bit first) or MSBFIRST (most-significant bit first).
+    /// Sets the order of the bits shifted out of and into the SPI bus, either 
+    /// LSBFIRST (least-significant bit first) or MSBFIRST (most-significant bit first). 
     /// \param[in] bitOrder Bit order to be used: one of RHGenericSPI::BitOrder
     virtual void setBitOrder(BitOrder bitOrder);
 
-    /// Sets the SPI data mode: that is, clock polarity and phase.
-    /// See the Wikipedia article on SPI for details.
+    /// Sets the SPI data mode: that is, clock polarity and phase. 
+    /// See the Wikipedia article on SPI for details. 
     /// \param[in] dataMode The mode to use: one of RHGenericSPI::DataMode
     virtual void setDataMode(DataMode dataMode);
 
-    /// Sets the SPI clock divider relative to the system clock.
-    /// On AVR based boards, the dividers available are 2, 4, 8, 16, 32, 64 or 128.
-    /// The default setting is SPI_CLOCK_DIV4, which sets the SPI clock to one-quarter
-    /// the frequency of the system clock (4 Mhz for the boards at 16 MHz).
+    /// Sets the SPI clock divider relative to the system clock. 
+    /// On AVR based boards, the dividers available are 2, 4, 8, 16, 32, 64 or 128. 
+    /// The default setting is SPI_CLOCK_DIV4, which sets the SPI clock to one-quarter 
+    /// the frequency of the system clock (4 Mhz for the boards at 16 MHz). 
     /// \param[in] frequency The data rate to use: one of RHGenericSPI::Frequency
     virtual void setFrequency(Frequency frequency);
 
@@ -143,16 +143,16 @@ public:
     /// Might be overridden in subclass
     /// \param[in] interruptNumber The number of the interrupt
     virtual void usingInterrupt(uint8_t interruptNumber){}
-
+    
 protected:
-
+    
     /// The configure SPI Bus frequency, one of RHGenericSPI::Frequency
     Frequency    _frequency; // Bus frequency, one of RHGenericSPI::Frequency
 
     /// Bit order, one of RHGenericSPI::BitOrder
-    BitOrder     _bitOrder;
+    BitOrder     _bitOrder;  
 
     /// SPI bus mode, one of RHGenericSPI::DataMode
-    DataMode     _dataMode;
+    DataMode     _dataMode;  
 };
 #endif

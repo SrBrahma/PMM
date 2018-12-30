@@ -54,7 +54,7 @@ int PmmTelemetry::init()
 
     // So it initialized!
     mRf95.setFrequency(PMM_LORA_FREQUENCY);
-    mRf95.setTransmissionPower(PMM_LORA_TX_POWER, false);
+    mRf95.setTxPower(PMM_LORA_TX_POWER);
 
     mTelemetryIsWorking = 1;
     tlmDebugMorePrintf("LoRa initialized successfully!\n");
@@ -69,10 +69,6 @@ int PmmTelemetry::updateTransmission()
     // 1) Is the telemetry working?
     if (!mTelemetryIsWorking)
         return 1;
-
-    // 2) Is there any packet being sent?
-    if (mRf95.isAnyPacketBeingSent())
-        return 2;
 
     telemetryQueueStructType* queueStructPtr;
 
@@ -89,10 +85,11 @@ int PmmTelemetry::updateTransmission()
 
     // 4) Send it!
     int returnVal;
+    tlmDebugMorePrintf("pointer is %p, actual index is %u\n", queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->actualIndex)
     if ((returnVal = mRf95.sendIfAvailable(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex])))
     {
         tlmDebugMorePrintf("Return value of sendIfAvailable() is <%i>.\n", returnVal)
-        return 3;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
+        return 2;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
     }
     tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex)
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.

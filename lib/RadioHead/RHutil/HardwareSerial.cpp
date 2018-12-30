@@ -48,7 +48,7 @@ int HardwareSerial::peek(void)
     return 0;
 }
 
-int HardwareSerial::getIsThereANewReceivedPacket()
+int HardwareSerial::available()
 {
     int bytes;
 

@@ -184,7 +184,7 @@ void Pmm::update()
 
 
     mMainLoopCounter++;
-    delay(100);
+    delay(500);
 }
 
 

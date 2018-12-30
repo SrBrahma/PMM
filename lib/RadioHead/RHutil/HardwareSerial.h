@@ -60,7 +60,7 @@ public:
     /// Returns the number of bytes immediately available to be read from the
     /// device.
     /// \return 0 if none available else the number of characters available for immediate reading
-    int getIsThereANewReceivedPacket();
+    int available();
 
     /// Read and return the next available character.
     /// If no character is available prints a message to stderr and returns 0;
@@ -83,7 +83,7 @@ public:
     /// Wait until a a character is available from the port.
     /// or the timeout expires
     /// \param[in] timeout The maximum time to wait in milliseconds. 0 means wait forever.
-    /// \return true if a message is available as reported by getIsThereANewReceivedPacket()
+    /// \return true if a message is available as reported by available()
     bool waitAvailableTimeout(uint16_t timeout);
 
 protected:

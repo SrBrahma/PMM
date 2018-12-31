@@ -11,8 +11,8 @@
 
 
 
-#define PMM_TELEMETRY_QUEUE_LENGTH              8
-
+#define PMM_TELEMETRY_QUEUE_LENGTH          8
+#define PMM_RF_INIT_MAX_TRIES               10
 
 
 
@@ -44,7 +44,10 @@ public:
 
     receivedPacketAllInfoStructType* getReceivedPacketAllInfoStructPtr();
 
-
+    // This below shouldn't be normally used. Used in debugging.
+    int setTelemetryConfig(RH_RF95::ModemConfigChoice index);
+    int sendIfAvailableDebug(uint8_t data[], uint8_t length);
+    int isPacketBeingSent();
 
 private:
 

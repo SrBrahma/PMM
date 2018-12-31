@@ -29,7 +29,7 @@ bool RHSPIDriver::init()
 
 uint8_t RHSPIDriver::spiRead(uint8_t reg)
 {
-    uint8_t val;
+    uint8_t val = 0;
     ATOMIC_BLOCK_START;
     digitalWrite(_slaveSelectPin, LOW);
     _spi.transfer(reg & ~RH_SPI_WRITE_MASK); // Send the address with the write mask off

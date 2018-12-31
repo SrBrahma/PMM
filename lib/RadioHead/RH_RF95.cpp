@@ -283,7 +283,7 @@ int RH_RF95::receivePayloadAndInfoStruct(uint8_t* payload, receivedPacketPhysica
     return true;
 }
 
-int  RH_RF95::packetIsBeingSent()
+int  RH_RF95::isPacketBeingSent()
 {
     if (_mode == RHModeTx)
         return true;
@@ -300,7 +300,7 @@ int  RH_RF95::sendIfAvailable(uint8_t data[], uint8_t len)
     if (len > RH_RF95_MAX_PAYLOAD_LEN)
         return 2;
 
-    if(packetIsBeingSent()) // Make sure we dont interrupt an outgoing message.
+    if(isPacketBeingSent()) // Make sure we dont interrupt an outgoing message.
         return 3;
 
     setModeIdle();

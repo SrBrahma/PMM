@@ -24,8 +24,8 @@ uint8_t protocolHeaderLength(uint8_t protocol)
 int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentPacketStruct)
 {
     // 1) Test the given array
-    if (!destinationArray)  return 1;
-    if (!packetLength)      return 2;
+    if (!destinationArray)     return 1;
+    if (!packetLength)         return 2;
     if (!toBeSentPacketStruct) return 3;
 
     // 2) Which protocol are we using?
@@ -45,9 +45,7 @@ int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSen
             // NEO, 7) Write the Payload Length.
             destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]   = toBeSentPacketStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
             // NEO, 8) Write the CRC of this header
-            uint16_t crcVar = crc16(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB); // The length is the same as the index of the CRC LSB
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]  = LSB0(crcVar);
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]  = LSB1(crcVar);
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC] = crc8(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC); // The length is the same as the index of the CRC
 
             *packetLength = PMM_NEO_PROTOCOL_HEADER_LENGTH;
 
@@ -112,9 +110,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
     {
         #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
             case PMM_NEO_PROTOCOL_ID:
-            { // Without brackets we were getting "jump to case label" warning.
-              // https://stackoverflow.com/questions/5685471/error-jump-to-case-label
-
+            {
                 // NEO, 3.1) Checks the length of the packet again, now based on the protocol.
                 if (packetLength < PMM_NEO_PROTOCOL_HEADER_LENGTH)
                     return 1; // Too short to be a real message
@@ -124,8 +120,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 2;
 
                 // NEO, 4) Checks the CRC.
-                uint16_t crcVar = crc16(packet, packetLength); // This variable was giving the "jump to case label", without the brackets.
-                if ((LSB0(crcVar) != packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB]) || (LSB1(crcVar) != packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB]))
+                if (packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC] != crc8(packet, PMM_NEO_PROTOCOL_HEADER_LENGTH))
                     return 3;
 
                 // NEO, 5.1) Check if the Destination Address is to this device...

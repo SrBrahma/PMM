@@ -197,8 +197,8 @@ void RH_ASK::timerSetup()
     timer.resume();
 
 #elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) // Arduino specific
-    uint16_t nticks; // number of prescaled ticks needed
-    uint8_t prescaler; // Bit values for CS0[2:0]
+    //uint16_t nticks; // number of prescaled ticks needed
+    //uint8_t prescaler; // Bit values for CS0[2:0]
 
  #ifdef RH_PLATFORM_ATTINY
     // figure out prescaler value and counter match value

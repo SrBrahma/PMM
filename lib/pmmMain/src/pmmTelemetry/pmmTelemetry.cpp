@@ -63,7 +63,6 @@ int PmmTelemetry::init()
 }
 
 
-
 int PmmTelemetry::updateTransmission()
 {
     // 1) Is the telemetry working?
@@ -82,16 +81,14 @@ int PmmTelemetry::updateTransmission()
     else
         return 0; // Nothing to send!
 
-
     // 4) Send it!
     int returnVal;
-    tlmDebugMorePrintf("pointer is %p, actual index is %u\n", queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->actualIndex)
     if ((returnVal = mRf95.sendIfAvailable(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex])))
     {
-        tlmDebugMorePrintf("Return value of sendIfAvailable() is <%i>.\n", returnVal)
+        // tlmDebugMorePrintf("Return value of sendIfAvailable() is <%i>.\n", returnVal)
         return 2;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
     }
-    tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex)
+    tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent.\n", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex)
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
     if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
@@ -124,3 +121,17 @@ receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketAllInfoStructPtr
     return mReceivedPacketAllInfoStructPtr;
 }
 
+
+int PmmTelemetry::sendIfAvailableDebug(uint8_t data[], uint8_t length)
+{
+    return mRf95.sendIfAvailable(data, length);
+}
+int PmmTelemetry::isPacketBeingSent()
+{
+    return mRf95.isPacketBeingSent();
+}
+
+int PmmTelemetry::setTelemetryConfig(RH_RF95::ModemConfigChoice index)
+{
+    return mRf95.setModemConfig(index);
+}

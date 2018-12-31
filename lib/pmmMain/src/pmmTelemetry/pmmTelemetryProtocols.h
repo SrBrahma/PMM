@@ -59,10 +59,9 @@
     #define PMM_NEO_PROTOCOL_INDEX_SOURCE               2   // Who sent this packet?
     #define PMM_NEO_PROTOCOL_INDEX_DESTINATION          3   // Who this packet wants to reach?
     #define PMM_NEO_PROTOCOL_INDEX_PORT                 4   // Who this packet wants to reach?
-    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_LSB       5   // Least significant byte
-    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC_MSB       6   // Most significant byte
+    #define PMM_NEO_PROTOCOL_INDEX_HEADER_CRC           5   // Least significant byte
     // Total length is
-    #define PMM_NEO_PROTOCOL_HEADER_LENGTH              7   // The minimum length, counting
+    #define PMM_NEO_PROTOCOL_HEADER_LENGTH              6
 
     // The define below is defined on pmmTelemetry.h, as there was happening a circular dependency!
     // #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH

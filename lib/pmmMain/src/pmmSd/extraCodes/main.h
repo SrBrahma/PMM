@@ -10,7 +10,7 @@ class PmmSdExtraCodes
 
             while (!doQuit)
             {
-                Serial.println("=-= PmmSdExtraCodes =-=");
+                Serial.println("=-= PMM SD Extra Codes =-=");
                 Serial.println("Type 1 to run the Formatting tool");
                 Serial.println("Type 2 to run the SafeLog test");
                 Serial.println("Anything else to quit\n");
@@ -39,6 +39,6 @@ class PmmSdExtraCodes
                         break;
                 }
             }
-            Serial.println("=-= Finished PmmSdExtraCodes =-=\n");
+            Serial.println("=-= Finished PMM SD Extra Codes =-=\n");
         }
 };

@@ -765,7 +765,7 @@ float RH_RF24::get_gpio_voltage(uint8_t gpio)
 
 uint8_t RH_RF24::frr_read(uint8_t reg)
 {
-    uint8_t ret;
+    uint8_t ret = 0;
 
     // Do not wait for CTS
     ATOMIC_BLOCK_START;

@@ -32,7 +32,7 @@ int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telem
 
     tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>. Packet content is:\n", getQueuePriorityString(priority), newItemIndex)
     #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE
-        printHexArray(queueStructPtr->packet[newItemIndex], queueStructPtr->packetLength[newItemIndex]);
+        // printHexArray(queueStructPtr->packet[newItemIndex], queueStructPtr->packetLength[newItemIndex]);
     #endif
 
 

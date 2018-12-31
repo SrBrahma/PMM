@@ -19,7 +19,10 @@
         #include "pmmSd/extraCodes/main.h"
     #endif
 
-    
+    #if PMM_TELEMETRY_EXTRA_CODES
+        #include "pmmTelemetry/extraCodes/main.h"
+    #endif
+
     // Extra Codes are codes from Formatting the SD card to testing and calibrating sensors.
     // This always returns true.
     bool runExtraCodes()
@@ -37,6 +40,10 @@
 
             #if PMM_SD_EXTRA_CODES
                 PmmSdExtraCodes();
+            #endif
+
+            #if PMM_TELEMETRY_EXTRA_CODES
+                PmmTelemetryExtraCodes();
             #endif
 
             Serial.println("=-= End of PMM Extra Codes. =-=");

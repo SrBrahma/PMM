@@ -44,9 +44,10 @@ int Pmm::init(bool skipDebugDelay)
     mMillis = 0;
     mMainLoopCounter = 0;
 
+    mSessionId = 0x0; // Later, use the EEPROM.
     // Debug
     #if PMM_DEBUG
-        Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
+        Serial.begin(9600);     // Initialize the debug Serial Port. The value doesn't matter, as Teensy will set it to its maximum. https://forum.pjrc.com/threads/27290-Teensy-Serial-Print-vs-Arduino-Serial-Print
         
         #if PMM_DEBUG_TIMEOUT_ENABLED
             uint32_t serialDebugTimeout = millis();
@@ -134,6 +135,7 @@ int Pmm::init(bool skipDebugDelay)
 
     setSystemMode(MODE_DEPLOYED);
 
+    PMM_DEBUG_PRINTLN("Main loop started!");
     return 0;
 }
 
@@ -169,8 +171,7 @@ void Pmm::update()
         // included the PmmPortzXYZ, that would causa a circular dependency, and the code wouldn't compile.
         if(mPmmTelemetry.updateReception())
             mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
-        int returnVal = mPmmTelemetry.updateTransmission();
-        tlmDebugMorePrintf("Return value of updateTransmission is <%i>.\n", returnVal)
+        mPmmTelemetry.updateTransmission();
 
     #endif
 
@@ -184,7 +185,7 @@ void Pmm::update()
 
 
     mMainLoopCounter++;
-    delay(500);
+    // delay(500);
 }
 
 

@@ -46,7 +46,7 @@
     #define PMM_DEBUG_MORE                          1  // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
         #define PMM_IMU_DEBUG_MORE                  0  // Prints IMU additional debug messages.
         #define PMM_GPS_DEBUG_MORE                  0  // Prints GPS additional debug messages.
-        #define PMM_TLM_DEBUG_MORE                  1  // Prints Telemetry additional debug messages.
+        #define PMM_TLM_DEBUG_MORE                  0  // Prints Telemetry additional debug messages.
 
     #define PMM_DEBUG_TIMEOUT_ENABLED               0  // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
     // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
@@ -67,12 +67,12 @@
     // Extra codes are a fast way of testing a system, individually. It is very useful for debugging, testing and calibrating sensors,
     // formatting the SD, and whatever I may add on the future.
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
-    #define PMM_EXTRA_CODES_ENABLE                  0
+    #define PMM_EXTRA_CODES_ENABLE                  1
 
-        #define PMM_SD_EXTRA_CODES                  1   // For now, there are only extra codes for the SD.
+        #define PMM_SD_EXTRA_CODES                  0   // For now, there are only extra codes for the SD.
         #define PMM_GPS_EXTRA_CODES                 1
         #define PMM_IMU_EXTRA_CODES                 1
-        #define PMM_TELEMETRY_EXTRA_CODES           0
+        #define PMM_TELEMETRY_EXTRA_CODES           1
 
 
 
@@ -101,7 +101,6 @@
 // =======================================================================
 //  LoRa
 // =======================================================================
-    #define PMM_RF_INIT_MAX_TRIES               10
 
     #define PMM_PIN_RFM95_CS                    9
     #define PMM_PIN_RFM95_RST                   38

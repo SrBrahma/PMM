@@ -35,7 +35,7 @@ int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSen
         case PMM_NEO_PROTOCOL_ID:
         {
             // NEO, 3) Write the Protocol ID.
-            destinationArray[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
+            destinationArray[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
             destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]          = toBeSentPacketStruct->sourceAddress;
             // NEO, 5) Write the Destination Address
@@ -106,9 +106,9 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
         return -1;
 
     // 2) Checks the protocol.
-    switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    switch(packet[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL])
     {
-        #if PMM_TELEMETRY_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
+        #if PMM_TLM_PROTOCOLS_ACCEPTS_NEO_PROTOCOL
             case PMM_NEO_PROTOCOL_ID:
             {
                 // NEO, 3.1) Checks the length of the packet again, now based on the protocol.
@@ -128,14 +128,14 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 4;
 
                 // NEO, 5.2) ... and if is valid (there are forbidden addresses -- promiscuousMode isn't DUMB mode!)
-                // Allowing forbidden addresses, like the PMM_TELEMETRY_ADDRESS_SELF, would mess the system / could be used for attacks.
-                if (packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] >= PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION &&
-                    packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] <= PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_DESTINATION)
+                // Allowing forbidden addresses, like the PMM_TLM_ADDRESS_SELF, would mess the system / could be used for attacks.
+                if (packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] >= PMM_TLM_ADDRESSES_INITIAL_FORBIDDEN_DESTINATION &&
+                    packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] <= PMM_TLM_ADDRESSES_FINAL_FORBIDDEN_DESTINATION)
                     return 5;
 
                 // NEO, 6) Check if the Source Address is valid (there are forbidden addresses).
-                if (packet[PMM_NEO_PROTOCOL_INDEX_SOURCE] >= PMM_TELEMETRY_ADDRESSES_INITIAL_FORBIDDEN_SOURCE &&
-                    packet[PMM_NEO_PROTOCOL_INDEX_SOURCE] <= PMM_TELEMETRY_ADDRESSES_FINAL_FORBIDDEN_SOURCE)
+                if (packet[PMM_NEO_PROTOCOL_INDEX_SOURCE] >= PMM_TLM_ADDRESSES_INITIAL_FORBIDDEN_SOURCE &&
+                    packet[PMM_NEO_PROTOCOL_INDEX_SOURCE] <= PMM_TLM_ADDRESSES_FINAL_FORBIDDEN_SOURCE)
                     return 6;
 
                 return 0;   // Successful.
@@ -149,21 +149,26 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
 }
 
 // It assumes the packet was already validated by the validateReceivedPacket() function, which is called in handleInterrupt() function (in case of our rfm95w).
-void getReceivedPacketAllInfoStruct(uint8_t packet[], receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct)
+int getReceivedPacketAllInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct)
 {
+    if (!receivedPacketPhysicalLayerStruct) return 1;
+    if (!receivedPacketAllInfoStruct)       return 2;
+
     // 1) Which protocol is this packet using?
-    switch(packet[PMM_TELEMETRY_PROTOCOLS_INDEX_PROTOCOL])
+    switch(receivedPacketPhysicalLayerStruct->packet[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL])
     {
         case PMM_NEO_PROTOCOL_ID:
-            receivedPacketAllInfoStruct->payload            = packet + PMM_NEO_PROTOCOL_HEADER_LENGTH;
-            receivedPacketAllInfoStruct->snr                = receivedPacketPhysicalLayerInfoStruct->snr;
-            receivedPacketAllInfoStruct->rssi               = receivedPacketPhysicalLayerInfoStruct->rssi;
+            receivedPacketAllInfoStruct->payload            = receivedPacketPhysicalLayerStruct->packet + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            receivedPacketAllInfoStruct->snr                = receivedPacketPhysicalLayerStruct->snr;
+            receivedPacketAllInfoStruct->rssi               = receivedPacketPhysicalLayerStruct->rssi;
             receivedPacketAllInfoStruct->protocol           = PMM_NEO_PROTOCOL_ID;
-            receivedPacketAllInfoStruct->sourceAddress      = packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
-            receivedPacketAllInfoStruct->destinationAddress = packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
-            receivedPacketAllInfoStruct->port               = packet[PMM_NEO_PROTOCOL_INDEX_PORT];
-            receivedPacketAllInfoStruct->payloadLength      = packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] - PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            receivedPacketAllInfoStruct->sourceAddress      = receivedPacketPhysicalLayerStruct->packet[PMM_NEO_PROTOCOL_INDEX_SOURCE];
+            receivedPacketAllInfoStruct->destinationAddress = receivedPacketPhysicalLayerStruct->packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION];
+            receivedPacketAllInfoStruct->port               = receivedPacketPhysicalLayerStruct->packet[PMM_NEO_PROTOCOL_INDEX_PORT];
+            receivedPacketAllInfoStruct->payloadLength      = receivedPacketPhysicalLayerStruct->packet[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] - PMM_NEO_PROTOCOL_HEADER_LENGTH;
 
             break;
     }
+
+    return 0;
 }

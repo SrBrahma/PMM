@@ -73,7 +73,7 @@ int PmmModuleDataLog::update()
 
         case MODE_DEPLOYED:
         case MODE_FINISHED:
-            if (mUpdateModeDeployedCounter < 20) // Send lots of DataLog before the DataLogInfo!
+            if (mUpdateModeDeployedCounter < 1) // Send lots of DataLog before the DataLogInfo!
             {
                 // This 'if' is to always send the newest dataLog package. However, some other package may still be sent first if added to the queue with a
                 // higher priority.

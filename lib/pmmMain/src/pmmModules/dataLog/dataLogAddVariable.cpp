@@ -175,7 +175,7 @@ int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
 
     #ifdef GPS_FIX_SPEED
         const PROGMEM char* gpsUpSpeedString         = "gpsSpeedUp(m/s)";
-        const PROGMEM char* gpsHorizontalSpeedString = "gpsHorSpeed(m/s)";
+        const PROGMEM char* gpsHorizontalSpeedString = "gpsHorizontalSpeed(m/s)";
         if ((returnVal = includeVariableInPackage(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
         if ((returnVal = includeVariableInPackage(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
 

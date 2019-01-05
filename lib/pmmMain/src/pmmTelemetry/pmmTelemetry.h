@@ -2,8 +2,8 @@
  *
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
-#ifndef PMM_TELEMETRY_h
-#define PMM_TELEMETRY_h
+#ifndef PMM_TLM_h
+#define PMM_TLM_h
 
 #include <RH_RF95.h>                            // Our current RF module!
 #include "pmmTelemetry/pmmTelemetryProtocols.h" // For the PMM_NEO_PROTOCOL_HEADER_LENGTH define
@@ -11,16 +11,18 @@
 
 
 
-#define PMM_TELEMETRY_QUEUE_LENGTH          8
-#define PMM_RF_INIT_MAX_TRIES               10
+#define PMM_TLM_QUEUE_LENGTH            8
+#define PMM_RF_INIT_MAX_TRIES           10
+
+#define PMM_TLM_SIMULATE_RECEPTION      1       // Be sure to disable it when using for real!
 
 
 
 typedef enum
 {
-    PMM_TELEMETRY_QUEUE_PRIORITY_HIGH,
-    PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL,
-    PMM_TELEMETRY_QUEUE_PRIORITY_LOW
+    PMM_TLM_QUEUE_PRIORITY_HIGH,
+    PMM_TLM_QUEUE_PRIORITY_NORMAL,
+    PMM_TLM_QUEUE_PRIORITY_LOW
 } telemetryQueuePriorities;
 
 class PmmTelemetry
@@ -38,7 +40,7 @@ public:
     uint8_t availablePositionsInQueue(telemetryQueuePriorities priority);
 
     // As the telemetry will usually be slow, I did a queue system. To send a packet, you must use this.
-    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
+    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
     
     uint8_t getTotalPacketsRemainingOnQueue();
 
@@ -54,9 +56,9 @@ private:
     typedef struct
     {
         telemetryQueuePriorities thisPriority;  // For getting the priority by the struct.
-        uint8_t   packet      [PMM_TELEMETRY_QUEUE_LENGTH][PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];  // The packet data, ready to be sent.
-        uint8_t   packetLength[PMM_TELEMETRY_QUEUE_LENGTH];
-        unsigned* feedback    [PMM_TELEMETRY_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
+        uint8_t   packet      [PMM_TLM_QUEUE_LENGTH][PMM_TLM_MAX_PACKET_TOTAL_LENGTH];  // The packet data, ready to be sent.
+        uint8_t   packetLength[PMM_TLM_QUEUE_LENGTH];
+        unsigned* feedback    [PMM_TLM_QUEUE_LENGTH]; // A variable that will be set to 0 when the packet is added to the queue, and to 1 when it is sent.
         uint8_t   actualIndex;
         uint8_t   remainingPacketsOnQueue; // How many items on this queue not sent yet.
     } telemetryQueueStructType;
@@ -68,14 +70,16 @@ private:
 
     unsigned mTelemetryIsWorking;
 
-    uint8_t  mReceivedPacket[PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH];
-
-    receivedPacketAllInfoStructType*           mReceivedPacketAllInfoStructPtr          ;
-    receivedPacketPhysicalLayerInfoStructType* mReceivedPacketPhysicalLayerInfoStructPtr;
+    receivedPacketPhysicalLayerInfoStructType   mReceivedPacketPhysicalLayerInfoStruct;
+    receivedPacketAllInfoStructType             mReceivedPacketAllInfoStruct          ;
 
     telemetryQueueStructType mHighPriorityQueueStruct  ;
     telemetryQueueStructType mNormalPriorityQueueStruct;
     telemetryQueueStructType mLowPriorityQueueStruct   ;
+
+    #if PMM_TLM_SIMULATE_RECEPTION
+        int                                         mNewSimulatedPacket;
+    #endif
 };
 
 

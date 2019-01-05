@@ -209,7 +209,7 @@ int BMP085::begin(bmp085_mode_t mode)
 
 /**************************************************************************/
 /*!
-    @brief  Gets the compensated pressure level in kPa
+    @brief  Gets the compensated pressure level in hPa
 */
 /**************************************************************************/
 int BMP085::getPressure(float *pressure)

@@ -17,7 +17,7 @@
 #define TESTS_PER_LENGTH 1 // No need to send more than one!
 
 #define MIN_LENGTH       0
-#define MAX_LENGTH       PMM_TELEMETRY_MAX_PACKET_TOTAL_LENGTH
+#define MAX_LENGTH       PMM_TLM_MAX_PACKET_TOTAL_LENGTH
 
 class TransmissionSpeedTest   // Being a class allows us to have functions inside, instead of global functions.
 {

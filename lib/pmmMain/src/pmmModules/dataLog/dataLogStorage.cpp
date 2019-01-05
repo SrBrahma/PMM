@@ -21,7 +21,10 @@ int PmmModuleDataLog::getDataLogDirectory(char destination[], uint8_t maxLength,
 
 int PmmModuleDataLog::saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus)
 {
-    return mPmmSdSafeLog->write(groupData, dirRelativePath, allocStatus);
+    uint32_t millisTime = millis();
+    int returnVal = mPmmSdSafeLog->write(groupData, dirRelativePath, allocStatus);
+    advPrintf("Time taken to save was %f seconds.\n", (millis() - millisTime) / 1000.0);
+    return returnVal;
 }
 
 

@@ -36,7 +36,7 @@ int PmmImu::initMpu()
     mMpu.setSleepEnabled        (false);
 
     mMpuIsWorking = 1;
-    debugMorePrintf("MPU6050 initialized successfully!\n")
+    imuDebugMorePrintf("MPU6050 initialized successfully!\n")
 
     return 0;
 }
@@ -56,7 +56,7 @@ int PmmImu::initMagnetometer()
     mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
 
     mMagnetometerIsWorking = 1;
-    debugMorePrintf("Magnetometer initialized successfully!\n")
+    imuDebugMorePrintf("Magnetometer initialized successfully!\n")
 
     return 0;
 }
@@ -76,7 +76,7 @@ int PmmImu::initBmp()  //BMP085 Setup
 
     mBarometerIsWorking = 1;
 
-    debugMorePrintf("Barometer initialized successfully!\n")
+    imuDebugMorePrintf("Barometer initialized successfully!\n")
     return 0;
 }
 
@@ -178,8 +178,7 @@ int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/
 
 int PmmImu::updateBmp()
 {
-    // Add a filter later!
-    // read calibrated pressure value in Pascals (Pa)
+    // read calibrated pressure value in hecto Pascals (hPa)
     if (mBarometerIsWorking)
     {
 

@@ -59,7 +59,7 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
         // 1.2) Write the second field, which is the positions of each part. For now, they will all be zeroes.
         for (unsigned counter = 0; counter < totalParts * 2; counter++) // * 2 as they are 2 bytes each
             mFile.write((uint8_t)0);
-    } // Just this.
+    }
 
 // 2) We are ready for writing the received packet. Not really. First, we check if we already received this packet.
     mFile.seek(PMM_SD_SPLIT_INDEX_POSITIONS_START + (currentPart * 2));

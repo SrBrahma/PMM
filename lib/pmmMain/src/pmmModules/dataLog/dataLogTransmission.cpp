@@ -46,11 +46,11 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
     mPacketStruct.payload[PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_MSB] = LSB1(crcValue);
 
 // 4) Add the CRC-8 of the Header to the Header (1.1)
-    mPacketStruct.payload[PORT_DATA_LOG_INDEX_CRC_8_HEADER] = crc8(mPacketStruct.payload, PORT_DATA_LOG_HEADER_LENGTH);
+    mPacketStruct.payload[PORT_DATA_LOG_INDEX_CRC_8_HEADER] = crc8(mPacketStruct.payload + 1, PORT_DATA_LOG_HEADER_LENGTH - 1);
 
 // 5) Add the remaining fields and add it to the queue!
     mPacketStruct.protocol           = PMM_NEO_PROTOCOL_ID;
-    mPacketStruct.sourceAddress      = PMM_TELEMETRY_ADDRESS_THIS_SYSTEM;
+    mPacketStruct.sourceAddress      = PMM_TLM_ADDRESS_THIS_SYSTEM;
     mPacketStruct.destinationAddress = destinationAddress;
     mPacketStruct.port               = PORT_DATA_LOG_ID;
 

@@ -8,7 +8,7 @@
 #include "pmmConsts.h"  // For the defines
 
 #if PMM_EXTRA_CODES_ENABLE
-    #if PMM_SD_EXTRA_CODES || PMM_GPS_EXTRA_CODES || PMM_IMU_EXTRA_CODES || PMM_TELEMETRY_EXTRA_CODES
+    #if PMM_SD_EXTRA_CODES || PMM_GPS_EXTRA_CODES || PMM_IMU_EXTRA_CODES || PMM_TLM_EXTRA_CODES
         #define PMM_EXTRA_CODES_WILL_HAPPEN
     #endif
 #endif
@@ -19,7 +19,7 @@
         #include "pmmSd/extraCodes/main.h"
     #endif
 
-    #if PMM_TELEMETRY_EXTRA_CODES
+    #if PMM_TLM_EXTRA_CODES
         #include "pmmTelemetry/extraCodes/main.h"
     #endif
 
@@ -42,7 +42,7 @@
                 PmmSdExtraCodes();
             #endif
 
-            #if PMM_TELEMETRY_EXTRA_CODES
+            #if PMM_TLM_EXTRA_CODES
                 PmmTelemetryExtraCodes();
             #endif
 

@@ -49,7 +49,7 @@
 
 #define PORT_DATA_LOG_PAYLOAD_START                 PORT_DATA_LOG_HEADER_LENGTH
 
-#define PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            (PMM_TELEMETRY_MAX_PAYLOAD_LENGTH - PORT_DATA_LOG_HEADER_LENGTH)
+#define PORT_DATA_LOG_MAX_PAYLOAD_LENGTH            (PMM_TLM_MAX_PAYLOAD_LENGTH - PORT_DATA_LOG_HEADER_LENGTH)
 
 
 
@@ -104,8 +104,8 @@ public:
 private:
 
 // Transmission
-    int  sendDataLog(uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_LOW);
-    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TELEMETRY_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL);
+    int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_LOW);
+    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
 
 // Auxiliar functions
     uint8_t variableTypeToVariableSize(uint8_t variableType);
@@ -169,8 +169,8 @@ private:
 
 // Storage reception
     static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
-    static PmmSdAllocStatus mAllocStatusReceived       [PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
-    static uint8_t          mAllocStatusReceivedSession[PMM_TELEMETRY_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static PmmSdAllocStatus mAllocStatusReceived       [PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
+    static uint8_t          mAllocStatusReceivedSession[PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
     static char             mTempFilename [PMM_SD_FILENAME_MAX_LENGTH]; //
     static char             mTempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
 // Storage self

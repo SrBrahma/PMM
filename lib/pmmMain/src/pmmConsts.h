@@ -41,12 +41,13 @@
 //  Debug
 // =======================================================================
     #define PMM_DEBUG                               1  // Will enable debug messages via Serial. All error messages will be displayed with this, and some minor messages.
+    
     #define PMM_DATA_LOG_DEBUG                      0  // Prints the values of the data of the DataLog; = Prints the main variables of your system.
 
     #define PMM_DEBUG_MORE                          1  // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
         #define PMM_IMU_DEBUG_MORE                  0  // Prints IMU additional debug messages.
         #define PMM_GPS_DEBUG_MORE                  0  // Prints GPS additional debug messages.
-        #define PMM_TLM_DEBUG_MORE                  0  // Prints Telemetry additional debug messages.
+        #define PMM_TLM_DEBUG_MORE                  1  // Prints Telemetry additional debug messages.
 
     #define PMM_DEBUG_TIMEOUT_ENABLED               0  // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
     // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
@@ -67,12 +68,12 @@
     // Extra codes are a fast way of testing a system, individually. It is very useful for debugging, testing and calibrating sensors,
     // formatting the SD, and whatever I may add on the future.
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
-    #define PMM_EXTRA_CODES_ENABLE                  1
+    #define PMM_EXTRA_CODES_ENABLE                  0
 
         #define PMM_SD_EXTRA_CODES                  0   // For now, there are only extra codes for the SD.
-        #define PMM_GPS_EXTRA_CODES                 1
-        #define PMM_IMU_EXTRA_CODES                 1
-        #define PMM_TELEMETRY_EXTRA_CODES           1
+        #define PMM_GPS_EXTRA_CODES                 0
+        #define PMM_IMU_EXTRA_CODES                 0
+        #define PMM_TLM_EXTRA_CODES                 0
 
 
 
@@ -94,7 +95,7 @@
 //  Telemetry
 // =======================================================================
     #define PMM_USE_TELEMETRY                           1
-    #define PMM_TELEMETRY_ADDRESS_THIS_SYSTEM_CONST_H   1   // This system address. Two systems MUST NOT have the same address. Control them.
+    #define PMM_TLM_ADDRESS_THIS_SYSTEM_CONST_H   1   // This system address. Two systems MUST NOT have the same address. Control them.
 
 
 

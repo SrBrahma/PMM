@@ -13,9 +13,9 @@
 PmmTelemetry::PmmTelemetry()
     : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT) // https://stackoverflow.com/a/12927220
 {
-    mHighPriorityQueueStruct.thisPriority   = PMM_TELEMETRY_QUEUE_PRIORITY_HIGH  ;
-    mNormalPriorityQueueStruct.thisPriority = PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL;
-    mLowPriorityQueueStruct.thisPriority    = PMM_TELEMETRY_QUEUE_PRIORITY_LOW   ;
+    mHighPriorityQueueStruct.thisPriority   = PMM_TLM_QUEUE_PRIORITY_HIGH  ;
+    mNormalPriorityQueueStruct.thisPriority = PMM_TLM_QUEUE_PRIORITY_NORMAL;
+    mLowPriorityQueueStruct.thisPriority    = PMM_TLM_QUEUE_PRIORITY_LOW   ;
 }
 
 
@@ -88,10 +88,23 @@ int PmmTelemetry::updateTransmission()
         // tlmDebugMorePrintf("Return value of sendIfAvailable() is <%i>.\n", returnVal)
         return 2;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
     }
-    tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent.\n", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex)
+
+    tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent.\n", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex);
+
+    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 1
+        tlmDebugMorePrintf("Transmitted packet content:\n");
+        printHexArray(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]);
+    #endif
+
+    #if PMM_TLM_SIMULATE_RECEPTION
+        memcpy(mReceivedPacketPhysicalLayerInfoStruct.packet, queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]);
+        mReceivedPacketPhysicalLayerInfoStruct.packetLength = queueStructPtr->packetLength[queueStructPtr->actualIndex];
+        mNewSimulatedPacket = 1;
+    #endif
+
     // 5) After giving the order to send, increase the actualIndex of the queue, and decrease the remaining items to send on the queue.
     queueStructPtr->actualIndex++;
-    if (queueStructPtr->actualIndex >= PMM_TELEMETRY_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
+    if (queueStructPtr->actualIndex >= PMM_TLM_QUEUE_LENGTH)  // If the index is greater than the maximum queue index, reset it.
         queueStructPtr->actualIndex = 0;
 
     queueStructPtr->remainingPacketsOnQueue--;
@@ -106,19 +119,37 @@ int PmmTelemetry::updateTransmission()
 // Returns 1 if received anything, else, 0.
 int PmmTelemetry::updateReception()
 {
-    if (mRf95.receivePayloadAndInfoStruct(mReceivedPacket, mReceivedPacketPhysicalLayerInfoStructPtr));
-    {
-        getReceivedPacketAllInfoStruct(mReceivedPacket, mReceivedPacketPhysicalLayerInfoStructPtr, mReceivedPacketAllInfoStructPtr);
-        return 1;
-    }
-    return 0;
+    #if !PMM_TLM_SIMULATE_RECEPTION
+        if (mRf95.receivePayloadAndInfoStruct(&mReceivedPacketPhysicalLayerInfoStruct))
+        {
+
+    #else 
+        if (mNewSimulatedPacket)
+        {
+            mNewSimulatedPacket = 0;
+
+    #endif
+
+            getReceivedPacketAllInfoStruct(&mReceivedPacketPhysicalLayerInfoStruct, &mReceivedPacketAllInfoStruct);
+            tlmDebugMorePrintf("Packet received: Protocol[%u] Source[%u] Destination[%u] Port[%u] PayloadLength[%u]\n",
+                                mReceivedPacketAllInfoStruct.protocol, mReceivedPacketAllInfoStruct.sourceAddress,
+                                mReceivedPacketAllInfoStruct.destinationAddress, mReceivedPacketAllInfoStruct.port,
+                                mReceivedPacketAllInfoStruct.payloadLength);
+            #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 1
+                tlmDebugMorePrintf("Received payload content:\n");
+                printHexArray(mReceivedPacketAllInfoStruct.payload, mReceivedPacketAllInfoStruct.payloadLength);
+            #endif
+
+            return 1;
+        }
+        return 0;
 }
 
 
 
 receivedPacketAllInfoStructType* PmmTelemetry::getReceivedPacketAllInfoStructPtr()
 {
-    return mReceivedPacketAllInfoStructPtr;
+    return &mReceivedPacketAllInfoStruct;
 }
 
 
@@ -130,7 +161,6 @@ int PmmTelemetry::isPacketBeingSent()
 {
     return mRf95.isPacketBeingSent();
 }
-
 int PmmTelemetry::setTelemetryConfig(RH_RF95::ModemConfigChoice index)
 {
     return mRf95.setModemConfig(index);

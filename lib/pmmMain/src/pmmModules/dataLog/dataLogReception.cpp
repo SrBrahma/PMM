@@ -28,6 +28,9 @@ int PmmModuleDataLog::receivedDataLog(receivedPacketAllInfoStructType* packetInf
                          packetInfo->sourceAddress,
                          packetInfo->payload[PORT_DATA_LOG_INDEX_SESSION_ID]);
 
+    #undef groupLength
+    #undef sourceSession
+    #undef dataLogId
 
     return 0;
 }

@@ -260,22 +260,20 @@ bool RH_RF95::recv(uint8_t* buf, uint8_t* len)
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PAYLOAD_LEN!
 // This version retuns by reference a receivedPacketPhysicalLayerInfoStructType, which includes the packetLength, the SNR and the RSSI.
 // Returns negative if error, returns 0 if no error, returns 1 if packet has been received.
-int RH_RF95::receivePayloadAndInfoStruct(uint8_t* payload, receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerInfoStruct)
+int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct)
 {
     if (!available())
         return 0;
 
-    if (!payload)
+    if (!receivedPacketPhysicalLayerStruct) // Avoid NULL address
         return -1;
-    if (!receivedPacketPhysicalLayerInfoStruct) // Avoid NULL addresses
-        return -2;
 
     ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
     
-    memcpy(payload, _buf, _bufLen);
-    receivedPacketPhysicalLayerInfoStruct->packetLength = _bufLen;
-    receivedPacketPhysicalLayerInfoStruct->snr          = _lastSNR;
-    receivedPacketPhysicalLayerInfoStruct->rssi         = _lastRssi;
+    memcpy(receivedPacketPhysicalLayerStruct, _buf, _bufLen);
+    receivedPacketPhysicalLayerStruct->packetLength = _bufLen;
+    receivedPacketPhysicalLayerStruct->snr          = _lastSNR;
+    receivedPacketPhysicalLayerStruct->rssi         = _lastRssi;
 
     ATOMIC_BLOCK_END;
     clearRxBuf(); // This message accepted and cleared

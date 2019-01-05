@@ -21,8 +21,8 @@ int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telem
     int newItemIndex = queueStructPtr->actualIndex + queueStructPtr->remainingPacketsOnQueue;
 
     // If the new index is beyond the maximum index, it means it needs to 'circulate' the queue.
-    if (newItemIndex >= PMM_TELEMETRY_QUEUE_LENGTH)
-        newItemIndex -= PMM_TELEMETRY_QUEUE_LENGTH;
+    if (newItemIndex >= PMM_TLM_QUEUE_LENGTH)
+        newItemIndex -= PMM_TLM_QUEUE_LENGTH;
 
     // Now there is a new item on the queue!
     queueStructPtr->remainingPacketsOnQueue++;
@@ -30,11 +30,7 @@ int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telem
     addProtocolHeader (queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetStruct);
     addProtocolPayload(queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetStruct);
 
-    tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>. Packet content is:\n", getQueuePriorityString(priority), newItemIndex)
-    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE
-        // printHexArray(queueStructPtr->packet[newItemIndex], queueStructPtr->packetLength[newItemIndex]);
-    #endif
-
+    tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>.\n", getQueuePriorityString(priority), newItemIndex)
 
     return 0;
 }
@@ -44,14 +40,14 @@ uint8_t PmmTelemetry::availablePositionsInQueue(telemetryQueuePriorities priorit
 {
     switch (priority)
     {
-        case PMM_TELEMETRY_QUEUE_PRIORITY_HIGH:
-            return PMM_TELEMETRY_QUEUE_LENGTH - mHighPriorityQueueStruct.remainingPacketsOnQueue;
+        case PMM_TLM_QUEUE_PRIORITY_HIGH:
+            return PMM_TLM_QUEUE_LENGTH - mHighPriorityQueueStruct.remainingPacketsOnQueue;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL:
-            return PMM_TELEMETRY_QUEUE_LENGTH - mNormalPriorityQueueStruct.remainingPacketsOnQueue;
+        case PMM_TLM_QUEUE_PRIORITY_NORMAL:
+            return PMM_TLM_QUEUE_LENGTH - mNormalPriorityQueueStruct.remainingPacketsOnQueue;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_LOW:
-            return PMM_TELEMETRY_QUEUE_LENGTH - mLowPriorityQueueStruct.remainingPacketsOnQueue;
+        case PMM_TLM_QUEUE_PRIORITY_LOW:
+            return PMM_TLM_QUEUE_LENGTH - mLowPriorityQueueStruct.remainingPacketsOnQueue;
 
         default:    // If for some mystic reason it goes wrong...
             advPrintf("Invalid priority.\n")
@@ -70,15 +66,15 @@ int PmmTelemetry::getQueueStruct(telemetryQueuePriorities priority, telemetryQue
 {
     switch (priority)
     {
-        case PMM_TELEMETRY_QUEUE_PRIORITY_HIGH:
+        case PMM_TLM_QUEUE_PRIORITY_HIGH:
             *pmmTelemetryQueueStructPtr = &mHighPriorityQueueStruct;
             break;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL:
+        case PMM_TLM_QUEUE_PRIORITY_NORMAL:
             *pmmTelemetryQueueStructPtr = &mNormalPriorityQueueStruct;
             break;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_LOW:
+        case PMM_TLM_QUEUE_PRIORITY_LOW:
             *pmmTelemetryQueueStructPtr = &mLowPriorityQueueStruct;
             break;
 
@@ -98,13 +94,13 @@ const char* PmmTelemetry::getQueuePriorityString(telemetryQueuePriorities priori
 
     switch (priority)
     {
-        case PMM_TELEMETRY_QUEUE_PRIORITY_HIGH:
+        case PMM_TLM_QUEUE_PRIORITY_HIGH:
             return HIGH_PRIORITY_STRING;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_NORMAL:
+        case PMM_TLM_QUEUE_PRIORITY_NORMAL:
             return NORMAL_PRIORITY_STRING;
 
-        case PMM_TELEMETRY_QUEUE_PRIORITY_LOW:
+        case PMM_TLM_QUEUE_PRIORITY_LOW:
             return LOW_PRIORITY_STRING;
 
         default:    // If for some mystic reason it goes wrong...

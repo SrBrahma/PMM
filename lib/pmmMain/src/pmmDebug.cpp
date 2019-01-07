@@ -3,7 +3,7 @@
 #include <string.h>     // For snprintf
 #include "pmmDebug.h"
 
-void printHexArray(uint8_t arrayToPrint[], unsigned arrayLength)
+void printArrayHex(uint8_t arrayToPrint[], unsigned arrayLength)
 {
     char buffer[4];
 

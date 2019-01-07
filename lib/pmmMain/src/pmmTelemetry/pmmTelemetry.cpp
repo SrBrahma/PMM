@@ -91,9 +91,9 @@ int PmmTelemetry::updateTransmission()
 
     tlmDebugMorePrintf("Packet of <%s> priority and from position <%u> successfully sent.\n", getQueuePriorityString(queueStructPtr->thisPriority), queueStructPtr->actualIndex);
 
-    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 1
+    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
         tlmDebugMorePrintf("Transmitted packet content:\n");
-        printHexArray(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]);
+        printArrayHex(queueStructPtr->packet[queueStructPtr->actualIndex], queueStructPtr->packetLength[queueStructPtr->actualIndex]);
     #endif
 
     #if PMM_TLM_SIMULATE_RECEPTION
@@ -135,9 +135,9 @@ int PmmTelemetry::updateReception()
                                 mReceivedPacketAllInfoStruct.protocol, mReceivedPacketAllInfoStruct.sourceAddress,
                                 mReceivedPacketAllInfoStruct.destinationAddress, mReceivedPacketAllInfoStruct.port,
                                 mReceivedPacketAllInfoStruct.payloadLength);
-            #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 1
+            #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
                 tlmDebugMorePrintf("Received payload content:\n");
-                printHexArray(mReceivedPacketAllInfoStruct.payload, mReceivedPacketAllInfoStruct.payloadLength);
+                printArrayHex(mReceivedPacketAllInfoStruct.payload, mReceivedPacketAllInfoStruct.payloadLength);
             #endif
 
             return 1;

@@ -23,12 +23,13 @@ int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInf
 
 // 3) Save the received packet on the memory
     saveReceivedDataLogInfo(&packetInfo->payload[PORT_LOG_INFO_INDEX_PAYLOAD_START],
+                             packetInfo->payloadLength - PORT_LOG_INFO_HEADER_LENGTH,
+                             packetInfo->sourceAddress,
+                             packetInfo->payload[PORT_LOG_INFO_INDEX_SESSION_ID],
+                             packetInfo->payload[PORT_LOG_INFO_INDEX_DATA_LOG_ID],
                              packetInfo->payload[PORT_LOG_INFO_INDEX_DATA_LOG_GROUP_LENGTH],
                              packetInfo->payload[PORT_LOG_INFO_INDEX_CURRENT_PACKET],
-                             packetInfo->payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS],
-                             packetInfo->payload[PORT_LOG_INFO_INDEX_DATA_LOG_ID],
-                             packetInfo->sourceAddress,
-                             packetInfo->payload[PORT_LOG_INFO_INDEX_SESSION_ID]);
+                             packetInfo->payload[PORT_LOG_INFO_INDEX_TOTAL_PACKETS]);
 
     return 0;
 }

@@ -128,7 +128,7 @@ private:
 
     int  saveOwnDataLogInfo();
     int  savePart(char filePath[], uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, int* finishedBuilding, int flags);
-    int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
+    int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
 
 
 

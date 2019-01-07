@@ -35,7 +35,7 @@ public:
 
     bool     exists(char filename[]);
 
-    int      createDirsAndOpen(char path[], uint8_t mode = O_RDWR | O_CREAT | O_APPEND);
+    int      createDirsAndOpen(char path[], uint8_t mode = O_RDWR | O_CREAT);
     int      open (char filename[], uint8_t mode = O_READ);
     int      seek (uint32_t position);
     int      read (uint8_t buffer[], size_t numberBytes);

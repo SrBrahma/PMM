@@ -67,7 +67,7 @@ public:
             Serial.print("Block ["); Serial.print(mCurrentBlockShowing - mBeginBlockShowing); Serial.print("] of ["); Serial.print(mEndBlockShowing - mBeginBlockShowing); Serial.println("].");
             
             mPmmSd.getCardPtr()->readBlock(mCurrentBlockShowing, mBlockContent);
-            printHexArray(mBlockContent, 512);
+            printArrayHex(mBlockContent, 512);
 
             printControls();
             Serial.println();

@@ -18,8 +18,9 @@
 // The data of this part.
 
 #include <stdint.h>
-#include "pmmSd/pmmSdConsts.h"
 #include "byteSelection.h"
+#include "pmmSd/pmmSdConsts.h"
+#include "pmmDebug.h"
 
 #include "pmmSd/pmmSdGeneralFunctions.h"
 #include "pmmSd/split/pmmSdSplit.h"
@@ -69,6 +70,7 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
 
 // 3) So we don't own this packet. Write it! First, the Data Part X Length.
     uint16_t dataPartLengthPosition = mFile.fileSize(); // This will also be used later! fileSize() return an uint32_t, so, remember it if planing a > 64KiB file.
+    
     mFile.seek(dataPartLengthPosition); // Jump to the end of the file!
     mFile.write(LSB0(dataLength));
     mFile.write(LSB1(dataLength));
@@ -83,23 +85,27 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
 
 // 6) Before ending, we check if we finished building the package. We do it here to avoid having another function
 //      which will have to reopen the file.
+
     mFile.seek(PMM_SD_SPLIT_INDEX_POSITIONS_START);
     for (uint8_t counter = 0; counter < totalParts; counter++)
     {
         mFile.read(dataLengthContent, 2);
-        if (!(dataLengthContent[0] | dataLengthContent[1])) // Check for an empty field.
+        if (!(dataLengthContent[0] || dataLengthContent[1])) // Check for an empty field.
         {
             mFile.close(); // Empty field found! Close and quit!
             return 0;
         }
     }
 
+    mFile.sync(); // To save the changes to the file
+
     if (flags & PMM_SD_SPLIT_BUILD_FLAG)
     {
-        buildFileFromSplit(filePath);
+        buildFileFromSplit(filePath);   // Here is the why we needed to save the changes, we are going to use them!
 
         if (flags & PMM_SD_SPLIT_REMOVE_FLAG)
-            mFile.remove();
+            mFile.remove();             // Here is another why! I could use the mSdFat->remove(filePath), but, it surely is faster to remove this way.
+                                        // It actually won't change anything significantly, but also didn't cost me anything to do it. I HAD TO CHOSE, OK?
     }
     
     mFile.close();
@@ -108,61 +114,62 @@ int PmmSdSplit::savePart(char filePath[], uint8_t data[], uint16_t dataLength, u
 }
 
 
+
 // This function won't check if destination file already exists, so, check before or mess will come to Earth.
 int PmmSdSplit::buildFileFromSplit(char filePath[])
 {
     if (!filePath)
         return 1;
 
-    File sourceFile;
-    
-    uint8_t  buffer[PMM_SD_SPLIT_BUFFER_LENGTH];
-    
-    uint8_t  totalPackets;
-
-    uint16_t partLengthPosition;
-    uint8_t  partLengthPositionArray[2];
-
-    uint16_t partLength;
-    uint8_t  partLengthArray[2];
-
+    File sourceFile, targetFile;
 
     char sourcePath[PMM_SD_FILENAME_MAX_LENGTH];
     snprintf(sourcePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath, PMM_SD_SPLIT_EXTENSION);
     
     sourceFile.open(sourcePath); // O_READ flag is default flag
-    createDirsAndOpen(mSdFat, &mFile, filePath);
-    
+    targetFile.open(filePath, O_CREAT | O_RDWR);
+
+
     // 2) Read the totalPackets
+    uint8_t totalPackets;
     sourceFile.seek(PMM_SD_SPLIT_INDEX_TOTAL_PACKETS);
     sourceFile.read(&totalPackets, 1);
-    
+
+
     // 3) Copy!
     for (uint8_t packetIndex = 0; packetIndex < totalPackets; packetIndex++)
     {
-        sourceFile.seek(packetIndex * 2 + PMM_SD_SPLIT_INDEX_POSITIONS_START);
-        sourceFile.read(partLengthPositionArray, 2);
-        partLengthPosition = (partLengthPositionArray[1] << 8) | partLengthPositionArray[0]; // Ensures the LSB format.
+        // 3.1) Get where is located the partLength of the part x.
+        uint8_t  partLengthPositionArray[2];
 
+        sourceFile.seek(PMM_SD_SPLIT_INDEX_POSITIONS_START + packetIndex * 2);
+        sourceFile.read(partLengthPositionArray, 2);
+
+        uint16_t partLengthPosition = (partLengthPositionArray[1] << 8) | partLengthPositionArray[0]; // Ensures the LSB format.
         if (partLengthPosition == 0)
             return 2;   // This part still missing in the Split file.
 
+        // 3.2) Get the partLength of the part x.
+        uint8_t  partLengthArray[2];
         sourceFile.seek(partLengthPosition);
         sourceFile.read(partLengthArray, 2);
-        partLength = (partLengthArray[1] << 8) | partLengthArray[0];
 
+        uint16_t partLength = (partLengthArray[1] << 8) | partLengthArray[0];
+
+        // 3.3) Actually copy the part to the target file.
         uint16_t bytesRemaining = partLength;
         while (bytesRemaining > 0)
         {
+            uint8_t  buffer[PMM_SD_SPLIT_BUFFER_LENGTH];
             uint16_t bytesToCopyNow = ((bytesRemaining > PMM_SD_SPLIT_BUFFER_LENGTH) ? PMM_SD_SPLIT_BUFFER_LENGTH : bytesRemaining);
             sourceFile.read(buffer, bytesToCopyNow);
-            mFile.write(buffer, bytesToCopyNow);
+            targetFile.write(buffer, bytesToCopyNow);
             bytesRemaining -= bytesToCopyNow;
         }
     }
 
     sourceFile.close();
-    mFile.close();
+    targetFile.close();
 
     return 0;
 }

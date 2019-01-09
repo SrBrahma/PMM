@@ -14,11 +14,16 @@ const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]           = "AltitudeBarometer
 const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]       = "gpsLatitude";
 const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]      = "gpsLongitude";
 
-
-
-int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t variableType, void *variableAddress)
+PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
 {
-    if (mIsLocked)
+    mIsGroupLocked      = 0;
+    mGroupLength        = 0;
+    mNumberVariables    = 0;
+}
+
+int PmmModuleDataLog::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
+{
+    if (lockGroup())
     {
         advPrintf("Failed to add the variable \"%s\". DataLog is already locked.\n", variableName)
         return 1;
@@ -50,7 +55,7 @@ int PmmModuleDataLog::includeVariableInPackage(const char *variableName, uint8_t
 
 
 
-int PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
+int PmmModuleDataLog::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
 {
     if (!variableName)
         return 1;
@@ -59,7 +64,7 @@ int PmmModuleDataLog::includeArrayInPackage(const char **variableName, uint8_t a
 
     uint8_t counter;
     for (counter = 0; counter < arraySize; counter++)
-        includeVariableInPackage(*variableName++, arrayType, (uint8_t*) arrayAddress + (variableTypeToVariableSize(arrayType) * counter));
+        includeVariable(*variableName++, arrayType, (uint8_t*) arrayAddress + (variableTypeToVariableSize(arrayType) * counter));
 
     return 0;
 }
@@ -73,8 +78,8 @@ int PmmModuleDataLog::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainM
     if (!mainMillisPtr)
         return 2;
 
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
-    includeVariableInPackage(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, mainMillisPtr);
+    includeVariable(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
+    includeVariable(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, mainMillisPtr);
     return 0;
 }
 
@@ -83,48 +88,48 @@ int PmmModuleDataLog::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainM
 int PmmModuleDataLog::addAccelerometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"accelerometerX(g)", "accelerometerY(g)", "accelerometerZ(g)"};
-    return includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 int PmmModuleDataLog::addGyroscope(void* array)
 {
     const PROGMEM char* arrayString[3] = {"gyroscopeX(degree/s)", "gyroscopeY(degree/s)", "gyroscopeZ(degree/s)"};
-    return includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 int PmmModuleDataLog::addTemperatureMpu(void* temperatureMpu)
 {
     const PROGMEM char* mpuTemperatureString = "temperatureMpu(C)";
-    return includeVariableInPackage(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
+    return includeVariable(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
 }
 
 int PmmModuleDataLog::addMagnetometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"magnetometerX(uT)", "magnetometerY(uT)", "magnetometerZ(uT)"};
-    return includeArrayInPackage(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
 int PmmModuleDataLog::addBarometer(void* barometer)
 {
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
-    return includeVariableInPackage(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
+    return includeVariable(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
 }
 
 // Without filtering
 int PmmModuleDataLog::addRawAltitudeBarometer(void* rawAltitudePressure)
 {
-    return includeVariableInPackage(PMM_DATA_LOG_RAW_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, rawAltitudePressure);
+    return includeVariable(PMM_DATA_LOG_RAW_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, rawAltitudePressure);
 }
 
 int PmmModuleDataLog::addAltitudeBarometer(void* altitude)
 {
-    return includeVariableInPackage(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
+    return includeVariable(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
 }
 
 int PmmModuleDataLog::addTemperatureBmp(void* barometerTempPtr)
 {
     const PROGMEM char* barometerTempString = "temperatureBmp(C)";
-    return includeVariableInPackage(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
+    return includeVariable(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
 }
 
 
@@ -154,36 +159,36 @@ int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
     int returnVal;
 
     #ifdef GPS_FIX_LOCATION
-        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->latitude ))) return returnVal;
-        if ((returnVal = includeVariableInPackage(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->longitude))) return returnVal;
+        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->latitude ))) return returnVal;
+        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->longitude))) return returnVal;
     #endif
 
     #ifdef GPS_FIX_ALTITUDE
         const PROGMEM char* gpsAltitudeString        = "gpsAltitude(m)";
-        if ((returnVal = includeVariableInPackage(gpsAltitudeString,      MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->altitude)))      return returnVal;
+        if ((returnVal = includeVariable(gpsAltitudeString,      MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->altitude)))      return returnVal;
     #endif
 
     #ifdef GPS_FIX_SATELLITES
         const PROGMEM char* gpsSatellitesString      = "gpsSatellites";
-        if ((returnVal = includeVariableInPackage(gpsSatellitesString,    MODULE_DATA_LOG_TYPE_UINT8, &pmmGpsStruct->satellites)))    return returnVal;
+        if ((returnVal = includeVariable(gpsSatellitesString,    MODULE_DATA_LOG_TYPE_UINT8, &pmmGpsStruct->satellites)))    return returnVal;
     #endif
     
     #ifdef GPS_FIX_HEADING
         const PROGMEM char* gpsHeadingDegreeString   = "gpsHeadingDegree";
-        if ((returnVal = includeVariableInPackage(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;
+        if ((returnVal = includeVariable(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;
     #endif
 
     #ifdef GPS_FIX_SPEED
         const PROGMEM char* gpsUpSpeedString         = "gpsSpeedUp(m/s)";
         const PROGMEM char* gpsHorizontalSpeedString = "gpsHorizontalSpeed(m/s)";
-        if ((returnVal = includeVariableInPackage(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
-        if ((returnVal = includeVariableInPackage(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
+        if ((returnVal = includeVariable(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
+        if ((returnVal = includeVariable(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
 
         #ifdef GPS_FIX_HEADING
             const PROGMEM char* gpsNorthSpeedString  = "gpsNorthSpeed(m/s)";
             const PROGMEM char* gpsEastSpeedString   = "gpsEastSpeed(m/s)";
-            if ((returnVal = includeVariableInPackage(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;
-            if ((returnVal = includeVariableInPackage(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->eastSpeed))) return returnVal;
+            if ((returnVal = includeVariable(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;
+            if ((returnVal = includeVariable(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->eastSpeed))) return returnVal;
         #endif
     #endif
 
@@ -194,5 +199,5 @@ int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
 
 int PmmModuleDataLog::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
 {
-    return includeVariableInPackage(variableName, variableType, variableAddress);
+    return includeVariable(variableName, variableType, variableAddress);
 }

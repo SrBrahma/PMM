@@ -10,7 +10,7 @@
 
 
 // Received DataLogInfo Package
-int PmmModuleDataLog::receivedLogInfo(receivedPacketAllInfoStructType* packetInfo)
+int PmmModuleDataLog::receivedDataLogInfo(receivedPacketAllInfoStructType* packetInfo)
 {
 // 1) If the packet size is smaller than the packet header length, it's invalid
     if (packetInfo->payloadLength < PORT_LOG_INFO_HEADER_LENGTH)

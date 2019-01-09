@@ -32,7 +32,7 @@ void PmmPortsReception::receivedPacket(receivedPacketAllInfoStructType* packetIn
             mPmmModuleDataLog->receivedDataLog(packetInfo);
             return;
         case PORT_DATA_LOG_INFO_ID:
-            mPmmModuleDataLog->receivedLogInfo(packetInfo);
+            mPmmModuleDataLog->receivedDataLogInfo(packetInfo);
             return;
         case PORT_MESSAGE_LOG_ID:
             mPmmModuleMessageLog->receivedPackageString(packetInfo);

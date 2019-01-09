@@ -34,7 +34,7 @@ int PmmModuleDataLog::saveOwnDataLog()
     if (!mPmmSd->getSdIsWorking())
         return 1;
 
-    if (!mIsLocked)
+    if (!lockGroup())
         updateLogInfoCombinedPayload();
 
     // Build the entire group in a single array

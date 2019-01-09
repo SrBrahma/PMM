@@ -29,9 +29,6 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mPmmSd              = pmmSd;
     mPmmSdSafeLog       = mPmmSd->getSafeLog();
 
-    mIsLocked           = 0;
-    mGroupLength        = 0;
-    mNumberVariables    = 0;
     mDataLogInfoPackets = 0;
 
     mUpdateModeReadyCounter   = mUpdateModeDeployedCounter = 0;

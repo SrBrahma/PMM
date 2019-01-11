@@ -16,7 +16,7 @@
 // This is defined at pmmConsts.h for a more centralized control of the important defines, so the user won't have to access different files
 // for normal operation.
 
-#define PMM_TLM_ADDRESS_THIS_SYSTEM   PMM_TLM_ADDRESS_THIS_SYSTEM_CONST_H 
+// #define PMM_TLM_ADDRESS_THIS_SYSTEM   PMM_TLM_ADDRESS_THIS_SYSTEM_CONST_H 
 
 
     #define PMM_TLM_ADDRESSES_INITIAL_ALLOWED_SOURCE        0x00

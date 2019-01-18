@@ -35,6 +35,10 @@ public:
     int getNumberFileParts(char dirFullRelativePath[], uint8_t* fileParts);
     int getFileRange(char dirFullRelativePath[], uint8_t filePart, uint32_t *beginBlock, uint32_t *endBlock);
 
+    int openForRead(char dirFullRelativePath[]);
+    int seek(uint16_t groupPosition);                   // Only changes reading.
+    int read(uint8_t buffer, uint16_t* bufferLength);   // Also increases the position by 1.
+
 private:
 
     SdFatSdio* mSdFat;

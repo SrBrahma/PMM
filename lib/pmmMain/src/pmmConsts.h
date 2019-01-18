@@ -70,7 +70,7 @@
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
     #define PMM_EXTRA_CODES_ENABLE                  0
 
-        #define PMM_SD_EXTRA_CODES                  0   // For now, there are only extra codes for the SD.
+        #define PMM_SD_EXTRA_CODES                  0
         #define PMM_GPS_EXTRA_CODES                 0
         #define PMM_IMU_EXTRA_CODES                 0
         #define PMM_TLM_EXTRA_CODES                 0
@@ -81,6 +81,10 @@
 //  IMU
 // =======================================================================
     #define PMM_USE_IMU                             1
+        // These below will be implemented later.
+        #define PMM_USE_IMU_ACCELEROMETER               1
+        #define PMM_USE_IMU_GYROSCOPE                   1
+        #define PMM_USE_IMU_MAGNETOMETER                1
 
 
 
@@ -95,7 +99,7 @@
 //  Telemetry
 // =======================================================================
     #define PMM_USE_TELEMETRY                           1
-    #define PMM_TLM_ADDRESS_THIS_SYSTEM_CONST_H   1   // This system address. Two systems MUST NOT have the same address. Control them.
+    #define PMM_TLM_ADDRESS_THIS_SYSTEM                 1   // This system address. Two systems MUST NOT have the same address.
 
 
 
@@ -118,7 +122,7 @@
 // =======================================================================
     #define PMM_USE_GPS                         1
 
-    #define PMM_GPS_PORT                        Serial1
+        #define PMM_GPS_PORT                        Serial1
 
 
 #endif // #ifndef PMM_CONSTS_h

@@ -1,5 +1,5 @@
 #include "pmmModules/dataLog/dataLog.h"
-
+#include "pmmModules/dataLog/dataLogInfo/logInfo.h"
 
 void PmmModuleDataLog::updateLogInfoCombinedPayload()
 {
@@ -9,14 +9,12 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     mLogInfoContentArrayLength = 0;  // Zero the length of the array.
 
 
-// 1) Add the "Number of variables"
+    // 1) Add the "Number of variables"
     mLogInfoContentArray[0] = mNumberVariables;
     mLogInfoContentArrayLength++;
 
 
-// 2) Add the "Variable types"
-
-    // 2.1) Adds the variables types in groups of two, as the types are always <= 4 bits, the group makes 8 bits.
+    // 2) Add the "Variable types". Adds them in groups of two, as the types are always <= 4 bits, the group makes 8 bits.
     for (variableCounter = 0; variableCounter < mNumberVariables; variableCounter += 2)
     {
         if (mNumberVariables - variableCounter >= 2)
@@ -26,9 +24,7 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
         mLogInfoContentArrayLength++;
     }
 
-
-
-// 3) Add the Variable strings
+    // 3) Add the Variable strings
     for (variableCounter = 0; variableCounter < mNumberVariables; variableCounter ++)
     {
         // As I couldn't find a way to use strnlen, made it!
@@ -43,20 +39,20 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
         mLogInfoContentArrayLength ++;
     }
 
-// 4) Calculate the total number of packets.
+    // 4) Calculate the total number of packets.
     mDataLogInfoPackets = ceil(mLogInfoContentArrayLength / (float) PORT_LOG_INFO_MAX_PAYLOAD_LENGTH);
 
-// 5) Get the path to this DataLog
+    // 5) Get the path to this DataLog
     char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
     getDataLogDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, mDataLogGroupId, mGroupLength);
     mPmmSd->getSelfDirectory(mDataLogSelfDirPath, PMM_SD_FILENAME_MAX_LENGTH, tempFilename);
 
-// 6) Save the DataLogInfo.
+    // 6) Save the DataLogInfo.
     saveOwnDataLogInfo();
 
-// 7) Set this to store the DataLog
+    // 7) Set this to store the DataLog
     mAllocStatusSelfDataLog.groupLength = mGroupLength;
 
-// 8) Finally, lock this DataLog!
+    // 8) Finally, lock this DataLog!
     lockGroup() = 1;
 }

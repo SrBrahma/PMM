@@ -5,7 +5,7 @@
 
 #include "crc.h"
 #include "pmmModules/dataLog/dataLog.h"
-#include "pmmModules/dataLogInfo/logInfo.h"
+#include "pmmModules/dataLog/dataLogInfo/logInfo.h"
 
 
 

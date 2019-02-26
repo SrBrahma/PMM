@@ -7,7 +7,8 @@
 
 #include "pmmTelemetry/pmmTelemetry.h"      // For transmitting
 #include "pmmSd/pmmSd.h"                    // For storing
-#include "pmmModules/dataLogInfo/logInfo.h" // For specific defines
+#include "pmmModules/dataLog/dataLogGroup.h"
+#include "pmmModules/dataLog/dataLogInfo/logInfo.h" // For specific defines
 
 
 // DataLog Defines
@@ -25,7 +26,7 @@
 
 
 
-class PmmModuleDataLog : public PmmDataLogGroup
+class PmmModuleDataLog : public PmmModuleDataLogGroup
 {
 
 public:
@@ -38,12 +39,12 @@ public:
     int  setSystemMode(pmmSystemState systemMode);
 
 
-// Reception
+    // Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
     int  receivedDataLogInfo(receivedPacketAllInfoStructType* packetInfo);
 
 
-// Debug!
+    // Debug!
     void debugPrintLogHeader ();
     void debugPrintLogContent();
 
@@ -53,8 +54,6 @@ private:
     // Transmission
     int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_LOW);
     int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
-
-
 
     // Build the Package Log Info Package
     void updateLogInfoCombinedPayload(); // Updates the DataLogInfo
@@ -67,7 +66,6 @@ private:
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
 
 
-
     // Variables
     PmmTelemetry*  mPmmTelemetry;
     PmmSd       *  mPmmSd;
@@ -76,29 +74,22 @@ private:
     pmmSystemState mSystemMode;
 
 
-
-
-
-
-
-
-
     // Update
     uint8_t  mUpdateModeReadyCounter, mUpdateModeDeployedCounter;
     uint8_t  mUpdateDataLogInfoCounter;
 
-// Storage reception
+    // Storage reception
     uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
     
-    static constexpr const char* LOG_INFO_FILENAME = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
+    static constexpr const char* LOG_INFO_FILENAME PROGMEM = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
     static PmmSdAllocStatus mAllocStatusReceived       [PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
     static uint8_t          mAllocStatusReceivedSession[PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
-    static char             mTempFilename [PMM_SD_FILENAME_MAX_LENGTH]; //
+    static char             mTempFilename [PMM_SD_FILENAME_MAX_LENGTH];
     static char             mTempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
-// Storage self
+
+    // Storage self
     PmmSdAllocStatus mAllocStatusSelfDataLog;
     char   mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
-
 
 }; // End of the class
 

@@ -3,25 +3,14 @@
 #include "pmmModules/dataLog/dataLog.h"
 
 
-// These are important strings, which both the transmitter and the receiver must have in commom. The other variables strings
-// not listed here can be freely changed.
-const PROGMEM char PMM_DATA_LOG_PACKAGE_ID_STRING[]         = "mainLoopCounter";
-const PROGMEM char PMM_DATA_LOG_PACKAGE_TIME_STRING[]       = "mainTime(ms)";
-
-const PROGMEM char PMM_DATA_LOG_RAW_ALTITUDE_STRING[]       = "rawAltitudeBarometer(m)";
-const PROGMEM char PMM_DATA_LOG_ALTITUDE_STRING[]           = "AltitudeBarometer(m)";
-
-const PROGMEM char PMM_DATA_LOG_GPS_LATITUDE_STRING[]       = "gpsLatitude";
-const PROGMEM char PMM_DATA_LOG_GPS_LONGITUDE_STRING[]      = "gpsLongitude";
-
-PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
+PmmModuleDataLogGroup::PmmModuleDataLogGroup()
 {
     mIsGroupLocked      = 0;
     mGroupLength        = 0;
     mNumberVariables    = 0;
 }
 
-int PmmModuleDataLog::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
+int PmmModuleDataLogGroup::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     if (lockGroup())
     {
@@ -55,7 +44,7 @@ int PmmModuleDataLog::includeVariable(const char *variableName, uint8_t variable
 
 
 
-int PmmModuleDataLog::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
+int PmmModuleDataLogGroup::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
 {
     if (!variableName)
         return 1;
@@ -71,7 +60,7 @@ int PmmModuleDataLog::includeArray(const char **variableName, uint8_t arrayType,
 
 
 
-int PmmModuleDataLog::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
+int PmmModuleDataLogGroup::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
 {
     if (!mainLoopCounterPtr)
         return 1;
@@ -85,48 +74,48 @@ int PmmModuleDataLog::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainM
 
 
 
-int PmmModuleDataLog::addAccelerometer(void* array)
+int PmmModuleDataLogGroup::addAccelerometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"accelerometerX(g)", "accelerometerY(g)", "accelerometerZ(g)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLog::addGyroscope(void* array)
+int PmmModuleDataLogGroup::addGyroscope(void* array)
 {
     const PROGMEM char* arrayString[3] = {"gyroscopeX(degree/s)", "gyroscopeY(degree/s)", "gyroscopeZ(degree/s)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLog::addTemperatureMpu(void* temperatureMpu)
+int PmmModuleDataLogGroup::addTemperatureMpu(void* temperatureMpu)
 {
     const PROGMEM char* mpuTemperatureString = "temperatureMpu(C)";
     return includeVariable(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
 }
 
-int PmmModuleDataLog::addMagnetometer(void* array)
+int PmmModuleDataLogGroup::addMagnetometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"magnetometerX(uT)", "magnetometerY(uT)", "magnetometerZ(uT)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLog::addBarometer(void* barometer)
+int PmmModuleDataLogGroup::addBarometer(void* barometer)
 {
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
     return includeVariable(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
 }
 
 // Without filtering
-int PmmModuleDataLog::addRawAltitudeBarometer(void* rawAltitudePressure)
+int PmmModuleDataLogGroup::addRawAltitudeBarometer(void* rawAltitudePressure)
 {
     return includeVariable(PMM_DATA_LOG_RAW_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, rawAltitudePressure);
 }
 
-int PmmModuleDataLog::addAltitudeBarometer(void* altitude)
+int PmmModuleDataLogGroup::addAltitudeBarometer(void* altitude)
 {
     return includeVariable(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
 }
 
-int PmmModuleDataLog::addTemperatureBmp(void* barometerTempPtr)
+int PmmModuleDataLogGroup::addTemperatureBmp(void* barometerTempPtr)
 {
     const PROGMEM char* barometerTempString = "temperatureBmp(C)";
     return includeVariable(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
@@ -134,7 +123,7 @@ int PmmModuleDataLog::addTemperatureBmp(void* barometerTempPtr)
 
 
 
-int PmmModuleDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
+int PmmModuleDataLogGroup::addImu(pmmImuStructType *pmmImuStructPtr)
 {
     int returnVal;
 
@@ -154,7 +143,7 @@ int PmmModuleDataLog::addImu(pmmImuStructType *pmmImuStructPtr)
 
 
 
-int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
+int PmmModuleDataLogGroup::addGps(pmmGpsStructType* pmmGpsStruct)
 {
     int returnVal;
 
@@ -197,7 +186,7 @@ int PmmModuleDataLog::addGps(pmmGpsStructType* pmmGpsStruct)
 
 
 
-int PmmModuleDataLog::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
+int PmmModuleDataLogGroup::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
 {
     return includeVariable(variableName, variableType, variableAddress);
 }

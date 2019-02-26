@@ -21,12 +21,12 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
         updateLogInfoCombinedPayload();
 
     if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
-        return 2;
+        return 1;
 
     toBeSentPacketStructType packetStruct;
 
-// 1) Add the Header
-    // 1.1) The CRC-8 is added after the other fields
+    // 1) Add the Header.
+    // 1.1) The CRC-8 is added after the other fields, on 4).
     // 1.2) Add the Session Identifier
     packetStruct.payload[PORT_DATA_LOG_INDEX_SESSION_ID]  = mSystemSession;
     // 1.3) Add the DataLogInfo Identifier
@@ -35,28 +35,29 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
 
     packetStruct.payloadLength = PORT_DATA_LOG_HEADER_LENGTH;
 
-// 2) Add the Log data.
+    // 2) Add the Log data.
     for (unsigned actualVar = 0; actualVar < mNumberVariables; actualVar++)
     {
         memcpy(packetStruct.payload + packetStruct.payloadLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
         packetStruct.payloadLength += mVariableSizeArray[actualVar];
     }
 
-// 3) Add the CRC-16 of the log to the Header (1.4)
+    // 3) Add the CRC-16 of the log to the Header (1.4)
     uint16_t crcValue = crc16(packetStruct.payload + PORT_DATA_LOG_HEADER_LENGTH, packetStruct.payloadLength - PORT_DATA_LOG_HEADER_LENGTH);
     packetStruct.payload[PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_LSB] = LSB0(crcValue);
     packetStruct.payload[PORT_DATA_LOG_INDEX_CRC_16_PAYLOAD_MSB] = LSB1(crcValue);
 
-// 4) Add the CRC-8 of the Header to the Header (1.1)
+    // 4) Add the CRC-8 of the Header to the Header (1.1)
     packetStruct.payload[PORT_DATA_LOG_INDEX_CRC_8_HEADER] = crc8(packetStruct.payload + 1, PORT_DATA_LOG_HEADER_LENGTH - 1);
 
-// 5) Add the remaining fields and add it to the queue!
+    // 5) Add the remaining fields and add it to the queue!
     packetStruct.protocol           = PMM_NEO_PROTOCOL_ID;
     packetStruct.sourceAddress      = PMM_TLM_ADDRESS_THIS_SYSTEM;
     packetStruct.destinationAddress = destinationAddress;
     packetStruct.port               = PORT_DATA_LOG_ID;
 
-    mPmmTelemetry->addPacketToQueue(&packetStruct, priority);
+    if (mPmmTelemetry->addPacketToQueue(&packetStruct, priority))
+        return 2;
 
     return 0;
 }

@@ -16,20 +16,20 @@
 #define PORT_LOG_INFO_INDEX_PAYLOAD_START           PORT_LOG_INFO_HEADER_LENGTH
 
 // The maximum payload length per packet.
-#define PORT_LOG_INFO_MAX_PAYLOAD_LENGTH        (PMM_TLM_MAX_PAYLOAD_LENGTH - PORT_LOG_INFO_HEADER_LENGTH)
+#define PORT_LOG_INFO_MAX_PAYLOAD_LENGTH            (PMM_TLM_MAX_PAYLOAD_LENGTH - PORT_LOG_INFO_HEADER_LENGTH)
 
 // When sending the types of the variables (4 bits each type), they are grouped into 1 byte, to make the telemetry packet smaller (read the Telemetry Guide).
 //   If the number of variables is odd, the last variable type won't be grouped with another variable type, as there isn't another one,
 //   but it will still take 1 byte on the telemetry packet to send it. So, it's the same as: maxLengthVariablesType = ceil(numberVariables/2).
-#define MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH   ((MODULE_DATA_LOG_MAX_VARIABLES + 2 - 1) / 2)
+#define MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH       ((MODULE_DATA_LOG_MAX_VARIABLES + 2 - 1) / 2)
                                                     // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
 // The total DataLogInfo content length
-#define MODULE_LOG_INFO_CONTENT_MAX_LENGTH      (1 + MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH + MODULE_DATA_LOG_MAX_VARIABLES * MODULE_DATA_LOG_MAX_STRING_LENGTH)
+#define MODULE_LOG_INFO_CONTENT_MAX_LENGTH          (1 + MODULE_LOG_INFO_VARS_TYPES_MAX_LENGTH + MODULE_DATA_LOG_MAX_VARIABLES * MODULE_DATA_LOG_MAX_STRING_LENGTH)
 
 // How many packets are needed to send the Combined Payload.
-#define PORT_LOG_INFO_MAX_PACKETS               ((MODULE_LOG_INFO_CONTENT_MAX_LENGTH + PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
-                                                // Ceiling without ceil(). https://stackoverflow.com/a/2745086
+#define PORT_LOG_INFO_MAX_PACKETS                   ((MODULE_LOG_INFO_CONTENT_MAX_LENGTH + PORT_LOG_INFO_MAX_PAYLOAD_LENGTH - 1) / PORT_LOG_INFO_MAX_PAYLOAD_LENGTH)
+                                                    // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
 
 
@@ -41,7 +41,7 @@ class PmmModuleDataLogInfo
         int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
 
     private:
-        PmmModuleDataLogGroup
+        PmmModuleDataLogGroup* 
         // Transmission
         uint8_t  mLogInfoContentArray[MODULE_LOG_INFO_CONTENT_MAX_LENGTH];
         uint16_t mLogInfoContentArrayLength;

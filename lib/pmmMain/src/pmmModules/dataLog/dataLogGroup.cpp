@@ -10,6 +10,36 @@ PmmModuleDataLogGroup::PmmModuleDataLogGroup()
     mNumberVariables    = 0;
 }
 
+uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
+{
+    switch (variableType)
+    {
+        case MODULE_DATA_LOG_TYPE_UINT8:
+            return 1;
+        case MODULE_DATA_LOG_TYPE_INT8:
+            return 1;
+        case MODULE_DATA_LOG_TYPE_UINT16:
+            return 2;
+        case MODULE_DATA_LOG_TYPE_INT16:
+            return 2;
+        case MODULE_DATA_LOG_TYPE_UINT32:
+            return 4;
+        case MODULE_DATA_LOG_TYPE_INT32:
+            return 4;
+        case MODULE_DATA_LOG_TYPE_FLOAT:
+            return 4;
+        case MODULE_DATA_LOG_TYPE_UINT64:
+            return 8;
+        case MODULE_DATA_LOG_TYPE_INT64:
+            return 8;
+        case MODULE_DATA_LOG_TYPE_DOUBLE:
+            return 8;
+        default:    // Maybe will avoid internal crashes?
+            advPrintf("Invalid variable type to size!\n");
+            return 1;
+    }
+}
+
 int PmmModuleDataLogGroup::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     if (lockGroup())
@@ -60,15 +90,45 @@ int PmmModuleDataLogGroup::includeArray(const char **variableName, uint8_t array
 
 
 
-int PmmModuleDataLogGroup::addBasicInfo(uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
+int PmmModuleDataLogGroup::addTransmissionCounter(uint32_t* transmissionCounterPtr)
+{
+    if (!transmissionCounterPtr)
+        return 1;
+
+    includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, transmissionCounterPtr);
+
+    return 0;
+}
+
+int PmmModuleDataLogGroup::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
 {
     if (!mainLoopCounterPtr)
         return 1;
-    if (!mainMillisPtr)
-        return 2;
 
-    includeVariable(PMM_DATA_LOG_PACKAGE_ID_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
-    includeVariable(PMM_DATA_LOG_PACKAGE_TIME_STRING, MODULE_DATA_LOG_TYPE_UINT32, mainMillisPtr);
+    includeVariable(PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
+
+    return 0;
+}
+
+int PmmModuleDataLogGroup::addTimeMillis         (uint32_t* timeMillisPtr)
+{
+    if (!timeMillisPtr)
+        return 1;
+
+    includeVariable(PMM_DATA_LOG_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
+
+    return 0;
+}
+
+int PmmModuleDataLogGroup::addBasicInfo          (uint32_t* transmissionCounter, uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
+{
+    if (addTransmissionCounter(transmissionCounter))
+        return 1;
+    if (addMainLoopCounter(mainLoopCounter))
+        return 2;
+    if (addTimeMillis(timeMillis))
+        return 3;
+
     return 0;
 }
 
@@ -190,3 +250,10 @@ int PmmModuleDataLogGroup::addCustomVariable(const char* variableName, uint8_t v
 {
     return includeVariable(variableName, variableType, variableAddress);
 }
+
+
+
+const char** PmmModuleDataLogGroup::getVariableNameArray()    { return (const char**) mVariableNameArray;}
+uint8_t*     PmmModuleDataLogGroup::getVariableTypeArray()    { return mVariableTypeArray;}
+uint8_t*     PmmModuleDataLogGroup::getVariableSizeArray()    { return mVariableSizeArray;}
+uint8_t**    PmmModuleDataLogGroup::getVariableAdrsArray()    { return mVariableAdrsArray;}

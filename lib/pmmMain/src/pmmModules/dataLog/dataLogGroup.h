@@ -40,12 +40,11 @@ class PmmModuleDataLogGroup
 {
 
 public:
-    int  addTransmissionCounter (uint32_t* transmissionCounter);
-    int  addMainLoopCounter     (uint32_t* mainLoopCounter);
-    int  addTimeMillis          (uint32_t* timeMillis);
+    int  addTransmissionCounter (uint32_t* transmissionCounterPtr);
+    int  addMainLoopCounter     (uint32_t* mainLoopCounterPtr);
+    int  addTimeMillis          (uint32_t* timeMillisPtr);
 
-    int  addBasicInfo           (uint32_t* transmissionCounter, uint32_t* mainLoopCounter, uint32_t* timeMillis); // Adds the 
-
+    int  addBasicInfo           (uint32_t* transmissionCounterPtr, uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr); // Adds the three above.
 
     int  addMagnetometer        (void* magnetometerArray  );
     int  addGyroscope           (void* gyroscopeArray     );
@@ -97,7 +96,7 @@ private:
     uint8_t* mVariableAdrsArray[MODULE_DATA_LOG_MAX_VARIABLES]; // Adrs = Address!
 
     uint8_t  mGroupLength;
-
+    
     // These are important strings. The transmitter and the receiver must have in commom. The other variables strings not listed here can be freely changed.
     static constexpr const char* PMM_DATA_LOG_PACKAGE_ID_STRING    PROGMEM = "mainLoopCounter"; // https://forum.arduino.cc/index.php?topic=420956.0
     static constexpr const char* PMM_DATA_LOG_PACKAGE_TIME_STRING  PROGMEM = "mainTime(ms)";
@@ -107,6 +106,7 @@ private:
 
     static constexpr const char* PMM_DATA_LOG_GPS_LATITUDE_STRING  PROGMEM = "gpsLatitude";
     static constexpr const char* PMM_DATA_LOG_GPS_LONGITUDE_STRING PROGMEM = "gpsLongitude";
+
 };
 
 #endif

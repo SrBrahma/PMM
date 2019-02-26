@@ -188,14 +188,14 @@ int PmmSd::close()
 int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, char additionalPath[])
 {
     if (!destination)
-        return 1;
+        return 0;
 
     // Left expression is always evaluated first! https://stackoverflow.com/a/2456415/10247962
     if (!additionalPath || additionalPath[0] == '\0')
-        snprintf(destination, maxLength, "%s", PMM_SD_DIRECTORY_SELF);
+        return snprintf(destination, maxLength, "%s", PMM_SD_DIRECTORY_SELF);
 
     else
-        snprintf(destination, maxLength, "%s/%s", PMM_SD_DIRECTORY_SELF, additionalPath);
+        return snprintf(destination, maxLength, "%s/%s", PMM_SD_DIRECTORY_SELF, additionalPath);
     
     return 0;
 }

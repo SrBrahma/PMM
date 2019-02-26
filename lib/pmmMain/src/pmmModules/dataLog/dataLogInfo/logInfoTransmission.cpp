@@ -9,12 +9,11 @@
 
 int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress, telemetryQueuePriorities priority)
 {
+    if (!lockGroup()) // So we won't be able to change the variables anymore in this LogData Identifier!
+        updateLogInfoCombinedPayload();
 
     if (requestedPacket >= mDataLogInfoPackets)
         return 1;
-
-    if (!lockGroup()) // So we won't be able to change the variables anymore in this LogData Identifier!
-        updateLogInfoCombinedPayload();
 
     if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
         return 2;
@@ -23,7 +22,7 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
 
     packetStruct.payloadLength = 0;
 
-// 1) Adds the DataLogInfo Header to the packet
+    // 1) Adds the DataLogInfo Header to the packet
     // { 1.1) The CRC-16 of the packet is added on the end of the function. }
     // 1.2) Add the Session Identifier
     packetStruct.payload[PORT_LOG_INFO_INDEX_SESSION_ID]     = mSystemSession;
@@ -39,7 +38,7 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
     packetStruct.payloadLength = PORT_LOG_INFO_HEADER_LENGTH;
 
 
-// 2) Adds the DataLogInfo Payload, which was built on updateLogInfoCombinedPayload().
+    // 2) Adds the DataLogInfo Payload, which was built on updateLogInfoCombinedPayload().
     // 2.1) First, get the number of bytes this payload will have, as the last packet may not occupy all the available length.
     // This packet size is the total raw size minus the (current packet * packetPayloadLength).
     // If it is > maximum payload length, it will be equal to the payload length.
@@ -51,13 +50,13 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
     memcpy(packetStruct.payload + packetStruct.payloadLength, mLogInfoContentArray + (requestedPacket * PORT_LOG_INFO_MAX_PAYLOAD_LENGTH), payloadBytesInThisPacket);
     packetStruct.payloadLength += payloadBytesInThisPacket;
 
-// 3) CRC16 of this packet:
+    // 3) CRC16 of this packet:
     uint16_t crc16ThisPacket = crc16(packetStruct.payload + 2, packetStruct.payloadLength - 2); // + 2 and - 2 skips the self CRC bytes.
 
     packetStruct.payload[PORT_LOG_INFO_INDEX_CRC_LSB] = LSB0(crc16ThisPacket); // Little endian!
     packetStruct.payload[PORT_LOG_INFO_INDEX_CRC_MSB] = LSB1(crc16ThisPacket);
 
-// 5) Add the remaining fields and add it to the queue!
+    // 4) Add the remaining fields and add it to the queue!
     packetStruct.protocol           = PMM_NEO_PROTOCOL_ID;
     packetStruct.sourceAddress      = PMM_TLM_ADDRESS_THIS_SYSTEM;
     packetStruct.destinationAddress = destinationAddress;

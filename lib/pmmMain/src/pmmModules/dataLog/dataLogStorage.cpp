@@ -5,16 +5,14 @@
 int PmmModuleDataLog::getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[])
 {
     if (!destination)
-        return 1;
+        return 0;
 
     if (!additionalPath || additionalPath[0] == '\0')
         // %hu or %u? https://stackoverflow.com/a/8702610/10247962
-        snprintf(destination, maxLength, "DataLog ID-%u L-%u", dataLogId, groupLength);
+        return snprintf(destination, maxLength, "DataLog ID-%u L-%u", dataLogId, groupLength);
 
     else
-        snprintf(destination, maxLength, "DataLog ID-%u L-%u/%s", dataLogId, groupLength, additionalPath);
-
-    return 0;
+        return snprintf(destination, maxLength, "DataLog ID-%u L-%u/%s", dataLogId, groupLength, additionalPath);
 }
 
 
@@ -59,6 +57,9 @@ int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLeng
     if (!groupData)
         return 2;
 
+    char tempFilename [PMM_SD_FILENAME_MAX_LENGTH];
+    char tempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
+
     // 1) Check if needs to set/reset the statusStruct
     if (mAllocStatusReceived[sourceAddress].currentBlock == 0 || mAllocStatusReceivedSession[sourceAddress] != sourceSession)
     {
@@ -66,8 +67,8 @@ int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLeng
         mAllocStatusReceivedSession[sourceAddress] = sourceSession;
     }
 
-    getDataLogDirectory(mTempFilename, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength);
-    mPmmSd->getReceivedDirectory(mTempFilename2, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, mTempFilename);
+    getDataLogDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength);
+    mPmmSd->getReceivedDirectory(tempFilename2, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, tempFilename);
 
-    return saveDataLog(groupData, mTempFilename2, &mAllocStatusReceived[sourceAddress]);
+    return saveDataLog(groupData, tempFilename2, &mAllocStatusReceived[sourceAddress]);
 }

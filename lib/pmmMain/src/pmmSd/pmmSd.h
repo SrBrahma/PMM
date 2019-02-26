@@ -67,8 +67,6 @@ private:
 
     PmmSdSafeLog mSafeLog;
     PmmSdSplit   mSplit;
-    
-    char mTempFilename[PMM_SD_FILENAME_MAX_LENGTH];
 
 };
 

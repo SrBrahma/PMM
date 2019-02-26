@@ -38,11 +38,9 @@ public:
 
     int  setSystemMode(pmmSystemState systemMode);
 
-
     // Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
     int  receivedDataLogInfo(receivedPacketAllInfoStructType* packetInfo);
-
 
     // Debug!
     void debugPrintLogHeader ();
@@ -84,8 +82,6 @@ private:
     static constexpr const char* LOG_INFO_FILENAME PROGMEM = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
     static PmmSdAllocStatus mAllocStatusReceived       [PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
     static uint8_t          mAllocStatusReceivedSession[PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
-    static char             mTempFilename [PMM_SD_FILENAME_MAX_LENGTH];
-    static char             mTempFilename2[PMM_SD_FILENAME_MAX_LENGTH];
 
     // Storage self
     PmmSdAllocStatus mAllocStatusSelfDataLog;

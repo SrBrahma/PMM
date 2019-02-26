@@ -13,8 +13,6 @@
 // https://stackoverflow.com/a/9110535/10247962. We can't do the inline option, as the C++ version isn't the 17.
 PmmSdAllocStatus PmmModuleDataLog::mAllocStatusReceived[];
 uint8_t          PmmModuleDataLog::mAllocStatusReceivedSession[];
-char             PmmModuleDataLog::mTempFilename [];
-char             PmmModuleDataLog::mTempFilename2[];
 
 PmmModuleDataLog::PmmModuleDataLog()
 {
@@ -106,38 +104,6 @@ int PmmModuleDataLog::setSystemMode(pmmSystemState systemMode)
 
 
 
-uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
-{
-    switch (variableType)
-    {
-        case MODULE_DATA_LOG_TYPE_UINT8:
-            return 1;
-        case MODULE_DATA_LOG_TYPE_INT8:
-            return 1;
-        case MODULE_DATA_LOG_TYPE_UINT16:
-            return 2;
-        case MODULE_DATA_LOG_TYPE_INT16:
-            return 2;
-        case MODULE_DATA_LOG_TYPE_UINT32:
-            return 4;
-        case MODULE_DATA_LOG_TYPE_INT32:
-            return 4;
-        case MODULE_DATA_LOG_TYPE_FLOAT:
-            return 4;
-        case MODULE_DATA_LOG_TYPE_UINT64:
-            return 8;
-        case MODULE_DATA_LOG_TYPE_INT64:
-            return 8;
-        case MODULE_DATA_LOG_TYPE_DOUBLE:
-            return 8;
-        default:    // Maybe will avoid internal crashes?
-            advPrintf("Invalid variable type to size!\n");
-            return 1;
-    }
-}
-
-
-
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 uint8_t PmmModuleDataLog::getNumberOfVariables()
 {
@@ -146,19 +112,7 @@ uint8_t PmmModuleDataLog::getNumberOfVariables()
 
 
 
-const char** PmmModuleDataLog::getVariableNameArray()    { return (const char**) mVariableNameArray;}
-uint8_t*     PmmModuleDataLog::getVariableTypeArray()    { return mVariableTypeArray;}
-uint8_t*     PmmModuleDataLog::getVariableSizeArray()    { return mVariableSizeArray;}
-uint8_t**    PmmModuleDataLog::getVariableAdrsArray()    { return mVariableAdrsArray;}
-
-
-
-
-
-
-
 // Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
 void PmmModuleDataLog::debugPrintLogHeader()
 {
     char buffer[2048] = {'\0'}; // No static needed, as it is called usually only once.
@@ -229,3 +183,4 @@ void PmmModuleDataLog::debugPrintLogContent()
     } // for loop end
     Serial.println(buffer);
 } // end of function debugPrintLogContent()
+#undef DATA_LOG_DEBUG_BUFFER_LEN

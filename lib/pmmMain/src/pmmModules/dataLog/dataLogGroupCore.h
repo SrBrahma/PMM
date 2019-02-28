@@ -36,7 +36,7 @@
 
 #define MODULE_DATA_LOG_MAX_GROUPS                  3   // Be careful with this size.
 
-class PmmModuleDataLogGroup
+class PmmModuleDataLogGroupCore
 {
 
 public:
@@ -80,7 +80,7 @@ public:
     uint8_t**    getVariableAdrsArray();
 
 private:
-    PmmModuleDataLogGroup();
+    PmmModuleDataLogGroupCore();
 
     int      includeVariable(const char*  variableName,   uint8_t variableType, void* variableAddress);
     int      includeArray   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);

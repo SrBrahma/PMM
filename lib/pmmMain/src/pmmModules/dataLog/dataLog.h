@@ -7,7 +7,7 @@
 
 #include "pmmTelemetry/pmmTelemetry.h"      // For transmitting
 #include "pmmSd/pmmSd.h"                    // For storing
-#include "pmmModules/dataLog/dataLogGroup.h"
+#include "pmmModules/dataLog/dataLogGroupCore.h"
 #include "pmmModules/dataLog/dataLogInfo/logInfo.h" // For specific defines
 
 
@@ -26,7 +26,7 @@
 
 
 
-class PmmModuleDataLog : public PmmModuleDataLogGroup
+class PmmModuleDataLog : public PmmModuleDataLogGroupCore
 {
 
 public:

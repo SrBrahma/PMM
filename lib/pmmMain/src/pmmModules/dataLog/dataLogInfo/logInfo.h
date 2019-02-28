@@ -1,6 +1,7 @@
 #ifndef PMM_MODULE_DATA_LOG_INFO_h
 #define PMM_MODULE_DATA_LOG_INFO_h
 
+#include "pmmModules/dataLog/dataLogGroupCore.h"
 
 
 #define PORT_LOG_INFO_INDEX_CRC_LSB                 0
@@ -41,7 +42,8 @@ class PmmModuleDataLogInfo
         int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
 
     private:
-        PmmModuleDataLogGroup* 
+        PmmModuleDataLogGroupCore* dataLogGroupCore;
+
         // Transmission
         uint8_t  mLogInfoContentArray[MODULE_LOG_INFO_CONTENT_MAX_LENGTH];
         uint16_t mLogInfoContentArrayLength;

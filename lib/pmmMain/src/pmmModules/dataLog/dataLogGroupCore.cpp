@@ -3,14 +3,14 @@
 #include "pmmModules/dataLog/dataLog.h"
 
 
-PmmModuleDataLogGroup::PmmModuleDataLogGroup()
+PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
 {
     mIsGroupLocked      = 0;
     mGroupLength        = 0;
     mNumberVariables    = 0;
 }
 
-uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
+uint8_t PmmModuleDataLogGroupCore::variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
     {
@@ -40,7 +40,7 @@ uint8_t PmmModuleDataLog::variableTypeToVariableSize(uint8_t variableType)
     }
 }
 
-int PmmModuleDataLogGroup::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
+int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
 {
     if (lockGroup())
     {
@@ -74,7 +74,7 @@ int PmmModuleDataLogGroup::includeVariable(const char *variableName, uint8_t var
 
 
 
-int PmmModuleDataLogGroup::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
+int PmmModuleDataLogGroupCore::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
 {
     if (!variableName)
         return 1;
@@ -90,7 +90,7 @@ int PmmModuleDataLogGroup::includeArray(const char **variableName, uint8_t array
 
 
 
-int PmmModuleDataLogGroup::addTransmissionCounter(uint32_t* transmissionCounterPtr)
+int PmmModuleDataLogGroupCore::addTransmissionCounter(uint32_t* transmissionCounterPtr)
 {
     if (!transmissionCounterPtr)
         return 1;
@@ -100,7 +100,7 @@ int PmmModuleDataLogGroup::addTransmissionCounter(uint32_t* transmissionCounterP
     return 0;
 }
 
-int PmmModuleDataLogGroup::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
+int PmmModuleDataLogGroupCore::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
 {
     if (!mainLoopCounterPtr)
         return 1;
@@ -110,7 +110,7 @@ int PmmModuleDataLogGroup::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
     return 0;
 }
 
-int PmmModuleDataLogGroup::addTimeMillis         (uint32_t* timeMillisPtr)
+int PmmModuleDataLogGroupCore::addTimeMillis         (uint32_t* timeMillisPtr)
 {
     if (!timeMillisPtr)
         return 1;
@@ -120,7 +120,7 @@ int PmmModuleDataLogGroup::addTimeMillis         (uint32_t* timeMillisPtr)
     return 0;
 }
 
-int PmmModuleDataLogGroup::addBasicInfo          (uint32_t* transmissionCounter, uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
+int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* transmissionCounter, uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
 {
     if (addTransmissionCounter(transmissionCounter))
         return 1;
@@ -134,48 +134,48 @@ int PmmModuleDataLogGroup::addBasicInfo          (uint32_t* transmissionCounter,
 
 
 
-int PmmModuleDataLogGroup::addAccelerometer(void* array)
+int PmmModuleDataLogGroupCore::addAccelerometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"accelerometerX(g)", "accelerometerY(g)", "accelerometerZ(g)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroup::addGyroscope(void* array)
+int PmmModuleDataLogGroupCore::addGyroscope(void* array)
 {
     const PROGMEM char* arrayString[3] = {"gyroscopeX(degree/s)", "gyroscopeY(degree/s)", "gyroscopeZ(degree/s)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroup::addTemperatureMpu(void* temperatureMpu)
+int PmmModuleDataLogGroupCore::addTemperatureMpu(void* temperatureMpu)
 {
     const PROGMEM char* mpuTemperatureString = "temperatureMpu(C)";
     return includeVariable(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
 }
 
-int PmmModuleDataLogGroup::addMagnetometer(void* array)
+int PmmModuleDataLogGroupCore::addMagnetometer(void* array)
 {
     const PROGMEM char* arrayString[3] = {"magnetometerX(uT)", "magnetometerY(uT)", "magnetometerZ(uT)"};
     return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroup::addBarometer(void* barometer)
+int PmmModuleDataLogGroupCore::addBarometer(void* barometer)
 {
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
     return includeVariable(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
 }
 
 // Without filtering
-int PmmModuleDataLogGroup::addRawAltitudeBarometer(void* rawAltitudePressure)
+int PmmModuleDataLogGroupCore::addRawAltitudeBarometer(void* rawAltitudePressure)
 {
     return includeVariable(PMM_DATA_LOG_RAW_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, rawAltitudePressure);
 }
 
-int PmmModuleDataLogGroup::addAltitudeBarometer(void* altitude)
+int PmmModuleDataLogGroupCore::addAltitudeBarometer(void* altitude)
 {
     return includeVariable(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
 }
 
-int PmmModuleDataLogGroup::addTemperatureBmp(void* barometerTempPtr)
+int PmmModuleDataLogGroupCore::addTemperatureBmp(void* barometerTempPtr)
 {
     const PROGMEM char* barometerTempString = "temperatureBmp(C)";
     return includeVariable(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
@@ -183,7 +183,7 @@ int PmmModuleDataLogGroup::addTemperatureBmp(void* barometerTempPtr)
 
 
 
-int PmmModuleDataLogGroup::addImu(pmmImuStructType *pmmImuStructPtr)
+int PmmModuleDataLogGroupCore::addImu(pmmImuStructType *pmmImuStructPtr)
 {
     int returnVal;
 
@@ -203,7 +203,7 @@ int PmmModuleDataLogGroup::addImu(pmmImuStructType *pmmImuStructPtr)
 
 
 
-int PmmModuleDataLogGroup::addGps(pmmGpsStructType* pmmGpsStruct)
+int PmmModuleDataLogGroupCore::addGps(pmmGpsStructType* pmmGpsStruct)
 {
     int returnVal;
 
@@ -246,14 +246,14 @@ int PmmModuleDataLogGroup::addGps(pmmGpsStructType* pmmGpsStruct)
 
 
 
-int PmmModuleDataLogGroup::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
+int PmmModuleDataLogGroupCore::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress)
 {
     return includeVariable(variableName, variableType, variableAddress);
 }
 
 
 
-const char** PmmModuleDataLogGroup::getVariableNameArray()    { return (const char**) mVariableNameArray;}
-uint8_t*     PmmModuleDataLogGroup::getVariableTypeArray()    { return mVariableTypeArray;}
-uint8_t*     PmmModuleDataLogGroup::getVariableSizeArray()    { return mVariableSizeArray;}
-uint8_t**    PmmModuleDataLogGroup::getVariableAdrsArray()    { return mVariableAdrsArray;}
+const char** PmmModuleDataLogGroupCore::getVariableNameArray()    { return (const char**) mVariableNameArray;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()    { return mVariableTypeArray;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()    { return mVariableSizeArray;}
+uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()    { return mVariableAdrsArray;}

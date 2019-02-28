@@ -10,9 +10,7 @@
 
 #include "pmmModules/dataLog/dataLog.h"
 
-// https://stackoverflow.com/a/9110535/10247962. We can't do the inline option, as the C++ version isn't the 17.
-PmmSdAllocStatus PmmModuleDataLog::mAllocStatusReceived[];
-uint8_t          PmmModuleDataLog::mAllocStatusReceivedSession[];
+
 
 PmmModuleDataLog::PmmModuleDataLog()
 {
@@ -20,7 +18,7 @@ PmmModuleDataLog::PmmModuleDataLog()
 
 
 
-int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr, uint32_t* mainMillisPtr)
+int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* mainMillisPtr, bool createGroup)
 {
 
     mPmmTelemetry       = pmmTelemetry;
@@ -33,6 +31,8 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
     mUpdateDataLogInfoCounter = 0;
 
     mSystemSession      = systemSession;
+
+    if (createGroup)
 
     // These variables are always added to the package.
     addBasicInfo(mainLoopCounterPtr, mainMillisPtr);

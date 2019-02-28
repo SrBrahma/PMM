@@ -5,9 +5,19 @@
 
 PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
 {
-    mIsGroupLocked      = 0;
-    mGroupLength        = 0;
-    mNumberVariables    = 0;
+    reset();
+}
+
+int PmmModuleDataLogGroupCore::reset()
+{
+    mTransmissionCounter = 0;
+    mIsGroupLocked       = 0;
+    mSystemSession       = 0;
+    mDataLogGroupId      = 0;
+    mNumberVariables     = 0;
+    mGroupLength         = 0;
+
+    return 0;
 }
 
 uint8_t PmmModuleDataLogGroupCore::variableTypeToVariableSize(uint8_t variableType)
@@ -42,10 +52,16 @@ uint8_t PmmModuleDataLogGroupCore::variableTypeToVariableSize(uint8_t variableTy
 
 int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
 {
+    if (!variableName)
+        return 1;
+
+    if (!variableAddress)
+        return 2;
+
     if (lockGroup())
     {
         advPrintf("Failed to add the variable \"%s\". DataLog is already locked.\n", variableName)
-        return 1;
+        return 3;
     }
 
     uint8_t varSize = variableTypeToVariableSize(variableType);
@@ -53,13 +69,13 @@ int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t
     if (mNumberVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
         advPrintf("Failed to add the variable \"%s\". Exceeds the maximum number of variables in the DataLog.", variableName)
-        return 2;
+        return 4;
     }
 
     if ((mGroupLength + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
     {
         advPrintf("Failed to add the variable \"%s\". Exceeds the maximum content byte size (tried to be %u, max is %u).", variableName, mGroupLength + varSize, PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
-        return 3;
+        return 5;
     }
 
     mVariableNameArray[mNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
@@ -90,44 +106,28 @@ int PmmModuleDataLogGroupCore::includeArray(const char **variableName, uint8_t a
 
 
 
-int PmmModuleDataLogGroupCore::addTransmissionCounter(uint32_t* transmissionCounterPtr)
+int PmmModuleDataLogGroupCore::addTransmissionCounter()
 {
-    if (!transmissionCounterPtr)
-        return 1;
-
-    includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, transmissionCounterPtr);
-
-    return 0;
+    return includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING, MODULE_DATA_LOG_TYPE_UINT32, mTransmissionCounter);
 }
 
 int PmmModuleDataLogGroupCore::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
 {
-    if (!mainLoopCounterPtr)
-        return 1;
-
-    includeVariable(PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
-
-    return 0;
+    return includeVariable(PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
 }
 
 int PmmModuleDataLogGroupCore::addTimeMillis         (uint32_t* timeMillisPtr)
 {
-    if (!timeMillisPtr)
-        return 1;
-
-    includeVariable(PMM_DATA_LOG_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
-
-    return 0;
+    return includeVariable(PMM_DATA_LOG_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
 }
 
-int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* transmissionCounter, uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
+int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
 {
-    if (addTransmissionCounter(transmissionCounter))
-        return 1;
-    if (addMainLoopCounter(mainLoopCounter))
-        return 2;
-    if (addTimeMillis(timeMillis))
-        return 3;
+    int returnValue;
+
+    if ((returnValue = addTransmissionCounter()))               return returnValue;
+    if ((returnValue = addMainLoopCounter(mainLoopCounter)))    return returnValue;
+    if ((returnValue = addTimeMillis(timeMillis)))              return returnValue;
 
     return 0;
 }

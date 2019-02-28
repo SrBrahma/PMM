@@ -40,11 +40,14 @@ class PmmModuleDataLogGroupCore
 {
 
 public:
-    int  addTransmissionCounter (uint32_t* transmissionCounterPtr);
+    PmmModuleDataLogGroupCore();
+    int  reset();
+
+    int  addTransmissionCounter ();
     int  addMainLoopCounter     (uint32_t* mainLoopCounterPtr);
     int  addTimeMillis          (uint32_t* timeMillisPtr);
 
-    int  addBasicInfo           (uint32_t* transmissionCounterPtr, uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr); // Adds the three above.
+    int  addBasicInfo           (uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr); // Adds the three above.
 
     int  addMagnetometer        (void* magnetometerArray  );
     int  addGyroscope           (void* gyroscopeArray     );
@@ -79,11 +82,13 @@ public:
     uint8_t*     getVariableSizeArray();
     uint8_t**    getVariableAdrsArray();
 
+
 private:
-    PmmModuleDataLogGroupCore();
 
     int      includeVariable(const char*  variableName,   uint8_t variableType, void* variableAddress);
     int      includeArray   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
+
+    uint32_t mTransmissionCounter;
 
     int      mIsGroupLocked;
     uint8_t  mSystemSession;
@@ -98,14 +103,15 @@ private:
     uint8_t  mGroupLength;
     
     // These are important strings. The transmitter and the receiver must have in commom. The other variables strings not listed here can be freely changed.
-    static constexpr const char* PMM_DATA_LOG_PACKAGE_ID_STRING    PROGMEM = "mainLoopCounter"; // https://forum.arduino.cc/index.php?topic=420956.0
-    static constexpr const char* PMM_DATA_LOG_PACKAGE_TIME_STRING  PROGMEM = "mainTime(ms)";
+    static constexpr const char* PMM_DATA_LOG_TRANSMISSION_COUNTER_STIRNG PROGMEM = "transmissionCounter";
+    static constexpr const char* PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING    PROGMEM = "mainLoopCounter"; // https://forum.arduino.cc/index.php?topic=420956.0
+    static constexpr const char* PMM_DATA_LOG_SYSTEM_TIME_MILLIS_STRING   PROGMEM = "systemTime(ms)";
 
-    static constexpr const char* PMM_DATA_LOG_RAW_ALTITUDE_STRING  PROGMEM = "rawAltitudeBarometer(m)";
-    static constexpr const char* PMM_DATA_LOG_ALTITUDE_STRING      PROGMEM = "AltitudeBarometer(m)";
+    static constexpr const char* PMM_DATA_LOG_RAW_ALTITUDE_STRING         PROGMEM = "rawAltitudeBarometer(m)";
+    static constexpr const char* PMM_DATA_LOG_ALTITUDE_STRING             PROGMEM = "AltitudeBarometer(m)";
 
-    static constexpr const char* PMM_DATA_LOG_GPS_LATITUDE_STRING  PROGMEM = "gpsLatitude";
-    static constexpr const char* PMM_DATA_LOG_GPS_LONGITUDE_STRING PROGMEM = "gpsLongitude";
+    static constexpr const char* PMM_DATA_LOG_GPS_LATITUDE_STRING         PROGMEM = "gpsLatitude";
+    static constexpr const char* PMM_DATA_LOG_GPS_LONGITUDE_STRING        PROGMEM = "gpsLongitude";
 
 };
 

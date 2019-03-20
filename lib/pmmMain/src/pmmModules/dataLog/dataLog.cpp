@@ -18,7 +18,8 @@ PmmModuleDataLog::PmmModuleDataLog()
 
 
 
-int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* mainMillisPtr, bool createGroup)
+// For now, there will be only one group.
+int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr)
 {
 
     mPmmTelemetry       = pmmTelemetry;
@@ -32,10 +33,8 @@ int PmmModuleDataLog::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t sys
 
     mSystemSession      = systemSession;
 
-    if (createGroup)
-
     // These variables are always added to the package.
-    addBasicInfo(mainLoopCounterPtr, mainMillisPtr);
+    addBasicInfo(mainLoopCounterPtr);
 
     return 0;
 }
@@ -101,15 +100,6 @@ int PmmModuleDataLog::setSystemMode(pmmSystemState systemMode)
 
     return 0;
 }
-
-
-
-/* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-uint8_t PmmModuleDataLog::getNumberOfVariables()
-{
-    return mNumberVariables;
-}
-
 
 
 // Debug! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

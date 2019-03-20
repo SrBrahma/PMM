@@ -33,13 +33,11 @@ public:
 
     PmmModuleDataLog();
 
-    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* packageId, uint32_t* mainMillisPtr, bool createGroup = true);
+    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr);
     int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
-    int  createGroup(uint8_t* returnGroupId);
     int  setSystemMode(pmmSystemState systemMode);
 
-    int  getGroup(
     // Reception
     int  receivedDataLog(receivedPacketAllInfoStructType* packetInfo);
     int  receivedDataLogInfo(receivedPacketAllInfoStructType* packetInfo);
@@ -65,6 +63,7 @@ private:
     int  saveOwnDataLog     ();
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
 
+
     // Variables
     PmmTelemetry*  mPmmTelemetry;
     PmmSd       *  mPmmSd;
@@ -78,8 +77,7 @@ private:
 
     // Storage reception
     uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
-    
-    static constexpr const char* LOG_INFO_FILENAME PROGMEM = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
+    static constexpr const char* mLOG_INFO_FILENAME PROGMEM = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
 
     PmmSdAllocStatus mAllocStatusReceived       [PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
     uint8_t          mAllocStatusReceivedSession[PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];

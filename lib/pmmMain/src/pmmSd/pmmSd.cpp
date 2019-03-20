@@ -185,7 +185,7 @@ int PmmSd::close()
 
 
 
-int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, char additionalPath[])
+int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, const char additionalPath[])
 {
     if (!destination)
         return 0;
@@ -202,7 +202,7 @@ int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, char addition
 
 
 
-int PmmSd::getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char additionalPath[])
+int PmmSd::getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[])
 {
     if (!destination)
         return 1;

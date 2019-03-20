@@ -47,7 +47,7 @@ public:
     int  addMainLoopCounter     (uint32_t* mainLoopCounterPtr);
     int  addTimeMillis          (uint32_t* timeMillisPtr);
 
-    int  addBasicInfo           (uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr); // Adds the three above.
+    int  addBasicInfo           (uint32_t* mainLoopCounterPtr); // Adds the three above.
 
     int  addMagnetometer        (void* magnetometerArray  );
     int  addGyroscope           (void* gyroscopeArray     );

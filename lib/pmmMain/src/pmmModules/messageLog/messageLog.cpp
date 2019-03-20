@@ -5,32 +5,40 @@
 #include <crc.h>
 #include <byteSelection.h>
 
-int PmmModuleMessageLog::init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
+int PmmModuleMessageLog::init(uint32_t* packageLogIdPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd)
 {
     mPmmTelemetry = pmmTelemetry;
     mPmmSd = pmmSd;
-    mPackageLogIdPtr = packageLogIdPtr;
+    mMainLoopCounterPtr = packageLogIdPtr;
     mPackageLogMillisPtr = packageLogMillisPtr;
     mActualNumberOfStrings = 0;
+
+    mPmmSd->getSelfDirectory(mSelfDirPath, PMM_SD_FILENAME_MAX_LENGTH, mMESSAGE_LOG_FILENAME);
+
     return 0;
 }
 
 // Adds a little message header, ex: [19402ms 92112id] Parachutes Deployed
 int PmmModuleMessageLog::addString(char *string)
 {
-    snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "[%lums %luid] %s", *mPackageLogMillisPtr, *mPackageLogIdPtr, string); // Adds the time and the Package Log Id.
+    char buffer[PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH];
+    snprintf(buffer, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "[%lums %luid] %s", millis(), *mMainLoopCounterPtr, string); // Adds the time and the Package Log Id.
     
+    addRawString(buffer);
+
     return 0;
 }
 
 int PmmModuleMessageLog::addRawString(char *string)    // Won't add the time and the Package Log Id.
 {
-    snprintf(mString, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "%s", string);
+    char buffer[PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH];
+    snprintf(buffer, PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH, "%s", string);
     return 0;
 }
 
 int PmmModuleMessageLog::loadStringFromSd(char stringDestination[], uint16_t requestedStringId)
 {
+    mPmmSd->open(
     return 0;
 }
 
@@ -38,10 +46,6 @@ int PmmModuleMessageLog::loadStringFromSd(char stringDestination[], uint16_t req
 uint8_t PmmModuleMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId)
 {
     // Port format is in pmmPortString.h
-
-    uint16_t crc16Var;
-    uint8_t stringLengthWithNullChar; // With \0!
-    uint8_t packetLength;
 
     // If the requested ID is invalid.
     if (requestedStringId >= mActualNumberOfStrings)
@@ -54,7 +58,7 @@ uint8_t PmmModuleMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, u
     arrayToCopy[PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1] = mActualNumberOfStrings - 1;
 
     // 2) Now adds the payload, the null-terminated string!
-    stringLengthWithNullChar = strlen(mString) + 1;
+    uint8_t stringLengthWithNullChar = strlen(mString) + 1;
 
     // 3) Copies the requested string to the buffer
     memcpy(arrayToCopy + PORT_STRING_HEADER_LENGTH, mString, stringLengthWithNullChar);
@@ -63,8 +67,8 @@ uint8_t PmmModuleMessageLog::getPackageInTelemetryFormat(uint8_t* arrayToCopy, u
 
     // 4) Lastly, add the CRC of this packet! We want to be certain (actually, it doesn't give us 100% of error detection! Something like
     //   1/65536 certainty, assuming random errors. If it happens, is it God giving us a message? We will probably never know!!)
-    packetLength = PORT_STRING_HEADER_LENGTH + stringLengthWithNullChar;
-    crc16Var = crc16(arrayToCopy + PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1, packetLength - 2); // Remember to change this sum if you changed the Port Header!
+    uint8_t  packetLength = PORT_STRING_HEADER_LENGTH + stringLengthWithNullChar;
+    uint16_t crc16Var = crc16(arrayToCopy + PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1, packetLength - 2); // Remember to change this sum if you changed the Port Header!
     // Explaining:
     // arrayToCopy + PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET + 1
     //      The address is the next to the MSB CRC, so we sum (+) 1!

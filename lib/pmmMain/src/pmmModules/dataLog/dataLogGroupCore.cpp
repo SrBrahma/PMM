@@ -252,6 +252,11 @@ int PmmModuleDataLogGroupCore::addCustomVariable(const char* variableName, uint8
 }
 
 
+/* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+uint8_t PmmModuleDataLog::getNumberOfVariables()
+{
+    return mNumberVariables;
+}
 
 const char** PmmModuleDataLogGroupCore::getVariableNameArray()    { return (const char**) mVariableNameArray;}
 uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()    { return mVariableTypeArray;}

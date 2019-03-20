@@ -22,7 +22,7 @@ class PmmModuleMessageLog
 {
 
 public:
-    int init(uint32_t* packageLogIdPtr, uint32_t* packageLogMillisPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd);
+    int init(uint32_t* mainLoopCounterPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd);
     int addString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
     int addRawString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
 
@@ -34,14 +34,16 @@ public:
     int loadStringFromSd(char stringDestination[], uint16_t requestedStringId);
 
 private:
-    uint32_t* mPackageLogIdPtr;
-    uint32_t* mPackageLogMillisPtr; // To share the same millis as the Package Log
     PmmTelemetry* mPmmTelemetry;
-    PmmSd* mPmmSd;
-    char mString[PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH];
-    uint8_t mActualNumberOfStrings;
+    PmmSd*        mPmmSd;
 
+    char      mSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
+    uint32_t* mMainLoopCounterPtr;
+
+    uint8_t   mActualNumberOfStrings;
+
+    static constexpr const char* mMESSAGE_LOG_FILENAME PROGMEM = "MessageLog.txt";
 };
 
 #endif

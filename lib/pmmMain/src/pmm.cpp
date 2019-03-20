@@ -41,7 +41,6 @@ Pmm::Pmm() {}
 
 int Pmm::init(bool skipDebugDelay)
 {
-    mMillis = 0;
     mMainLoopCounter = 0;
 
     mSessionId = 0x0; // Later, use the EEPROM.
@@ -88,7 +87,7 @@ int Pmm::init(bool skipDebugDelay)
 
 
     // PmmModuleDataLog
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter);
 
         #if PMM_USE_GPS
             mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
@@ -99,7 +98,7 @@ int Pmm::init(bool skipDebugDelay)
         #endif
 
     // PmmModuleMessageLog
-    mPmmModuleMessageLog.init(&mMainLoopCounter, &mMillis, &mPmmTelemetry, &mPmmSd);
+    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd);
 
     // PmmPortsReception
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);
@@ -145,8 +144,6 @@ int Pmm::init(bool skipDebugDelay)
 // Where EVERYTHING happens!
 void Pmm::update()
 {
-
-    mMillis = millis();
 
     #if PMM_USE_IMU
         mPmmImu.update();

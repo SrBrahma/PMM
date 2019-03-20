@@ -11,7 +11,7 @@ int PmmModuleDataLog::saveOwnDataLogInfo()
         return 1;
 
     char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
-    snprintf(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s", mDataLogSelfDirPath, LOG_INFO_FILENAME);
+    snprintf(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s", mDataLogSelfDirPath, mLOG_INFO_FILENAME);
 
     if (!mPmmSd->exists(tempFilename))
     {
@@ -35,7 +35,7 @@ int PmmModuleDataLog::saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLengt
     char path[PMM_SD_FILENAME_MAX_LENGTH];
     char pathTemp[PMM_SD_FILENAME_MAX_LENGTH];
 
-    getDataLogDirectory(pathTemp, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength, LOG_INFO_FILENAME);
+    getDataLogDirectory(pathTemp, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength, mLOG_INFO_FILENAME);
     mPmmSd->getReceivedDirectory(path, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, pathTemp);
 
     if (!mPmmSd->exists(path)) // If the final file doesn't exists, try to save this part! However, in savePart it will check if we already own this part!

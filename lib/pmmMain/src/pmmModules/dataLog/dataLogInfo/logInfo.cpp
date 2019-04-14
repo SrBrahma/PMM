@@ -1,7 +1,8 @@
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/dataLog/dataLogInfo/logInfo.h"
+#include "pmmModules/dataLog/dataLogGroupCore.h"
 
-void PmmModuleDataLog::updateLogInfoCombinedPayload()
+void PmmModuleDataLogGroupCore::buildLogInfoArray()
 {
     unsigned variableCounter;
     unsigned stringLength;              // The length withou null char!
@@ -45,7 +46,7 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     // 5) Get the path to this DataLog
     char tempFilename[PMM_SD_FILENAME_MAX_LENGTH];
     getDataLogDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, mDataLogGroupId, mGroupLength);
-    mPmmSd->getSelfDirectory(mDataLogSelfDirPath, PMM_SD_FILENAME_MAX_LENGTH, tempFilename);
+    mPmmSdPtr->getSelfDirectory(mDataLogSelfDirPath, PMM_SD_FILENAME_MAX_LENGTH, tempFilename);
 
     // 6) Save the DataLogInfo.
     saveOwnDataLogInfo();
@@ -54,5 +55,5 @@ void PmmModuleDataLog::updateLogInfoCombinedPayload()
     mAllocStatusSelfDataLog.groupLength = mGroupLength;
 
     // 8) Finally, lock this DataLog!
-    lockGroup() = 1;
+    mIsGroupLocked = 1;
 }

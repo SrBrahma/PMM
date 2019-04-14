@@ -41,8 +41,8 @@ int PmmSdSafeLog::write(uint8_t data[], char dirFullRelativePath[], PmmSdAllocSt
     // Edit: Actually, now I think it was a very nice decision.
     #define remainingBytesInThisBlock_macro (PMM_SD_BLOCK_SIZE - allocStatus->currentPositionInBlock)
 
-    if (!data)                { advPrintf("No data given"); return 1; }
-    if (!dirFullRelativePath) { advPrintf("No directory given"); return 2; }
+    if (!data)                { advPrintf("No data given");        return 1; }
+    if (!dirFullRelativePath) { advPrintf("No directory given");   return 2; }
     if (!allocStatus)         { advPrintf("No allocStatus given"); return 3; }
 
     unsigned dataBytesRemaining = allocStatus->groupLength;

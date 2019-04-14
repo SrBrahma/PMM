@@ -24,7 +24,7 @@ PmmSdFastLog::PmmSdFastLog(PmmSd *pmmSd, uint16_t dataLength, char dirFullRelati
 
 
     // 2) Get the arguments
-    mPmmSd = pmmSd;
+    mPmmSdPtr = pmmSd;
     mDataLength              = dataLength;
     mBlocksAllocationPerPart = blocksAllocationPerPart;
     mBufferSizeInBlocks      = bufferSizeInBlocks;

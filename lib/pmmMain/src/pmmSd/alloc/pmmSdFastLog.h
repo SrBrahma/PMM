@@ -56,7 +56,7 @@ private:
 
     uint16_t    mDataLength;
 
-    PmmSd*      mPmmSd;
+    PmmSd*      mPmmSdPtr;
     File        mFile;
 };
 

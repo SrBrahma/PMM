@@ -15,7 +15,7 @@ void PmmModuleMessageLog::receivedPackageString(receivedPacketAllInfoStructType*
 
     // 1) First check is the packet is valid
     // 1.a) If the packet size is smaller than the package header length, it's invalid
-    if (packetInfo->payloadLength < PORT_STRING_HEADER_LENGTH)
+    if (packetInfo->payloadLength < PORT_MESSAGE_LOG_HEADER_LENGTH)
         return;
 
     // 1.b) Now test the CRC, to see if the packet content is valid

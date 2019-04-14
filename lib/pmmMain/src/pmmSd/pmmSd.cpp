@@ -17,7 +17,7 @@ PmmSd::PmmSd()
 {
 }
 
-int PmmSd::init()
+int  PmmSd::init()
 {
     // 1) Initialize the SD
     if (!mSdFat.begin())
@@ -38,7 +38,7 @@ int PmmSd::init()
     }
 }
 
-int PmmSd::init(uint8_t sessionId)
+int  PmmSd::init(uint8_t sessionId)
 {
     int returnValue;
 
@@ -62,7 +62,7 @@ int PmmSd::init(uint8_t sessionId)
 
 
 // Will rename, if exists, a previous Session with the same name, if this is the first time running this function in this Session.
-int PmmSd::setPmmCurrentDirectory()
+int  PmmSd::setPmmCurrentDirectory()
 {
 
     // 1) Make sure we are at root dir
@@ -107,7 +107,7 @@ int PmmSd::setPmmCurrentDirectory()
     return 0;
 }
 
-int PmmSd::setCurrentDirectory(char fullPath[])
+int  PmmSd::setCurrentDirectory(char fullPath[])
 {
     if (!fullPath)  // Null address
         return 1;
@@ -118,7 +118,7 @@ int PmmSd::setCurrentDirectory(char fullPath[])
     return 0;
 }
 
-int PmmSd::removeDirRecursively(char relativePath[])
+int  PmmSd::removeDirRecursively(char relativePath[])
 {
     // open the dir
     if (mSdFat.exists(relativePath))
@@ -146,16 +146,16 @@ bool PmmSd::exists(char path[])
 }
 
 // The default open, but this will also automatically create the path.
-int PmmSd::createDirsAndOpen(char path[], uint8_t mode)
+int  PmmSd::createDirsAndOpen(const char path[], oflag_t mode)
 {
     return ::createDirsAndOpen(&mSdFat, &mFile, path, mode); // https://stackoverflow.com/a/1061630/10247962
 }
 
-int PmmSd::open(char path[], uint8_t mode)
+int  PmmSd::open(const char path[], oflag_t mode)
 {
     return mFile.open(path, mode);
 }
-int PmmSd::seek(uint32_t position)
+int  PmmSd::seek(uint32_t position)
 {
     return mFile.seek(position);
 }
@@ -163,29 +163,37 @@ uint32_t PmmSd::size()
 {
     return mFile.size();
 }
-int PmmSd::read(uint8_t buffer[], size_t numberBytes)
+int  PmmSd::read(uint8_t buffer[], size_t numberBytes)
 {
     if (!buffer)
         return 1;
 
     return mFile.read(buffer, numberBytes);
 }
-int PmmSd::write(uint8_t byte)
+int  PmmSd::fgets(char buffer[], int16_t maxLength, char delimiter[])
+{
+    return mFile.fgets(buffer, maxLength, delimiter);
+}
+int  PmmSd::write(uint8_t byte)
 {
     return mFile.write(byte);
 }
-int PmmSd::write(uint8_t arrayToWrite[], size_t length)
+int  PmmSd::write(uint8_t arrayToWrite[], size_t length)
 {
     return mFile.write(arrayToWrite, length);
 }
-int PmmSd::close()
+int  PmmSd::println(char buffer[])
+{
+    return mFile.println(buffer);
+}
+int  PmmSd::close()
 {
     return mFile.close();
 }
 
 
 
-int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, const char additionalPath[])
+int  PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, const char additionalPath[])
 {
     if (!destination)
         return 0;
@@ -202,7 +210,7 @@ int PmmSd::getSelfDirectory(char destination[], uint8_t maxLength, const char ad
 
 
 
-int PmmSd::getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[])
+int  PmmSd::getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[])
 {
     if (!destination)
         return 1;

@@ -9,7 +9,7 @@
 #include "pmmSd/pmmSdConsts.h"
 #include "pmmSd/pmmSdGeneralFunctions.h"
 
-int createDirsAndOpen(SdFatSdio* sdFat, File* file, char path[], uint8_t mode)
+int createDirsAndOpen(SdFatSdio* sdFat, File* file, const char path[], oflag_t mode)
 {
     if (!sdFat) return 1;
     if (!file)  return 2;

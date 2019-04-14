@@ -11,39 +11,52 @@
 #define PORT_MESSAGE_LOG_INDEX_STRING_X         2
 #define PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1     3
 // Total header length is equal to...
-#define PORT_STRING_HEADER_LENGTH               4
+#define PORT_MESSAGE_LOG_HEADER_LENGTH          4
 
-#define PMM_PACKAGE_MESSAGE_LOG_MAX_STRING_LENGTH (PMM_TLM_MAX_PAYLOAD_LENGTH - PORT_STRING_HEADER_LENGTH)
+#define MESSAGE_LOG_MAX_STRING_LENGTH_TELEMETRY (PMM_TLM_MAX_PAYLOAD_LENGTH - PORT_MESSAGE_LOG_HEADER_LENGTH)
 
+#define MESSAGE_LOG_NEWLINE                     "\r\n"
+#define MESSAGE_LOG_MAX_STRING_LENGTH_STORAGE   MESSAGE_LOG_MAX_STRING_LENGTH_TELEMETRY + 2 // (+2 are the 2 chars from /r/n. If you change it to linux style, also do change here.
 
+#define MESSAGE_LOG_FILENAME                    "MessageLog.txt"
+#define MESSAGE_LOG_FILENAME_BACKUP             "MessageLogBackup.txt"
 
 
 class PmmModuleMessageLog
 {
 
 public:
-    int init(uint32_t* mainLoopCounterPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd);
-    int addString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
-    int addRawString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
+
+    int  init(uint32_t* mainLoopCounterPtr, PmmTelemetry* pmmTelemetry, PmmSd* pmmSd);
+    int  addString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
+    int  addRawString(char *string); // For now, all added strings will be saved on SD and sent by telemetry.
 
     void receivedPackageString(receivedPacketAllInfoStructType* packetInfo);
 
-    uint8_t getActualNumberOfStrings();
-    uint8_t getPackageInTelemetryFormat(uint8_t* arrayToCopy, uint8_t requestedStringId);
+    int  sendString(uint8_t* arrayToCopy, uint8_t requestedStringId);
 
-    int loadStringFromSd(char stringDestination[], uint16_t requestedStringId);
+    int  loadSelfString(char stringDestination[], uint16_t requestedStringId);
+    int  loadReceivedString(uint8_t sourceAddress, uint8_t sourceSession, char stringDestination[], uint16_t requestedStringId);
+
+    int  saveSelfString(char string[]);
+    int  saveReceivedString(uint8_t sourceAddress, uint8_t sourceSession, char string[]);
+
+    uint8_t getActualNumberOfStrings();
+
+
 
 private:
-    PmmTelemetry* mPmmTelemetry;
-    PmmSd*        mPmmSd;
+    PmmTelemetry* mPmmTelemetryPtr;
+    PmmSd*        mPmmSdPtr;
 
     char      mSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
     uint32_t* mMainLoopCounterPtr;
 
+    uint8_t   mStringTransmissionCounter; // Allows buffering of the transmission.
     uint8_t   mActualNumberOfStrings;
 
-    static constexpr const char* mMESSAGE_LOG_FILENAME PROGMEM = "MessageLog.txt";
+
 };
 
 #endif

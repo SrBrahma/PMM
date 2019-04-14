@@ -46,7 +46,7 @@ private:
     int setSystemMode(pmmSystemState systemMode);
 
     uint8_t  mSessionId;
-    uint32_t mMainLoopCounter;
+    uint32_t mMainLoopCounter, mMillis;
     
     pmmSystemState mSystemState;
 

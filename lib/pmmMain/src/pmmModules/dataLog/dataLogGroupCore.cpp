@@ -8,19 +8,31 @@ PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
     reset();
 }
 
-int PmmModuleDataLogGroupCore::reset()
+int PmmModuleDataLogGroupCore::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, PmmSdSafeLog* pmmSdSafeLog, uint8_t systemSession, uint8_t dataLogGroupId)
 {
-    mTransmissionCounter = 0;
-    mIsGroupLocked       = 0;
-    mSystemSession       = 0;
-    mDataLogGroupId      = 0;
-    mNumberVariables     = 0;
-    mGroupLength         = 0;
+    mPmmTelemetryPtr   = pmmTelemetry;
+    mPmmSdPtr          = pmmSd;
+    mPmmSdSafeLogPtr   = pmmSdSafeLog;
+
+    mDataLogGroupId = dataLogGroupId;
+    mSystemSession  = systemSession;
 
     return 0;
 }
 
-uint8_t PmmModuleDataLogGroupCore::variableTypeToVariableSize(uint8_t variableType)
+int PmmModuleDataLogGroupCore::reset()
+{
+    mTransmissionCounter = 0;
+    mIsGroupLocked       = 0;
+    mDataLogGroupId      = 0;
+    mNumberVariables     = 0;
+    mGroupLength         = 0;
+
+    mDataLogInfoPackets = 0;
+    return 0;
+}
+
+uint8_t variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
     {
@@ -58,7 +70,7 @@ int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t
     if (!variableAddress)
         return 2;
 
-    if (lockGroup())
+    if (mIsGroupLocked)
     {
         advPrintf("Failed to add the variable \"%s\". DataLog is already locked.\n", variableName)
         return 3;
@@ -108,7 +120,7 @@ int PmmModuleDataLogGroupCore::includeArray(const char **variableName, uint8_t a
 
 int PmmModuleDataLogGroupCore::addTransmissionCounter()
 {
-    return includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING, MODULE_DATA_LOG_TYPE_UINT32, mTransmissionCounter);
+    return includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING, MODULE_DATA_LOG_TYPE_UINT32, &mTransmissionCounter);
 }
 
 int PmmModuleDataLogGroupCore::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
@@ -118,7 +130,7 @@ int PmmModuleDataLogGroupCore::addMainLoopCounter    (uint32_t* mainLoopCounterP
 
 int PmmModuleDataLogGroupCore::addTimeMillis         (uint32_t* timeMillisPtr)
 {
-    return includeVariable(PMM_DATA_LOG_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
+    return includeVariable(PMM_DATA_LOG_SYSTEM_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
 }
 
 int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
@@ -253,12 +265,15 @@ int PmmModuleDataLogGroupCore::addCustomVariable(const char* variableName, uint8
 
 
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-uint8_t PmmModuleDataLog::getNumberOfVariables()
+uint8_t PmmModuleDataLogGroupCore::getNumberOfVariables()
 {
     return mNumberVariables;
 }
 
-const char** PmmModuleDataLogGroupCore::getVariableNameArray()    { return (const char**) mVariableNameArray;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()    { return mVariableTypeArray;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()    { return mVariableSizeArray;}
-uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()    { return mVariableAdrsArray;}
+const char** PmmModuleDataLogGroupCore::getVariableNameArray()      { return (const char**) mVariableNameArray  ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()      { return mVariableTypeArray                 ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()      { return mVariableSizeArray                 ;}
+uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()      { return mVariableAdrsArray                 ;}
+
+
+uint8_t      PmmModuleDataLogGroupCore::getDataLogInfoPackets()     { return mDataLogInfoPackets                ;}

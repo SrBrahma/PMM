@@ -1,5 +1,6 @@
 /* dataLog.h
- *
+ * This class handles the received the dataLog and dataLogInfo packets, and the groupCores.
+ * 
  * By Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
 
 #ifndef PMM_MODULE_DATA_LOG_h
@@ -11,7 +12,6 @@
 #include "pmmModules/dataLog/dataLogInfo/logInfo.h" // For specific defines
 
 
-// DataLog Defines
 #define PORT_DATA_LOG_INDEX_CRC_8_HEADER            0
 #define PORT_DATA_LOG_INDEX_SESSION_ID              1
 #define PORT_DATA_LOG_INDEX_DATA_LOG_ID             2
@@ -26,14 +26,14 @@
 
 
 
-class PmmModuleDataLog : public PmmModuleDataLogGroupCore
+class PmmModuleDataLog
 {
 
 public:
 
     PmmModuleDataLog();
 
-    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr);
+    int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession, uint8_t dataLogInfoId, uint32_t* mainLoopCounterPtr, uint32_t* timeMillisPtr);
     int  update();   // Will automatically sendDataLog, sendDataLogInfo and store on the memories.
 
     int  setSystemMode(pmmSystemState systemMode);
@@ -46,47 +46,34 @@ public:
     void debugPrintLogHeader ();
     void debugPrintLogContent();
 
+    PmmModuleDataLogGroupCore* getDataLogGroupCore(uint8_t dataLogGroupId = 0); // The argument for now is useless. You can imagine what it's for.
 
 private:
 
-    // Transmission
-    int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_LOW);
-    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
-
-    // Build the LogInfo
-    void updateLogInfoCombinedPayload(); // Updates the DataLogInfo
-
-    // Storage
-    int  getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[] = NULL);
-    
-    int  saveDataLog        (uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus);
-    int  saveOwnDataLog     ();
     int  saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession);
+    int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
 
 
-    // Variables
-    PmmTelemetry*  mPmmTelemetry;
-    PmmSd       *  mPmmSd;
-    PmmSdSafeLog*  mPmmSdSafeLog;
+    PmmTelemetry*  mPmmTelemetryPtr;
+    PmmSd       *  mPmmSdPtr;
+    PmmSdSafeLog*  mPmmSdSafeLogPtr;
 
     pmmSystemState mSystemMode;
+
+    PmmModuleDataLogGroupCore mDataLogGroupCore;
+
+
+    uint8_t  mSystemSession;
 
     // Update
     uint8_t  mUpdateModeReadyCounter, mUpdateModeDeployedCounter;
     uint8_t  mUpdateDataLogInfoCounter;
 
-    // Storage reception
-    uint8_t  mGroupTempData[PORT_DATA_LOG_MAX_PAYLOAD_LENGTH];  // Used in the saveOwnDataLog(). This, however, isn't used in the temeletry.
-    static constexpr const char* mLOG_INFO_FILENAME PROGMEM = "DataLogInfo"; // https://stackoverflow.com/a/25323360/10247962
-
     PmmSdAllocStatus mAllocStatusReceived       [PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
     uint8_t          mAllocStatusReceivedSession[PMM_TLM_ADDRESSES_FINAL_ALLOWED_SOURCE];
 
-    // Storage self
-    PmmSdAllocStatus mAllocStatusSelfDataLog;
 
-    char   mDataLogSelfDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
-}; // End of the class
+};
 
 #endif

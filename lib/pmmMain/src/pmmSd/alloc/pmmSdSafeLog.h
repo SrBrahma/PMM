@@ -21,9 +21,7 @@
 // The maximum buffer length is defined by PMM_SD_MAXIMUM_BUFFER_LENTH_KIB! If the given value is greater than this, will be replaced by this maximum!
 // As the blocksAllocationPerPart is an uint16_t, the maximum file part size is 32MiB. As making bigger file parts doesn't seem too reasonable for the system specifications, will leave this way.
 class PmmSdSafeLog : public PmmSdAllocation
-
 {
-
 public:
 
     PmmSdSafeLog(SdFatSdio* sdFat);

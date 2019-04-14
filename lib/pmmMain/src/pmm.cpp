@@ -41,7 +41,7 @@ Pmm::Pmm() {}
 
 int Pmm::init(bool skipDebugDelay)
 {
-    mMainLoopCounter = 0;
+    mMainLoopCounter = 0; mMillis = millis();
 
     mSessionId = 0x0; // Later, use the EEPROM.
     // Debug
@@ -87,14 +87,14 @@ int Pmm::init(bool skipDebugDelay)
 
 
     // PmmModuleDataLog
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter);
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
 
         #if PMM_USE_GPS
-            mPmmModuleDataLog.addGps(mPmmGps.getGpsStructPtr());
+            mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
         #endif
         
         #if PMM_USE_IMU
-            mPmmModuleDataLog.addImu(mPmmImu.getImuStructPtr());
+            mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
         #endif
 
     // PmmModuleMessageLog
@@ -133,6 +133,8 @@ int Pmm::init(bool skipDebugDelay)
     #endif
 
     setSystemMode(MODE_DEPLOYED);
+
+    mMillis = millis(); // Again!
 
     PMM_DEBUG_PRINTLN("Main loop started!");
     return 0;
@@ -181,7 +183,7 @@ void Pmm::update()
     }*/
 
 
-    mMainLoopCounter++;
+    mMainLoopCounter++; mMillis = millis();
     PMM_DEBUG_PRINTLN("");
     PMM_DEBUG_PRINTLN("");
     delay(500);

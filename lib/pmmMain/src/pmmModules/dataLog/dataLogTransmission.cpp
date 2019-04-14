@@ -1,10 +1,11 @@
 #include "crc.h"
 #include "byteSelection.h"
 
+#include "pmmModules/dataLog/dataLogGroupCore.h"
 #include "pmmModules/dataLog/dataLog.h"
 #include "pmmModules/ports.h"           // For 
 
-int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePriorities priority)
+int PmmModuleDataLogGroupCore::sendDataLog(uint8_t destinationAddress, telemetryQueuePriorities priority)
 {
     // --------------- DataLog Header 1.0 ---------------
     // [Positions] : [Function] : [ Length in Bytes ]
@@ -17,10 +18,10 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
     //                    Total header length = 5 bytes.
     // --------------------------------------------------
 
-    if (!lockGroup())
-        updateLogInfoCombinedPayload();
+    if (!mIsGroupLocked)
+        buildLogInfoArray();
 
-    if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
+    if (!mPmmTelemetryPtr->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
         return 1;
 
     toBeSentPacketStructType packetStruct;
@@ -56,8 +57,10 @@ int PmmModuleDataLog::sendDataLog(uint8_t destinationAddress, telemetryQueuePrio
     packetStruct.destinationAddress = destinationAddress;
     packetStruct.port               = PORT_DATA_LOG_ID;
 
-    if (mPmmTelemetry->addPacketToQueue(&packetStruct, priority))
+    if (mPmmTelemetryPtr->addPacketToQueue(&packetStruct, priority))
         return 2;
+
+    mTransmissionCounter++;
 
     return 0;
 }

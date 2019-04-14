@@ -1,8 +1,9 @@
+#include "pmmModules/dataLog/dataLogGroupCore.h"
 #include "pmmModules/dataLog/dataLog.h"
 
 
 
-int PmmModuleDataLog::getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[])
+int getDataLogDirectory(char destination[], uint8_t maxLength, uint8_t dataLogId, uint8_t groupLength, const char additionalPath[])
 {
     if (!destination)
         return 0;
@@ -15,43 +16,42 @@ int PmmModuleDataLog::getDataLogDirectory(char destination[], uint8_t maxLength,
         return snprintf(destination, maxLength, "DataLog ID-%u L-%u/%s", dataLogId, groupLength, additionalPath);
 }
 
-
-
-int PmmModuleDataLog::saveDataLog(uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus)
+int saveDataLog(PmmSdSafeLog* pmmSdSafeLog, uint8_t groupData[], char dirRelativePath[], PmmSdAllocStatus* allocStatus)
 {
     uint32_t millisTime = millis();
-    int returnVal = mPmmSdSafeLog->write(groupData, dirRelativePath, allocStatus);
+    int returnVal = pmmSdSafeLog->write(groupData, dirRelativePath, allocStatus);
     advPrintf("Time taken to save was %f seconds.\n", (millis() - millisTime) / 1000.0);
     return returnVal;
 }
 
 
 
-int PmmModuleDataLog::saveOwnDataLog()
+int PmmModuleDataLogGroupCore::saveOwnDataLog()
 {
-    if (!mPmmSd->getSdIsWorking())
+    if (!mPmmSdPtr->getSdIsWorking())
         return 1;
 
-    if (!lockGroup())
-        updateLogInfoCombinedPayload();
+    if (!mIsGroupLocked)
+        buildLogInfoArray();
 
-    // Build the entire group in a single array
+    uint8_t tempGroupDataArray[512];
     unsigned currentLength = 0;
 
+    // Build the entire group in a single array
     for (unsigned actualVar = 0; actualVar < mNumberVariables; actualVar++)
     {
-        memcpy(mGroupTempData + currentLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
+        memcpy(tempGroupDataArray + currentLength, mVariableAdrsArray[actualVar], mVariableSizeArray[actualVar]);
         currentLength += mVariableSizeArray[actualVar];
     }
 
-    return saveDataLog(mGroupTempData, mDataLogSelfDirPath, &mAllocStatusSelfDataLog);
+    return saveDataLog(mPmmSdSafeLogPtr, tempGroupDataArray, mDataLogSelfDirPath, &mAllocStatusSelfDataLog);
 }
 
 
 
 int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLength, uint8_t dataLogId, uint8_t sourceAddress, uint8_t sourceSession)
 {
-    if (!mPmmSd->getSdIsWorking())
+    if (!mPmmSdPtr->getSdIsWorking())
         return 1;
     
     if (!groupData)
@@ -68,7 +68,7 @@ int PmmModuleDataLog::saveReceivedDataLog(uint8_t groupData[], uint8_t groupLeng
     }
 
     getDataLogDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, dataLogId, groupLength);
-    mPmmSd->getReceivedDirectory(tempFilename2, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, tempFilename);
+    mPmmSdPtr->getReceivedDirectory(tempFilename2, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, tempFilename);
 
-    return saveDataLog(groupData, tempFilename2, &mAllocStatusReceived[sourceAddress]);
+    return saveDataLog(mPmmSdSafeLogPtr, groupData, tempFilename2, &mAllocStatusReceived[sourceAddress]);
 }

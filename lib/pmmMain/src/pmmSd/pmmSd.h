@@ -30,19 +30,21 @@ public:
     int removeDirRecursively(char relativePath[]);
 
 
-    int getSelfDirectory    (char destination[], uint8_t maxLength, char additionalPath[] = NULL);
-    int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, char additionalPath[] = NULL);
+    int getSelfDirectory    (char destination[], uint8_t maxLength, const char additionalPath[] = NULL);
+    int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[] = NULL);
 
     bool     exists(char filename[]);
 
-    int      createDirsAndOpen(char path[], uint8_t mode = O_RDWR | O_CREAT);
-    int      open (char filename[], uint8_t mode = O_READ);
+    int      createDirsAndOpen(const char path[], oflag_t mode = O_RDWR | O_CREAT);
+    int      open (const char filename[], oflag_t mode = O_READ);
     int      seek (uint32_t position);
     int      read (uint8_t buffer[], size_t numberBytes);
+    int      fgets(char buffer[], int16_t maxLength, char delimiter[] = 0);
     int      write(uint8_t byte);
     int      write(uint8_t arrayToWrite[], size_t length);
+    int      println(char buffer[]);
     int      close();
-    uint32_t size();
+    uint32_t size ();
 
     unsigned      getSdIsWorking();
     bool          getSdIsBusy();

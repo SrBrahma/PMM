@@ -7,15 +7,15 @@
 
 
 
-int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress, telemetryQueuePriorities priority)
+int PmmModuleDataLogGroupCore::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress, telemetryQueuePriorities priority)
 {
-    if (!lockGroup()) // So we won't be able to change the variables anymore in this LogData Identifier!
-        updateLogInfoCombinedPayload();
+    if (!mIsGroupLocked) // So we won't be able to change the variables anymore in this LogData Identifier!
+        buildLogInfoArray();
 
     if (requestedPacket >= mDataLogInfoPackets)
         return 1;
 
-    if (!mPmmTelemetry->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
+    if (!mPmmTelemetryPtr->availablePositionsInQueue(priority)) // Avoids building the packet uselessly
         return 2;
 
     toBeSentPacketStructType packetStruct;
@@ -38,7 +38,7 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
     packetStruct.payloadLength = PORT_LOG_INFO_HEADER_LENGTH;
 
 
-    // 2) Adds the DataLogInfo Payload, which was built on updateLogInfoCombinedPayload().
+    // 2) Adds the DataLogInfo Payload, which was built on buildLogInfoArray().
     // 2.1) First, get the number of bytes this payload will have, as the last packet may not occupy all the available length.
     // This packet size is the total raw size minus the (current packet * packetPayloadLength).
     // If it is > maximum payload length, it will be equal to the payload length.
@@ -61,7 +61,7 @@ int PmmModuleDataLog::sendDataLogInfo(uint8_t requestedPacket, uint8_t destinati
     packetStruct.sourceAddress      = PMM_TLM_ADDRESS_THIS_SYSTEM;
     packetStruct.destinationAddress = destinationAddress;
     packetStruct.port               = PORT_DATA_LOG_INFO_ID;
-    mPmmTelemetry->addPacketToQueue(&packetStruct, priority);
+    mPmmTelemetryPtr->addPacketToQueue(&packetStruct, priority);
 
     return 0;
 }

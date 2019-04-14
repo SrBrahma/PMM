@@ -33,24 +33,7 @@
                                                     // Ceiling without ceil(). https://stackoverflow.com/a/2745086
 
 
-
-class PmmModuleDataLogInfo
-{
-    public:
-        int  saveOwnDataLogInfo();
-        int  savePart(char filePath[], uint8_t data[], uint16_t dataLength, uint8_t currentPart, uint8_t totalParts, int* finishedBuilding, int flags);
-        int  saveReceivedDataLogInfo(uint8_t data[], uint16_t dataLength, uint8_t sourceAddress, uint8_t sourceSession, uint8_t dataLogId, uint8_t groupLength, uint8_t currentPart, uint8_t totalParts);
-
-    private:
-        PmmModuleDataLogGroupCore* dataLogGroupCore;
-
-        // Transmission
-        uint8_t  mLogInfoContentArray[MODULE_LOG_INFO_CONTENT_MAX_LENGTH];
-        uint16_t mLogInfoContentArrayLength;
-
-        uint8_t  mDataLogInfoPackets;
-};
-
+#define LOG_INFO_FILENAME                           "DataLogInfo"
 
 
 #endif

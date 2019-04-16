@@ -54,13 +54,13 @@ PmmGps::PmmGps(){}
 int PmmGps::init()
 {
     
-    Serial1.begin(9600);
+    PMM_GPS_PORT.begin(9600);
     #if PMM_GPS_GET_SPEEDS
         mTempLastReadMillis = 0;
         mLastReadMillis = 0;
     #endif
 
-    if (Serial1)
+    if (PMM_GPS_PORT)
     {
         gpsDebugMorePrintf("Initialized successfully!\n");
         mGpsIsWorking = 1;
@@ -134,7 +134,12 @@ pmmGpsStructType* PmmGps::getGpsStructPtr()
     return &mPmmGpsStruct;
 }
 
-pmmGpsStructType PmmGps::getGpsStruct()
+pmmGpsStructType  PmmGps::getGpsStruct()
 {
     return mPmmGpsStruct;
+}
+
+gps_fix*          PmmGps::getFixPtr()
+{
+    return &mFix;
 }

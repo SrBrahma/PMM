@@ -14,16 +14,11 @@
 #define PMM_TLM_QUEUE_LENGTH            8
 #define PMM_RF_INIT_MAX_TRIES           10
 
-#define PMM_TLM_SIMULATE_RECEPTION      1       // Be sure to disable it when using for real!
+#define PMM_TLM_SIMULATE_RECEPTION      0       // Be sure to disable it when using for real!
 
 
 
-typedef enum
-{
-    PMM_TLM_QUEUE_PRIORITY_HIGH,
-    PMM_TLM_QUEUE_PRIORITY_NORMAL,
-    PMM_TLM_QUEUE_PRIORITY_LOW
-} telemetryQueuePriorities;
+
 
 class PmmTelemetry
 {
@@ -40,7 +35,7 @@ public:
     uint8_t availablePositionsInQueue(telemetryQueuePriorities priority);
 
     // As the telemetry will usually be slow, I did a queue system. To send a packet, you must use this.
-    int addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
+    int addPacketToQueue(PacketToBeSent* packetToBeSent);
     
     uint8_t getTotalPacketsRemainingOnQueue();
 

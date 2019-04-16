@@ -21,33 +21,36 @@ uint8_t protocolHeaderLength(uint8_t protocol)
 
 // Adds the corresponding header depending on the protocol.
 // It assumes you already checked the total length of the packet to be sent.
-int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentPacketStruct)
+int  buildPacket(uint8_t destinationArray[], uint8_t* destinationPacketLength, PacketToBeSent* packetToBeSent)
 {
     // 1) Test the given array
     if (!destinationArray)     return 1;
-    if (!packetLength)         return 2;
-    if (!toBeSentPacketStruct) return 3;
+    if (!destinationPacketLength)         return 2;
+    if (!packetToBeSent) return 3;
 
     // 2) Which protocol are we using?
-    switch (toBeSentPacketStruct->protocol)
+    switch (packetToBeSent->getProtocol())
     {
         // NEO
         case PMM_NEO_PROTOCOL_ID:
         {
             // NEO, 3) Write the Protocol ID.
-            destinationArray[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL] = PMM_NEO_PROTOCOL_ID;
+            destinationArray[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL]     = PMM_NEO_PROTOCOL_ID;
             // NEO, 4) Write the Source Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]          = toBeSentPacketStruct->sourceAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]        = packetToBeSent->getSourceAddress();
             // NEO, 5) Write the Destination Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]     = toBeSentPacketStruct->destinationAddress;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]   = packetToBeSent->getDestinationAddress();
             // NEO, 6) Write the Port
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]            = toBeSentPacketStruct->port;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]          = packetToBeSent->getPort();
             // NEO, 7) Write the Payload Length.
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH]   = toBeSentPacketStruct->payloadLength + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] = packetToBeSent->getPayloadLength() + PMM_NEO_PROTOCOL_HEADER_LENGTH;
             // NEO, 8) Write the CRC of this header
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC] = crc8(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC); // The length is the same as the index of the CRC
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC]    = crc8(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC); // The length is the same as the index of the CRC
 
-            *packetLength = PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            *destinationPacketLength = PMM_NEO_PROTOCOL_HEADER_LENGTH;
+
+            memcpy(destinationArray + PMM_NEO_PROTOCOL_HEADER_LENGTH, packetToBeSent->payload, packetToBeSent->getPayloadLength());
+            *destinationPacketLength += packetToBeSent->getPayloadLength();
 
             break;
         }
@@ -59,27 +62,6 @@ int addProtocolHeader(uint8_t destinationArray[], uint8_t* packetLength, toBeSen
     return 0;
 }
 
-int addProtocolPayload(uint8_t destinationArray[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentPacketStruct)
-{
-    // 1) Test the given array
-    if (!destinationArray || !toBeSentPacketStruct)    // If given array or struct is NULL, error!
-        return 1;
-
-    // 2) Which protocol are we using?
-    switch (toBeSentPacketStruct->protocol)
-    {
-        // NEO
-        case PMM_NEO_PROTOCOL_ID:
-            memcpy(destinationArray + PMM_NEO_PROTOCOL_HEADER_LENGTH, toBeSentPacketStruct->payload, toBeSentPacketStruct->payloadLength);
-            *packetLength += toBeSentPacketStruct->payloadLength;
-            break;
-
-        default:
-            return 2;   // Invalid given protocol
-    }
-
-    return 0;
-}
 
 // RECEPTION =======================================================================
 
@@ -172,3 +154,21 @@ int getReceivedPacketAllInfoStruct(receivedPacketPhysicalLayerInfoStructType* re
 
     return 0;
 }
+
+void  PacketToBeSent::addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength, telemetryQueuePriorities priority)
+{
+    mProtocol           = protocol;
+    mSourceAddress      = sourceAddress;
+    mDestinationAddress = destinationAddress;
+    mPort               = port;
+    mPayloadLength      = payloadLength;
+    mPriority           = priority;
+}
+
+uint8_t  PacketToBeSent::getProtocol()                 { return mProtocol;      }
+uint8_t  PacketToBeSent::getSourceAddress()            { return mSourceAddress; }
+uint8_t  PacketToBeSent::getDestinationAddress()       { return mDestinationAddress;}
+uint8_t  PacketToBeSent::getPort()                     { return mPort;          }
+uint8_t  PacketToBeSent::getPayloadLength()            { return mPayloadLength; }
+telemetryQueuePriorities PacketToBeSent::getPriority() { return mPriority;      }
+

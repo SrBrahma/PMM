@@ -153,7 +153,9 @@ void Pmm::update()
 
 
     #if PMM_USE_GPS
-        mPmmGps.update();
+        if (mPmmGps.update())
+            if (mPmmGps.getFixPtr()->valid.location)
+                mPmmImu.setDeclination(mPmmGps.getGpsStructPtr()->latitude, mPmmGps.getGpsStructPtr()->longitude);
     #endif
 
 
@@ -171,21 +173,16 @@ void Pmm::update()
         if(mPmmTelemetry.updateReception())
             mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
         mPmmTelemetry.updateTransmission();
-
     #endif
 
 
 
-    /*if (mMainLoopCounter % 100 == 0)
-    {
-        debugMorePrintf("Time between 100 cycles = millis() - timePrint")
-        timePrint = millis();
-    }*/
+    // if (mMainLoopCounter % 100 == 0) { debugMorePrintf("Time between 100 cycles = millis() - timePrint");  timePrint = millis(); }
 
 
     mMainLoopCounter++; mMillis = millis();
-    PMM_DEBUG_PRINTLN("");
-    PMM_DEBUG_PRINTLN("");
+
+    PMM_DEBUG_PRINTF("\n\n");
     delay(500);
 }
 

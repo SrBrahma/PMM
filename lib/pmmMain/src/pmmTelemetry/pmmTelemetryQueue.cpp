@@ -6,18 +6,18 @@
 
 
 // Returns 0 if added to the queue successfully, 1 ifn't.
-int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telemetryQueuePriorities priority)
+int PmmTelemetry::addPacketToQueue(PacketToBeSent* packetToBeSent)
 {
-    if (!packetStruct)
+    if (!packetToBeSent)
         return 1;
 
     // If there is no room to allocate a new item on the queue
-    if (!availablePositionsInQueue(priority))
+    if (!availablePositionsInQueue(packetToBeSent->getPriority()))
         return 2;
 
     telemetryQueueStructType* queueStructPtr = NULL; // = NULL to stop "warning: 'queueStructPtr' is used uninitialized in this function [-Wuninitialized]"
 
-    getQueueStruct(priority, &queueStructPtr);
+    getQueueStruct(packetToBeSent->getPriority(), &queueStructPtr);
     int newItemIndex = queueStructPtr->actualIndex + queueStructPtr->remainingPacketsOnQueue;
 
     // If the new index is beyond the maximum index, it means it needs to 'circulate' the queue.
@@ -27,10 +27,9 @@ int PmmTelemetry::addPacketToQueue(toBeSentPacketStructType* packetStruct, telem
     // Now there is a new item on the queue!
     queueStructPtr->remainingPacketsOnQueue++;
 
-    addProtocolHeader (queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetStruct);
-    addProtocolPayload(queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetStruct);
+    buildPacket (queueStructPtr->packet[newItemIndex], &queueStructPtr->packetLength[newItemIndex], packetToBeSent);
 
-    tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>.\n", getQueuePriorityString(priority), newItemIndex)
+    tlmDebugMorePrintf("New packet added to <%s> priority queue, on position <%u>.\n", getQueuePriorityString(packetToBeSent->getPriority()), newItemIndex)
 
     return 0;
 }

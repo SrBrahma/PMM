@@ -90,15 +90,32 @@ typedef struct
     int8_t  rssi; //in dBm
 } receivedPacketPhysicalLayerInfoStructType;
 
-typedef struct
+typedef enum
 {
-    uint8_t protocol;
-    uint8_t sourceAddress;
-    uint8_t destinationAddress;
-    uint8_t port;
-    uint8_t payloadLength;  // Note that it is the payload length, not the entire packet length!
-    uint8_t payload[PMM_TLM_MAX_PAYLOAD_LENGTH];        // The pointer to the payload you are sending.
-} toBeSentPacketStructType;
+    PMM_TLM_QUEUE_PRIORITY_HIGH,
+    PMM_TLM_QUEUE_PRIORITY_NORMAL,
+    PMM_TLM_QUEUE_PRIORITY_LOW
+} telemetryQueuePriorities;
+
+class PacketToBeSent
+{
+public:
+    uint8_t payload[PMM_TLM_MAX_PAYLOAD_LENGTH]; // Yes, public; so you can write into it directly.
+    void    addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
+    uint8_t getProtocol();
+    uint8_t getSourceAddress();
+    uint8_t getDestinationAddress();
+    uint8_t getPort();
+    uint8_t getPayloadLength();
+    telemetryQueuePriorities getPriority();
+private:
+    uint8_t mProtocol;
+    uint8_t mSourceAddress;
+    uint8_t mDestinationAddress;
+    uint8_t mPort;
+    uint8_t mPayloadLength;
+    telemetryQueuePriorities mPriority;
+};
 
 // ===== Reception functions =====
 // This function checks the received telemetry packet:
@@ -118,8 +135,7 @@ int  validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t this
 int  getReceivedPacketAllInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
 
 // ===== Transmissin functions =====
-int  addProtocolHeader (uint8_t packet[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
-int  addProtocolPayload(uint8_t packet[], uint8_t* packetLength, toBeSentPacketStructType* toBeSentTelemetryPacketInfoStruct);
+int  buildPacket (uint8_t packet[], uint8_t* packetLength, PacketToBeSent* toBeSentTelemetryPacketInfoStruct);
 
 uint8_t protocolHeaderLength(uint8_t protocol);
 

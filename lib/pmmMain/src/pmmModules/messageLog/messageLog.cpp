@@ -12,7 +12,7 @@ int PmmModuleMessageLog::init(uint32_t* mainLoopCounterPtr, PmmTelemetry* pmmTel
     mMainLoopCounterPtr = mainLoopCounterPtr;
 
     mStringTransmissionCounter = 0;
-    mActualNumberOfStrings     = 0;
+    mCurrentlNumberOfStrings     = 0;
 
     return 0;
 }
@@ -35,4 +35,4 @@ int PmmModuleMessageLog::addRawString(char *string)    // Won't add the time and
     return 0;
 }
 
-uint8_t PmmModuleMessageLog::getActualNumberOfStrings() { return mActualNumberOfStrings;}
+uint8_t PmmModuleMessageLog::getActualNumberOfStrings() { return mCurrentlNumberOfStrings;}

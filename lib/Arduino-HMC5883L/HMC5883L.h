@@ -94,36 +94,45 @@ class HMC5883L
 {
     public:
 
-	bool begin(void);
+    bool begin(void);
 
-	Vector readRaw(void);
+    Vector readRaw(void);
     int    readRaw(float magnetometerArray[3]);
-	Vector readNormalized(void);
+    Vector readNormalized(void);
     int    readNormalized(float magnetometerArray[3]);
 
-	void  setOffset(int xo, int yo);
+    void   setOffset(int xo, int yo);
 
-	void  setMagnetometerRange(hmc5883l_range_t range);
-	hmc5883l_range_t getMagnetometerRange(void);
+    void                setMagnetometerRange(hmc5883l_range_t range);
+    hmc5883l_range_t    getMagnetometerRange(void);
 
-	void  setMeasurementMode(hmc5883l_mode_t mode);
-	hmc5883l_mode_t getMeasurementMode(void);
+    void                setMeasurementMode(hmc5883l_mode_t mode);
+    hmc5883l_mode_t     getMeasurementMode(void);
 
-	void  setDataRate(hmc5883l_dataRate_t dataRate);
-	hmc5883l_dataRate_t getDataRate(void);
+    void                setDataRate(hmc5883l_dataRate_t dataRate);
+    hmc5883l_dataRate_t getDataRate(void);
 
-	void  setSamples(hmc5883l_samples_t samples);
-	hmc5883l_samples_t getSamples(void);
+    void                setSamples(hmc5883l_samples_t samples);
+    hmc5883l_samples_t  getSamples(void);
 
-    private:
 
-	float mgPerDigit;
-	Vector v;
-	int xOffset, yOffset;
+    int   setDeclination(float degree);
+    float getDeclination();
 
-	void write8 (uint8_t reg, uint8_t  value);
-	int  read8  (uint8_t reg, uint8_t* value);
-	int  read16S(uint8_t reg, int16_t* value);
+    float getHeading(float xAxis, float yAxis);
+
+
+
+private:
+
+    float mgPerDigit;
+    Vector v;
+    int xOffset, yOffset;
+    float mDeclinationDegree;
+
+    void write8 (uint8_t reg, uint8_t  value);
+    int  read8  (uint8_t reg, uint8_t* value);
+    int  read16S(uint8_t reg, int16_t* value);
 };
 
 #endif

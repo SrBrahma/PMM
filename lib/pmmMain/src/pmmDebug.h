@@ -7,7 +7,7 @@
 
 
 #define PMM_DEBUG_PRINT_HEX_MAX_BYTES_PER_LINE      49
-void printArrayHex(uint8_t arrayToPrint[], unsigned arrayLength);
+void    printArrayHex(uint8_t arrayToPrint[], unsigned arrayLength);
 
 
 #define PMM_CANCEL_MACRO() { do {} while (0); }

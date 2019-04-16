@@ -46,7 +46,7 @@ bool HMC5883L::begin()
     setDataRate         (HMC5883L_DATARATE_15HZ);
     setSamples          (HMC5883L_SAMPLES_1);
 
-    mgPerDigit = 0.92f;
+    mDeclinationDegree = 0;
 
     return true;
 }
@@ -109,6 +109,30 @@ int HMC5883L::readNormalized(float magnetometerArray[3])
 
     return 0;
 }
+
+int   HMC5883L::setDeclination(float degree)
+{
+    if (degree < -180 || degree > 180)  return 1;
+
+    mDeclinationDegree = degree;
+
+    return 0;
+}
+
+float HMC5883L::getDeclination()
+{
+    return mDeclinationDegree;
+}
+
+float HMC5883L::getHeading(float xAxis, float yAxis)
+{
+    // Calculate heading
+    float heading = (atan2(yAxis, xAxis) * 180) / M_PI;
+
+    return (heading + mDeclinationDegree);
+}
+
+
 
 void HMC5883L::setOffset(int xO, int yO)
 {
@@ -230,8 +254,6 @@ hmc5883l_samples_t HMC5883L::getSamples(void)
 
     return (hmc5883l_samples_t)value;
 }
-
-
 
 // Write byte to register
 void HMC5883L::write8(uint8_t reg, uint8_t value)

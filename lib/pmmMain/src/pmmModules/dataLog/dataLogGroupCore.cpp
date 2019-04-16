@@ -265,15 +265,14 @@ int PmmModuleDataLogGroupCore::addCustomVariable(const char* variableName, uint8
 
 
 /* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-uint8_t PmmModuleDataLogGroupCore::getNumberOfVariables()
-{
-    return mNumberVariables;
-}
-
-const char** PmmModuleDataLogGroupCore::getVariableNameArray()      { return (const char**) mVariableNameArray  ;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()      { return mVariableTypeArray                 ;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()      { return mVariableSizeArray                 ;}
-uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()      { return mVariableAdrsArray                 ;}
+uint8_t PmmModuleDataLogGroupCore::getNumberOfVariables()       { return mNumberVariables; }
+int     PmmModuleDataLogGroupCore::getIsGroupLocked()           { return mIsGroupLocked;   }
 
 
-uint8_t      PmmModuleDataLogGroupCore::getDataLogInfoPackets()     { return mDataLogInfoPackets                ;}
+const char** PmmModuleDataLogGroupCore::getVariableNameArray()  { return (const char**) mVariableNameArray  ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()  { return mVariableTypeArray                 ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()  { return mVariableSizeArray                 ;}
+uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()  { return mVariableAdrsArray                 ;}
+
+
+uint8_t      PmmModuleDataLogGroupCore::getDataLogInfoPackets() { return mDataLogInfoPackets                ;}

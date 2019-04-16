@@ -20,8 +20,41 @@ PmmImu::PmmImu()
 {
 }
 
+int  PmmImu::init()
+{
+    int returnValue = 0;
 
-int PmmImu::initMpu()
+    if (initBmp())
+        returnValue |= 0b001;
+
+    if (initMpu())
+        returnValue |= 0b010;
+
+    if (initMagnetometer())
+        returnValue |= 0b100;
+
+    return returnValue;
+}
+
+int  PmmImu::update()
+{
+    int returnValue = 0;
+
+    if (updateMpu())
+        returnValue |= 0b001;
+
+    if (updateMagnetometer())
+        returnValue |= 0b010;
+
+    if (updateBmp())
+        returnValue |= 0b100;
+
+    return returnValue;
+}
+
+
+
+int  PmmImu::initMpu()
 {
     if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {   
@@ -41,9 +74,23 @@ int PmmImu::initMpu()
     return 0;
 }
 
+int PmmImu::updateMpu()
+{
+    if (mMpuIsWorking)
+    {
+        mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
+        mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
+        mPmmImuStruct.temperatureMpu = mMpu.readTemperature();
+        imuDebugMorePrintf("Mpu updated!\n")
+        return 0;
+    }
+    else
+        return 1;
+}
 
 
-int PmmImu::initMagnetometer()
+
+int  PmmImu::initMagnetometer()
 {
     if (!mMagnetometer.begin())
     {
@@ -61,9 +108,35 @@ int PmmImu::initMagnetometer()
     return 0;
 }
 
+int  PmmImu::getDecByCoord(float* returnDeclination, float latitude, float longitude)
+{
+    return ::getDecByCoord(returnDeclination, latitude, longitude);
+}
+
+int  PmmImu::setDeclination(float degrees)
+{
+    mMagnetometer.setDeclination(degrees);
+    return 0;
+}
+
+// Uses coordinates to get declination, using another my another code.
+int  PmmImu::setDeclination(float latitude, float longitude)
+{
+    float declination;
+    getDecByCoord(&declination, latitude, longitude);
+
+    mMagnetometer.setDeclination(declination);
+    return 0;
+}
+
+float PmmImu::getDeclination()
+{
+    return mMagnetometer.getDeclination();
+}
 
 
-int PmmImu::initBmp()  //BMP085 Setup
+
+int  PmmImu::initBmp()  //BMP085 Setup
 {
     if (mBarometer.begin(BMP085_MODE_ULTRAHIGHRES))  
     {
@@ -74,15 +147,21 @@ int PmmImu::initBmp()  //BMP085 Setup
 
     setReferencePressure(20);
 
+    //mPlotter.Begin(); // start plotter
+    //mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
+    //mPlotter.SetColor(0, "red", "blue", "yellow");
+    mFilteredAltitudeLastMillis = millis();
+
     mBarometerIsWorking = 1;
 
     imuDebugMorePrintf("Barometer initialized successfully!\n")
+
     return 0;
 }
 
 
 // Deppending on the number of measures, this may take a little while.
-int PmmImu::setReferencePressure(unsigned samples)
+int  PmmImu::setReferencePressure(unsigned samples)
 {
     float sumPressure = 0;
     float pressure;
@@ -112,53 +191,12 @@ int PmmImu::setReferencePressure(unsigned samples)
 }
 
 
-int PmmImu::init()
-{
-    
-    mMagnetometerDeclinationRad = 369.4 / 1000; // https://www.meccanismocomplesso.org/en/arduino-magnetic-magnetic-magnetometer-hmc5883l/
-
-    int foundError = 0;
-
-    if (initBmp())  // later will use macros
-    {
-        foundError |= 0b001;
-    }
-
-    if (initMpu())
-    {
-        foundError |= 0b010;
-    }
-
-    if (initMagnetometer())
-    {
-        foundError |= 0b100;
-    }
-
-    //mPlotter.Begin(); // start plotter
-  
-    //mPlotter.AddTimeGraph("PMM altitude", 1000, "rawAltitude(m)", mPmmImuStruct.altitude, "semiFiltered(m)", mFiltered2, "filteredAltitude(m)", mPmmImuStruct.filteredAltitude);
-    //mPlotter.SetColor(0, "red", "blue", "yellow");
-    mFilteredAltitudeLastMillis = millis();
-    return foundError;
-}
 
 
 
 
 
-int PmmImu::updateMpu()
-{
-    if (mMpuIsWorking)
-    {
-        mMpu.readNormalizedAccelerometer(mPmmImuStruct.accelerometerArray);
-        mMpu.readNormalizedGyroscope(mPmmImuStruct.gyroscopeArray);
-        mPmmImuStruct.temperatureMpu = mMpu.readTemperature();
-        imuDebugMorePrintf("Mpu updated!\n")
-        return 0;
-    }
-    else
-        return 1;
-}
+
 
 
 
@@ -235,22 +273,10 @@ int PmmImu::updateBmp()
         return 1;
 }
 
-int PmmImu::update()
-{
-    updateMpu();
-
-    updateMagnetometer();
-
-    updateBmp();
-
-    return 0;
-}
-
 
 
 int PmmImu::setSystemMode(pmmSystemState systemMode)
 {
-
     switch (systemMode)
     {
         case MODE_SLEEP:
@@ -273,7 +299,6 @@ int PmmImu::setSystemMode(pmmSystemState systemMode)
             mMagnetometer.setMeasurementMode(HMC5883L_IDLE);
             break;
     }
-
     return 0;
 }
 

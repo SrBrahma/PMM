@@ -25,7 +25,9 @@ public:
     // Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
     
     pmmGpsStructType* getGpsStructPtr();
-    pmmGpsStructType getGpsStruct();
+    pmmGpsStructType  getGpsStruct();
+    gps_fix*          getFixPtr();
+
     //void doSomeWork();
 
 private:
@@ -38,12 +40,9 @@ private:
         unsigned long mTempLastReadMillis;
         float mLastAltitude;
     #endif
-    //------------------------------------------------------------
-    //  Define a set of GPS fix information.  It will hold on to the various pieces as they are received from
-    //  an RMC sentence.  It can be used anywhere in your sketch.
+
     gps_fix mFix;
     pmmGpsStructType mPmmGpsStruct;
-    
 
 };
 

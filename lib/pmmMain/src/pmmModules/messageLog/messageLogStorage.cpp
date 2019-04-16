@@ -47,6 +47,8 @@ int PmmModuleMessageLog::saveSelfString(char string[])
     mPmmSdPtr->getSelfDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, MESSAGE_LOG_FILENAME_BACKUP);
     mPmmSdPtr->createDirsAndOpen(tempFilename);
     mPmmSdPtr->println(string);
+
+    return 0;
 }
 
 int PmmModuleMessageLog::saveReceivedString(uint8_t sourceAddress, uint8_t sourceSession, char string[])
@@ -60,4 +62,6 @@ int PmmModuleMessageLog::saveReceivedString(uint8_t sourceAddress, uint8_t sourc
     mPmmSdPtr->getReceivedDirectory(tempFilename, PMM_SD_FILENAME_MAX_LENGTH, sourceAddress, sourceSession, MESSAGE_LOG_FILENAME_BACKUP);
     mPmmSdPtr->createDirsAndOpen(tempFilename);
     mPmmSdPtr->println(string);
+
+    return 0;
 }

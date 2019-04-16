@@ -12,6 +12,9 @@
 #include <MPU6050.h>
 #include <HMC5883L.h>
 #include <Adafruit_BMP085_U.h>
+
+#include <magDecByCoord.h>
+
 #include <SimpleKalmanFilter.h>
 #include <Plotter.h>
 
@@ -26,71 +29,85 @@ class PmmImu
 
 public:
     PmmImu();
-    /*
-    int initAccelerometer();
-    int initGyroscope(); */
 
-    int init(); // Must be executed, so the object is passed. Also, inits everything.
-
-    int update(); // Gets all the sensors
+    int init();     // Must be executed, so the object is passed. Also, inits everything.
+    int update();   // Gets all the sensors
 
     int setSystemMode(pmmSystemState systemMode);
-    
-    int setReferencePressure(unsigned samples = 10);
 
-    /* These returns safely a copy of the variables */
+    pmmImuStructType  getImuStruct();
+    pmmImuStructType* getImuStructPtr();
+
+
+    // MPU
+    int    initMpu();
+    int    updateMpu();
     void   getAccelerometer(float destinationArray[3]);
     void   getGyroscope(float destinationArray[3]);
     float  getMpuTemperature();
-    void   getMagnetometer(float destinationArray[3]);
-    float  getBarometer();
-    float  getAltitudeBarometer();
-    float  getBarometerTemperature();
-    pmmImuStructType getImuStruct();
 
-    /* These returns a pointer to the original variables - UNSAFE! Be careful! */
     float* getAccelerometerPtr();
     float* getGyroscopePtr();
     float* getMpuTemperaturePtr();
-    float* getMagnetometerPtr();
+    // -=-=-=-=-=-
+
+    // Barometer
+    int    initBmp();
+    int    updateBmp();
+    
+    int    setReferencePressure(unsigned samples = 10);
+
+    float  getBarometer();
+    float  getAltitudeBarometer();
+    float  getBarometerTemperature();
+
     float* getBarometerPtr();
     float* getAltitudeBarometerPtr();
     float* getBarometerTemperaturePtr();
-    pmmImuStructType* getImuStructPtr();
+    // -=-=-=-=-=-
+
+
+    // Magnetometer
+    int    initMagnetometer();
+    int    updateMagnetometer();
+
+    int    setDeclination(float degrees);
+    int    getDecByCoord (float* returnDeclination, float latitude, float longitude);
+    int    setDeclination(float latitude, float longitude); // Uses coordinates to get declination, using another my another code.
+    float  getDeclination();
+
+    void   getMagnetometer(float destinationArray[3]);
+    float* getMagnetometerPtr();
+    // -=-=-=-=-=-
+
+
 
 private:
-    BMP085   mBarometer;
-    MPU6050  mMpu;
-    HMC5883L mMagnetometer;
-
-    //Plotter mPlotter;
-
-    SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
-    
 
     pmmImuStructType mPmmImuStruct;
+    //Plotter mPlotter;
 
-    unsigned mMpuIsWorking;
-    unsigned mBarometerIsWorking;
-    unsigned mMagnetometerIsWorking;
+    // MPU
+    MPU6050  mMpu;
+    int      mMpuIsWorking;
+    // -=-=-=-=-=-
 
+    // Barometer
+    BMP085   mBarometer;
     double   mReferencePressure;
-
-    float    mMagnetometerDeclinationRad;
-
+    int      mBarometerIsWorking;
     uint32_t mBarometerLastMillis;
+    SimpleKalmanFilter mAltitudeKalmanFilter, mAltitudeKalmanFilter2;
 
     float    mFiltered2;
     float    mSemiFilteredAltitude;
     uint32_t mFilteredAltitudeLastMillis;
+    // -=-=-=-=-=-
 
-    int initMpu();
-    int initMagnetometer();
-    int initBmp();
-
-    int updateMpu();
-    int updateMagnetometer();
-    int updateBmp();
+    // Magnetometer
+    HMC5883L mMagnetometer;
+    int      mMagnetometerIsWorking;
+    // -=-=-=-=-=-
 
 };
 

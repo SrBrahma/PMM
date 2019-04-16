@@ -9,7 +9,7 @@
 #define PORT_MESSAGE_LOG_INDEX_LSB_CRC_PACKET   0
 #define PORT_MESSAGE_LOG_INDEX_MSB_CRC_PACKET   1
 #define PORT_MESSAGE_LOG_INDEX_STRING_X         2
-#define PORT_MESSAGE_LOG_INDEX_OF_Y_MINUS_1     3
+#define PORT_MESSAGE_LOG_INDEX_OF_Y     3
 // Total header length is equal to...
 #define PORT_MESSAGE_LOG_HEADER_LENGTH          4
 
@@ -33,7 +33,8 @@ public:
 
     void receivedPackageString(receivedPacketAllInfoStructType* packetInfo);
 
-    int  sendString(uint8_t* arrayToCopy, uint8_t requestedStringId);
+    int  sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId); // Here the string will be loaded from the SD.
+    int  sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId, char string[]);
 
     int  loadSelfString(char stringDestination[], uint16_t requestedStringId);
     int  loadReceivedString(uint8_t sourceAddress, uint8_t sourceSession, char stringDestination[], uint16_t requestedStringId);
@@ -54,7 +55,7 @@ private:
     uint32_t* mMainLoopCounterPtr;
 
     uint8_t   mStringTransmissionCounter; // Allows buffering of the transmission.
-    uint8_t   mActualNumberOfStrings;
+    uint8_t   mCurrentlNumberOfStrings;
 
 
 };

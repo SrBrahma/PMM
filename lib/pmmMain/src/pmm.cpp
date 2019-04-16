@@ -195,3 +195,11 @@ int Pmm::setSystemMode(pmmSystemState systemMode)
 
     return 0;
 }
+
+// Be careful using the functions below. You can easily turn the PMM code into a hell by bypassing the default running order.
+PmmImu*              Pmm::getPmmImuPtr()            { return &mPmmImu;               }
+PmmTelemetry*        Pmm::getTelemetryPtr()         { return &mPmmTelemetry;         }
+PmmGps*              Pmm::getGpsPtr()               { return &mPmmGps;               }
+PmmSd*               Pmm::getSdPtr()                { return &mPmmSd;                }
+PmmModuleDataLog*    Pmm::getModuleDataLog()        { return &mPmmModuleDataLog;     }
+PmmModuleMessageLog* Pmm::getModuleMessageLog()     { return &mPmmModuleMessageLog;  }

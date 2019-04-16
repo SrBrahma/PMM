@@ -1,10 +1,17 @@
-#ifndef PMM_PDA_MAIN_h
-#define PMM_PDA_MAIN_h
+#ifndef PDA_MAIN_h
+#define PDA_MAIN_h
+
+// Based on Layers.
+// Layer 0  = Main application
+// Layer 1+ = Popups
+
+#include "pmm.h"
 
 class PmmPda
 {
 public:
-    int init();
+    int init(bool showSplash = true);
+    int drawSplash(int display, int splashId);
 
 private:
 

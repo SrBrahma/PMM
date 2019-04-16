@@ -41,6 +41,13 @@ public:
     int  init(bool skipDebugDelay = false);
     void update();
 
+    PmmImu*                 getPmmImuPtr();
+    PmmTelemetry*           getTelemetryPtr();
+    PmmGps*                 getGpsPtr();
+    PmmSd*                  getSdPtr();
+    PmmModuleDataLog*       getModuleDataLog();
+    PmmModuleMessageLog*    getModuleMessageLog();
+
 private:
 
     int setSystemMode(pmmSystemState systemMode);

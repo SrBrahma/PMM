@@ -62,8 +62,12 @@ public:
     void reset();
 
 private:
-    // Removes the oldested measure in the circular array. Also, it decreases the Condition.currentPositives, if the
-    // removed measure was a condition positive.
+    // Adds a new measure to the end of the circular array (push()).
+    // Also, it increases the Condition.currentPositives, if the pushed measure is a condition positive.
+    void      pushMeasure(Measure measure);
+
+    // Removes the oldested measure in the circular array.
+    // Also, it decreases the 'Condition.currentPositives', if the removed measure was a condition positive.
     void      removeOldestMeasure();
 
     // 

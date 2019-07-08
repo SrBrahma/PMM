@@ -42,12 +42,12 @@ int PmmTelemetry::init()
     while (!mRf95.init()) // Keep trying! ...
     {
         initCounter++;
-        advPrintf("Fail at initialize, attempt %i of %i.", initCounter,PMM_RF_INIT_MAX_TRIES)
+        advPrintf("Fail at initialize, attempt %i of %i.\n", initCounter, PMM_RF_INIT_MAX_TRIES) // i dont think this is necessary.
 
         if (initCounter >= PMM_RF_INIT_MAX_TRIES) // Until counter
         {
             mTelemetryIsWorking = 0;
-            advPrintf("Max attempts reached, LoRa didn't initialize.");
+            advPrintf("Max attempts reached, LoRa didn't initialize.\n");
             return 1;
         }
     }

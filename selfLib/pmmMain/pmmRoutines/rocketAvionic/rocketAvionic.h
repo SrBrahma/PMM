@@ -10,7 +10,6 @@
 
 
 
-
 #include "pmmHealthSignals/healthSignals.h"
 
 
@@ -64,8 +63,8 @@ private:
     bool mGpsIsFirstCoord;
     bool mGpsIsFirstDate;
 
-    uint32_t recovery0MillisRemaining;
-    uint32_t recovery1MillisRemaining;
+    uint32_t recovery0DisableAtMillis;
+    uint32_t recovery1DisableAtMillis;
 };
 
 #endif

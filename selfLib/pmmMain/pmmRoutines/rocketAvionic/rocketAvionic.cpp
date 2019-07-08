@@ -20,7 +20,6 @@
 
 #include "pmmDebug.h"   // For debug prints
 
-#include "pmmRoutines/rocketAvionic/recovery/recovery.h"
 #include "pmmRoutines/rocketAvionic/rocketAvionic.h"
 
 RoutineRocketAvionic::RoutineRocketAvionic() {}
@@ -43,31 +42,34 @@ void RoutineRocketAvionic::init()
     mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
     mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
 
-    recovery0MillisRemaining = recovery1MillisRemaining = 0;
+    recovery0DisableAtMillis = recovery1DisableAtMillis = 0;
 
     mMillis = millis(); // Again!
 }
 
 void RoutineRocketAvionic::update()
 {
-    if (recovery0MillisRemaining)
-        recovery0MillisRemaining -= (recovery0MillisRemaining < (millis() - mMillis)? ;
-    uint32_t recovery1MillisRemaining;
+    if (recovery0DisableAtMillis && (millis() > recovery0DisableAtMillis))
+    { recovery0DisableAtMillis = 0; // disableRec0
+    }
+    if (recovery1DisableAtMillis && (millis() > recovery1DisableAtMillis))
+    { recovery1DisableAtMillis = 0; // disableRec0
+    }
+
     switch(mSubRoutine)
     {
-        case SubRoutines::AwaitingGps:
-            sR_AwaitingGps();   break;
+        case SubRoutines::FullActive:
+            sR_FullActive();   break;
         case SubRoutines::Landed:
             sR_Landed();        break;
     }
-    mMainLoopCounter++;
-    mMillis = millis();
 
-    PMM_DEBUG_PRINTF("\n\n");
-    delay(500);
+    mMainLoopCounter++; mMillis = millis();
+
+    PMM_DEBUG_PRINTF("\n\n"); delay(500);
 }
 
-void RoutineRocketAvionic::sR_AwaitingGps()
+void RoutineRocketAvionic::sR_FullActive()
 {
     mPmmImu.update();
     if (mPmmGps.update() == PmmGps::UpdateRtn::GotFix)

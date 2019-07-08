@@ -232,10 +232,8 @@ https://en.wikipedia.org/wiki/OSI_model
     The CRC header must be valid for the package to be accepted, but the CRC of the string doesn't need to be.
     The string will be saved, but will be marked with a '?' in it's start.
 
-    If a SD card is working, the received string will be saved on
-        "Minerva Rockets/pmm/*systemName*_*Session*/received/IP_*IP*/Session_*SessionId*/messagesLog.txt"
-        It may eventually change.
-    A backup file will also be saved.
+    If a SD card is working, the received string will be saved on it.
+    A secondary backup file will also be saved, in case the system crashes while writing one file.
 
     3.1) Header:
 

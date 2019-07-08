@@ -404,7 +404,7 @@ Print & operator <<( Print &outs, const gps_fix &fix )
         outs << fix.geoidHeight_cm();
       outs << ',';
     #endif
-    
+
   #endif
 
   #ifdef GPS_FIX_SATELLITES
@@ -463,7 +463,7 @@ void trace_all( Print & outs, const NMEAGPS &gps, const gps_fix &fix )
       outs << gps.satellites[i].id;
 
       #if defined(NMEAGPS_PARSE_SATELLITE_INFO)
-        outs << ' ' << 
+        outs << ' ' <<
           gps.satellites[i].elevation << '/' << gps.satellites[i].azimuth;
         outs << '@';
         if (gps.satellites[i].tracked)

@@ -3,7 +3,7 @@
 // Copyright (C) 2011 Mike McCauley
 // $Id: RH_RF95.cpp,v 1.19 2018/09/23 23:54:01 mikem Exp $
 
-#include "pmmTelemetry/pmmTelemetryProtocols.h"
+#include "pmmTelemetry/protocols.h"
 #include <RH_RF95.h>
 
 // Interrupt vectors for the 3 Arduino interrupt pins
@@ -21,7 +21,7 @@ PROGMEM static const RH_RF95::ModemConfig MODEM_CONFIG_TABLE[] =
     { 0x92,   0x74,    0x04}, // Bw500Cr45Sf128, AGC enabled
     { 0x48,   0x94,    0x04}, // Bw31_25Cr48Sf512, AGC enabled
     { 0x78,   0xc4,    0x0c}, // Bw125Cr48Sf4096, AGC enabled
-    
+
 };
 
 RH_RF95::RH_RF95(uint8_t slaveSelectPin, uint8_t interruptPin, RHGenericSPI& spi)
@@ -50,7 +50,7 @@ bool RH_RF95::init()
     spiUsingInterrupt(interruptNumber);
 
     // No way to check the device type :-(
-    
+
     // Set sleep mode, so we can also set LORA mode:
     spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_SLEEP | RH_RF95_LONG_RANGE_MODE);
     delay(10); // Wait for sleep mode to take over from say, CAD
@@ -64,12 +64,12 @@ bool RH_RF95::init()
     // Add by Adrien van den Bossche <vandenbo@univ-tlse2.fr> for Teensy
     // ARM M4 requires the below. else pin interrupt doesn't work properly.
     // On all other platforms, its innocuous, belt and braces
-    pinMode(_interruptPin, INPUT); 
+    pinMode(_interruptPin, INPUT);
 
     // Set up interrupt handler
     // Since there are a limited number of interrupt glue functions isr*() available,
     // we can only support a limited number of devices simultaneously
-    // ON some devices, notably most Arduinos, the interrupt pin passed in is actuallt the 
+    // ON some devices, notably most Arduinos, the interrupt pin passed in is actuallt the
     // interrupt number. You have to figure out the interruptnumber-to-interruptpin mapping
     // yourself based on knwledge of what Arduino board you are running on.
     if (_myInterruptIndex == 0xff)
@@ -119,7 +119,7 @@ bool RH_RF95::init()
 
 // C++ level interrupt handler for this instance
 // LORA is unusual in that it has several interrupt lines, and not a single, combined one.
-// On MiniWirelessLoRa, only one of the several interrupt lines (DI0) from the RFM95 is usefuly 
+// On MiniWirelessLoRa, only one of the several interrupt lines (DI0) from the RFM95 is usefuly
 // connnected to the processor.
 // We use this to get RxDone and TxDone interrupts
 void RH_RF95::handleInterrupt()
@@ -164,11 +164,11 @@ void RH_RF95::handleInterrupt()
             _lastRssi -= 157;
         else
             _lastRssi -= 164;
-            
+
         // We have received a message.
-        validateRxBuf(); 
+        validateRxBuf();
         if (_rxBufValid)
-            setModeIdle(); // Got one 
+            setModeIdle(); // Got one
     }
     else if (_mode == RHModeTx && irq_flags & RH_RF95_TX_DONE)
     {
@@ -269,7 +269,7 @@ int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructTy
         return -1;
 
     ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
-    
+
     memcpy(receivedPacketPhysicalLayerStruct, _buf, _bufLen);
     receivedPacketPhysicalLayerStruct->packetLength = _bufLen;
     receivedPacketPhysicalLayerStruct->snr          = _lastSNR;
@@ -326,7 +326,7 @@ bool RH_RF95::send(const uint8_t* data, uint8_t len)
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
     setModeIdle();
 
-    if (!waitCAD()) 
+    if (!waitCAD())
         return false;  // Check channel activity
 
     // Position at the beginning of the FIFO
@@ -509,7 +509,7 @@ void RH_RF95::enableTCXO()
     {
         sleep();
         spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) | RH_RF95_TCXO_TCXO_INPUT_ON));
-    } 
+    }
 }
 
 // From section 4.1.5 of SX1276/77/78/79
@@ -555,34 +555,34 @@ int RH_RF95::lastSNR()
  // a bit more intuitive
  //
  ///////////////////////////////////////////////////
- 
+
  void RH_RF95::setSpreadingFactor(uint8_t sf)
  {
-   if (sf <= 6) 
+   if (sf <= 6)
      sf = RH_RF95_SPREADING_FACTOR_64CPS;
-   else if (sf == 7) 
+   else if (sf == 7)
      sf = RH_RF95_SPREADING_FACTOR_128CPS;
-   else if (sf == 8) 
+   else if (sf == 8)
      sf = RH_RF95_SPREADING_FACTOR_256CPS;
    else if (sf == 9)
      sf = RH_RF95_SPREADING_FACTOR_512CPS;
    else if (sf == 10)
      sf = RH_RF95_SPREADING_FACTOR_1024CPS;
-   else if (sf == 11) 
+   else if (sf == 11)
      sf = RH_RF95_SPREADING_FACTOR_2048CPS;
    else if (sf >= 12)
      sf =  RH_RF95_SPREADING_FACTOR_4096CPS;
- 
+
    // set the new spreading factor
    spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, (spiRead(RH_RF95_REG_1E_MODEM_CONFIG2) & ~RH_RF95_SPREADING_FACTOR) | sf);
    // check if Low data Rate bit should be set or cleared
    setLowDatarate();
  }
- 
+
 void RH_RF95::setSignalBandwidth(long sbw)
 {
     uint8_t bw; //register bit pattern
- 
+
     if (sbw <= 7800)
         bw = RH_RF95_BW_7_8KHZ;
     else if (sbw <= 10400)
@@ -601,19 +601,19 @@ void RH_RF95::setSignalBandwidth(long sbw)
         bw = RH_RF95_BW_125KHZ;
     else if (sbw <= 250000)
         bw = RH_RF95_BW_250KHZ;
-    else 
+    else
         bw =  RH_RF95_BW_500KHZ;
-     
+
     // top 4 bits of reg 1D control bandwidth
     spiWrite(RH_RF95_REG_1D_MODEM_CONFIG1, (spiRead(RH_RF95_REG_1D_MODEM_CONFIG1) & ~RH_RF95_BW) | bw);
     // check if low data rate bit should be set or cleared
     setLowDatarate();
 }
- 
+
 void RH_RF95::setCodingRate4(uint8_t denominator)
 {
     int cr;
- 
+
     if (denominator <= 5)
         cr=RH_RF95_CODING_RATE_4_5;
     else if (denominator == 6)
@@ -622,53 +622,53 @@ void RH_RF95::setCodingRate4(uint8_t denominator)
         cr = RH_RF95_CODING_RATE_4_7;
     else if (denominator >= 8)
         cr = RH_RF95_CODING_RATE_4_8;
- 
+
     // CR is bits 3..1 of RH_RF95_REG_1D_MODEM_CONFIG1
     spiWrite(RH_RF95_REG_1D_MODEM_CONFIG1, (spiRead(RH_RF95_REG_1D_MODEM_CONFIG1) & ~RH_RF95_CODING_RATE) | cr);
 }
- 
+
 void RH_RF95::setLowDatarate()
 {
     // called after changing bandwidth and/or spreading factor
-    //  Semtech modem design guide AN1200.13 says 
-    // "To avoid issues surrounding  drift  of  the  crystal  reference  oscillator  due  to  either  temperature  change  
-    // or  motion,the  low  data  rate optimization  bit  is  used. Specifically for 125  kHz  bandwidth  and  SF  =  11  and  12,  
+    //  Semtech modem design guide AN1200.13 says
+    // "To avoid issues surrounding  drift  of  the  crystal  reference  oscillator  due  to  either  temperature  change
+    // or  motion,the  low  data  rate optimization  bit  is  used. Specifically for 125  kHz  bandwidth  and  SF  =  11  and  12,
     // this  adds  a  small  overhead  to increase robustness to reference frequency variations over the timescale of the LoRa packet."
- 
+
     // read current value for BW and SF
     uint8_t BW = spiRead(RH_RF95_REG_1D_MODEM_CONFIG1) >> 4;        // bw is in bits 7..4
     uint8_t SF = spiRead(RH_RF95_REG_1E_MODEM_CONFIG2) >> 4;        // sf is in bits 7..4
-   
+
     // calculate symbol time (see Semtech AN1200.22 section 4)
     float bw_tab[] = {7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000};
-   
+
     float bandwidth = bw_tab[BW];
-   
+
     float symbolTime = 1000.0 * pow(2, SF) / bandwidth;        // ms
-   
-    // the symbolTime for SF 11 BW 125 is 16.384ms. 
-    // and, according to this :- 
+
+    // the symbolTime for SF 11 BW 125 is 16.384ms.
+    // and, according to this :-
     // https://www.thethingsnetwork.org/forum/t/a-point-to-note-lora-low-data-rate-optimisation-flag/12007
     // the LDR bit should be set if the Symbol Time is > 16ms
     // So the threshold used here is 16.0ms
- 
+
     // the LDR is bit 3 of RH_RF95_REG_26_MODEM_CONFIG3
     uint8_t current = spiRead(RH_RF95_REG_26_MODEM_CONFIG3) & ~RH_RF95_LOW_DATA_RATE_OPTIMIZE; // mask off the LDR bit
     if (symbolTime > 16.0)
         spiWrite(RH_RF95_REG_26_MODEM_CONFIG3, current | RH_RF95_LOW_DATA_RATE_OPTIMIZE);
     else
         spiWrite(RH_RF95_REG_26_MODEM_CONFIG3, current);
-   
+
 }
- 
+
 void RH_RF95::setPayloadCRC(bool on)
 {
     // Payload CRC is bit 2 of register 1E
     uint8_t current = spiRead(RH_RF95_REG_1E_MODEM_CONFIG2) & ~RH_RF95_PAYLOAD_CRC_ON; // mask off the CRC
-   
+
     if (on)
         spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, current | RH_RF95_PAYLOAD_CRC_ON);
     else
         spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, current);
 }
- 
+

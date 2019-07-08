@@ -36,14 +36,14 @@ void BMP085::readCoefficients(void)
     read16S(BMP085_REGISTER_CAL_AC1, &_bmp085_coeffs.ac1);
     read16S(BMP085_REGISTER_CAL_AC2, &_bmp085_coeffs.ac2);
     read16S(BMP085_REGISTER_CAL_AC3, &_bmp085_coeffs.ac3);
-    read16(BMP085_REGISTER_CAL_AC4, &_bmp085_coeffs.ac4);
-    read16(BMP085_REGISTER_CAL_AC5, &_bmp085_coeffs.ac5);
-    read16(BMP085_REGISTER_CAL_AC6, &_bmp085_coeffs.ac6);
-    read16S(BMP085_REGISTER_CAL_B1, &_bmp085_coeffs.b1);
-    read16S(BMP085_REGISTER_CAL_B2, &_bmp085_coeffs.b2);
-    read16S(BMP085_REGISTER_CAL_MB, &_bmp085_coeffs.mb);
-    read16S(BMP085_REGISTER_CAL_MC, &_bmp085_coeffs.mc);
-    read16S(BMP085_REGISTER_CAL_MD, &_bmp085_coeffs.md);
+    read16 (BMP085_REGISTER_CAL_AC4, &_bmp085_coeffs.ac4);
+    read16 (BMP085_REGISTER_CAL_AC5, &_bmp085_coeffs.ac5);
+    read16 (BMP085_REGISTER_CAL_AC6, &_bmp085_coeffs.ac6);
+    read16S(BMP085_REGISTER_CAL_B1 , &_bmp085_coeffs.b1 );
+    read16S(BMP085_REGISTER_CAL_B2 , &_bmp085_coeffs.b2 );
+    read16S(BMP085_REGISTER_CAL_MB , &_bmp085_coeffs.mb );
+    read16S(BMP085_REGISTER_CAL_MC , &_bmp085_coeffs.mc );
+    read16S(BMP085_REGISTER_CAL_MD , &_bmp085_coeffs.md );
 }
 
 

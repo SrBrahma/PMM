@@ -40,7 +40,7 @@ public:
         float     minPercent;
         CheckType checkType;
         Relation  relation;
-        float     checkValue;
+        double    checkValue;
         Time      perTimeUnit;
         int       currentPositives;
     } Condition;
@@ -48,23 +48,26 @@ public:
     MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
     ~MeasuresAnalyzer();
 
-    int  addMeasure(float measure);
+    int  addMeasure(double measure);
 
     // The condition can be readden as
     // [minPercent]% of [checkType] [relation] [checkValue] units [perTimeUnit]
     // Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
     // Returns the condition index. If error, negative value is returned.
-    int  addCondition(float minPercent, CheckType checkType, Relation relation, float checkValue, Time perTimeUnit);
+    int  addCondition(float minPercent, CheckType checkType, Relation relation, double checkValue, Time perTimeUnit);
     bool checkCondition(int conditionIndex);
 
     // Do both functions above in one.
-    bool addMeasureAndCheck(float measure);
+    // bool addMeasureAndCheck(double measure); wont use it right now.
+
     void reset();
 
 private:
     // Adds a new measure to the end of the circular array (push()).
     // Also, it increases the Condition.currentPositives, if the pushed measure is a condition positive.
     void      pushMeasure(Measure measure);
+
+    bool      checkMeasureCondition(bool falseFirstTrueLast, const Condition *condition);
 
     // Removes the oldested measure in the circular array.
     // Also, it decreases the 'Condition.currentPositives', if the removed measure was a condition positive.

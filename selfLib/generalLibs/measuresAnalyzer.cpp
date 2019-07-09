@@ -15,10 +15,12 @@ MeasuresAnalyzer::MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMic
     mIsWorking = mCircularArray.realloc(minMicrosBetween * microsWindow + ADDITIONAL_LENGTH);
 }
 
-int MeasuresAnalyzer::addCondition(float minPercent, CheckType checkType, Relation relation, float checkValue, Time perTimeUnit)
+int MeasuresAnalyzer::addCondition(float minPercent, CheckType checkType, Relation relation, double checkValue, Time perTimeUnit)
 {
     if (!realloc(&mConditions, sizeof(Condition) * (mCurrentConditions + 1)))
         return 1;
+    
+    mConditions[mCurrentConditions] = {minPercent, checkType, relation, checkValue, 0};
     mCurrentConditions++;
     return 0;
 }
@@ -81,7 +83,7 @@ void MeasuresAnalyzer::reset()
 
 void MeasuresAnalyzer::pushMeasure(Measure measure)
 {
-    mCircularArray.push(measure); // Removes the first/oldest measure.
+    mCircularArray.push(measure); // Adds to the end a new item.
 
     for (int i = 0; i < mCurrentConditions; i++)
     {
@@ -89,30 +91,35 @@ void MeasuresAnalyzer::pushMeasure(Measure measure)
 
         switch (mConditions[i].checkType)
         {
-        case CheckType::Values:
-            switch (mConditions[i].relation)
-            {
-            case Relation::AreGreaterThan:
-                if (measure.value > mConditions[i].checkValue) passedCondition = true; break;
-            case Relation::AreLesserThan:
-                if (measure.value < mConditions[i].checkValue) passedCondition = true; break;
-            }
-        break;
-        case CheckType::FirstDerivative:
-            if (mCircularArray.length() >= 2) // We need two values to compare to. One was added at the begin of this func.
-            {
-                Measure previousMeasure = mCircularArray.getItemByLast(-1);
-                float firstDerivative = ((measure.value - previousMeasure.value) / (measure.micros - previousMeasure.micros));
+            case CheckType::Values:
+                switch (mConditions[i].relation) {
+                    case Relation::AreGreaterThan:
+                        if (measure.value > mConditions[i].checkValue) passedCondition = true; break;
+                    case Relation::AreLesserThan:
+                        if (measure.value < mConditions[i].checkValue) passedCondition = true; break; }
+            break;
 
-                switch (mConditions[i].relation)
+            case CheckType::FirstDerivative:
+                if (mCircularArray.length() >= 2) // We need two values to compare to. One was added at the begin of this func.
                 {
-                case Relation::AreGreaterThan:
-                    if (firstDerivative > mConditions[i].checkValue) passedCondition = true; break;
-                case Relation::AreLesserThan:
-                    if (firstDerivative < mConditions[i].checkValue) passedCondition = true; break;
+                    Measure previousMeasure = mCircularArray.getItemByLast(-1);
+                    double firstDerivative = (measure.value - previousMeasure.value);
+
+                    switch (mConditions[i].perTimeUnit) { // We do this way to get a better accuracy of the value.
+                        case Time::Second:
+                            firstDerivative * 1000000; break;
+                        case Time::Millisecond:
+                            firstDerivative * 1000;    break; }
+
+                    firstDerivative /= (measure.micros - previousMeasure.micros);
+
+                    switch (mConditions[i].relation) {
+                        case Relation::AreGreaterThan:
+                            if (firstDerivative > mConditions[i].checkValue) passedCondition = true; break;
+                        case Relation::AreLesserThan:
+                            if (firstDerivative < mConditions[i].checkValue) passedCondition = true; break; }
                 }
-            }
-        break;
+            break;
         }
 
         if (passedCondition)
@@ -129,35 +136,54 @@ void MeasuresAnalyzer::removeOldestMeasure()
     {
         bool passedCondition = false;
 
-        switch (mConditions[i].checkType)
-        {
-        case CheckType::Values:
-            switch (mConditions[i].relation)
-            {
-            case Relation::AreGreaterThan:
-                if (oldestMeasure.value > mConditions[i].checkValue) passedCondition = true; break;
-            case Relation::AreLesserThan:
-                if (oldestMeasure.value < mConditions[i].checkValue) passedCondition = true; break;
-            }
-        break;
-        case CheckType::FirstDerivative:
-            if (mCircularArray.length() >= 1) // We need another value to compare to. 1 because we already removed one, and have its value.
-            {
-                Measure firstItem = mCircularArray.getItemByFirst(0);
-                float firstDerivative = ((firstItem.value - oldestMeasure.value) / (firstItem.micros - oldestMeasure.micros));
 
-                switch (mConditions[i].relation)
-                {
-                case Relation::AreGreaterThan:
-                    if (firstDerivative > mConditions[i].checkValue) passedCondition = true; break;
-                case Relation::AreLesserThan:
-                    if (firstDerivative < mConditions[i].checkValue) passedCondition = true; break;
-                }
-            }
-        break;
-        }
 
         if (passedCondition && mConditions[i].currentPositives > 0) // We probably don't need this > 0. But, who knows?
             mConditions[i].currentPositives--;
     }
+}
+
+bool MeasuresAnalyzer::checkMeasureCondition(bool falseFirstTrueLast, const Condition *condition)
+{
+    Measure measure0 = falseFirstTrueLast? mCircularArray.getItemByLast(-1) : mCircularArray.getItemByFirst(0);
+
+    if (falseFirstTrueLast == false)
+        measure0 = ;
+    else
+        measure0 = ;
+
+    switch (condition->checkType)
+    {
+        case CheckType::Values:
+            switch (condition->relation) {
+                case Relation::AreGreaterThan:
+                    if (measure0.value > condition->checkValue) return true;
+                case Relation::AreLesserThan:
+                    if (measure0.value < condition->checkValue) return true; }
+        break;
+
+        case CheckType::FirstDerivative:
+            if (mCircularArray.length() >= 2) // We need at least 2 values to compare.
+            {
+                Measure measure1 = falseFirstTrueLast? mCircularArray.getItemByLast(0) : mCircularArray.getItemByFirst(1);
+
+                double firstDerivative = (measure1.value - measure0.value);
+
+                switch (condition->perTimeUnit) { // We do this way to get a better accuracy of the value.
+                    case Time::Second:
+                        firstDerivative * 1000000; break;
+                    case Time::Millisecond:
+                        firstDerivative * 1000;    break; }
+
+                firstDerivative /= (measure1.micros - measure0.micros);
+
+                switch (condition->relation) {
+                    case Relation::AreGreaterThan:
+                        if (firstDerivative > condition->checkValue) return true;
+                    case Relation::AreLesserThan:
+                        if (firstDerivative < condition->checkValue) return true; }
+            }
+        break;
+    }
+    return false;
 }

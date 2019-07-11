@@ -1,5 +1,5 @@
 # PMM
-Forked from my own project, at my previous team, Minerva Rockets.
+Fork from my own project.
 
 Open Source code of the PMM (Plataforma Multimissão, Multi-Mission Platform), a project of a system capable of functioning in a vast amount of diferent scenarios and applications, as rockets, drones, rovers, cars, submarines and handhelds.
 

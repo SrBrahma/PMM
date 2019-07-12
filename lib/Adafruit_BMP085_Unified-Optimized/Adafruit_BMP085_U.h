@@ -17,6 +17,8 @@
 #ifndef __BMP085_H__
 #define __BMP085_H__
 
+#include <Wire.h>
+
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
@@ -94,7 +96,7 @@ class BMP085
 {
 
 public:
-    BMP085();
+    BMP085(TwoWire &i2cChannel = Wire);
 
     int    begin(bmp085_mode_t mode = BMP085_MODE_ULTRAHIGHRES);
 
@@ -124,7 +126,7 @@ private:
     int  read16S(uint8_t reg, int16_t*  value);
     int  read   (uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse);
 
-
+    TwoWire &mWire;
     unsigned long readyStart;
     unsigned long readyDelay;
 

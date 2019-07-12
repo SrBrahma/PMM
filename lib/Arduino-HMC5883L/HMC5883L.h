@@ -94,26 +94,28 @@ class HMC5883L
 {
     public:
 
-    bool begin(void);
+    HMC5883L(TwoWire &i2cChannel = Wire);
+    
+    int begin();
 
-    Vector readRaw(void);
+    Vector readRaw();
     int    readRaw(float magnetometerArray[3]);
-    Vector readNormalized(void);
+    Vector readNormalized();
     int    readNormalized(float magnetometerArray[3]);
 
     void   setOffset(int xo, int yo);
 
     void                setMagnetometerRange(hmc5883l_range_t range);
-    hmc5883l_range_t    getMagnetometerRange(void);
+    hmc5883l_range_t    getMagnetometerRange();
 
     void                setMeasurementMode(hmc5883l_mode_t mode);
-    hmc5883l_mode_t     getMeasurementMode(void);
+    hmc5883l_mode_t     getMeasurementMode();
 
     void                setDataRate(hmc5883l_dataRate_t dataRate);
-    hmc5883l_dataRate_t getDataRate(void);
+    hmc5883l_dataRate_t getDataRate();
 
     void                setSamples(hmc5883l_samples_t samples);
-    hmc5883l_samples_t  getSamples(void);
+    hmc5883l_samples_t  getSamples();
 
 
     int   setDeclination(float degree);
@@ -124,6 +126,8 @@ class HMC5883L
 
 
 private:
+
+    TwoWire &mWire;
 
     float mgPerDigit;
     Vector v;

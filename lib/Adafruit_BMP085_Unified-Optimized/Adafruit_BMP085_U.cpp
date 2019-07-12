@@ -23,7 +23,152 @@ static uint8_t           _bmp085Mode;
 
 
 
-BMP085::BMP085(){}
+BMP085::BMP085(TwoWire &i2cChannel) : mWire(i2cChannel) {}
+
+
+
+ /**************************************************************************/
+ /*!
+     @brief  Setups the HW
+ */
+ /**************************************************************************/
+int BMP085::begin(bmp085_mode_t mode)
+{
+    // Enable I2C
+    mWire.begin();
+
+    /* Mode boundary check */
+    if ((mode > BMP085_MODE_ULTRAHIGHRES) || (mode < 0))
+        mode = BMP085_MODE_ULTRAHIGHRES;
+
+
+    /* Make sure we have the right device */
+    uint8_t id;
+    if (read8(BMP085_REGISTER_CHIPID, &id))
+        return 1;
+
+    if (id != 0x55)
+        return 2;
+
+
+    /* Set the mode indicator */
+    _bmp085Mode = mode;
+
+    /* Coefficients need to be read once */
+    readCoefficients();
+
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Gets the compensated pressure level in hPa
+*/
+/**************************************************************************/
+int BMP085::getPressure(float *pressure)
+{
+    /* Get the raw pressure and temperature values */
+    if (!readyPressure)
+        return 1;
+
+    readyPressure = false;
+
+    int32_t  x1, x2, b6, x3, b3, p;
+    uint32_t b4, b7;
+
+    /* Pressure compensation */
+    b6 = lastTemperature - 4000;
+    x1 = (_bmp085_coeffs.b2 * ((b6 * b6) >> 12)) >> 11;
+    x2 = (_bmp085_coeffs.ac2 * b6) >> 11;
+    x3 = x1 + x2;
+    b3 = (((((int32_t)_bmp085_coeffs.ac1) * 4 + x3) << _bmp085Mode) + 2) >> 2;
+    x1 = (_bmp085_coeffs.ac3 * b6) >> 13;
+    x2 = (_bmp085_coeffs.b1 * ((b6 * b6) >> 12)) >> 16;
+    x3 = ((x1 + x2) + 2) >> 2;
+    b4 = (_bmp085_coeffs.ac4 * (uint32_t)(x3 + 32768)) >> 15;
+    b7 = ((uint32_t)(lastPressure - b3) * (50000 >> _bmp085Mode));
+
+    if (b7 < 0x80000000)
+        p = (b7 << 1) / b4;
+
+    else
+        p = (b7 / b4) << 1;
+
+    x1 = (p >> 8) * (p >> 8);
+    x1 = (x1 * 3038) >> 16;
+    x2 = (-7357 * p) >> 16;
+    int32_t compp = p + ((x1 + x2 + 3791) >> 4);
+
+    /* Assign compensated pressure value */
+    *pressure = compp / 100.0F;
+
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Reads the temperatures in degrees Celsius
+*/
+/**************************************************************************/
+int BMP085::getTemperature(float *temp)
+{
+    if (!readyTemperature)
+        return 1;
+
+    readyTemperature = false;
+
+    float t;
+
+    t = (lastTemperature + 8) >> 4;
+    t /= 10;
+
+    *temp = t;
+
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+    Calculates the altitude (in meters) from the specified atmospheric
+    pressure (in hPa), and sea-level pressure (in hPa).
+
+    @param  seaLevel      Sea-level pressure in hPa
+    @param  atmospheric   Atmospheric pressure in hPa
+*/
+/**************************************************************************/
+float BMP085::pressureToAltitude(float seaLevel, float atmospheric)
+{
+    // Equation taken from BMP180 datasheet (page 16):
+    //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
+
+    // Note that using the equation from wikipedia can give bad results
+    // at high altitude.  See this thread for more information:
+    //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
+
+    return 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));
+}
+
+/**************************************************************************/
+/*!
+    Calculates the pressure at sea level (in hPa) from the specified altitude
+    (in meters), and atmospheric pressure (in hPa).
+
+    @param  altitude      Altitude in meters
+    @param  atmospheric   Atmospheric pressure in hPa
+*/
+/**************************************************************************/
+float BMP085::seaLevelForAltitude(float altitude, float atmospheric)
+{
+    // Equation taken from BMP180 datasheet (page 17):
+    //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
+
+    // Note that using the equation from wikipedia can give bad results
+    // at high altitude.  See this thread for more information:
+    //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
+
+    return atmospheric / pow(1.0 - (altitude / 44330.0), 5.255);
+}
+
 
 
 /**************************************************************************/
@@ -170,163 +315,17 @@ int32_t BMP085::computeB5(int32_t ut) {
     return X1 + X2;
 }
 
-/***************************************************************************
- PUBLIC FUNCTIONS
- ***************************************************************************/
-
- /**************************************************************************/
- /*!
-     @brief  Setups the HW
- */
- /**************************************************************************/
-int BMP085::begin(bmp085_mode_t mode)
-{
-    // Enable I2C
-    Wire.begin();
-
-    /* Mode boundary check */
-    if ((mode > BMP085_MODE_ULTRAHIGHRES) || (mode < 0))
-        mode = BMP085_MODE_ULTRAHIGHRES;
-
-
-    /* Make sure we have the right device */
-    uint8_t id;
-    if (read8(BMP085_REGISTER_CHIPID, &id))
-        return 1;
-
-    if (id != 0x55)
-        return 2;
-
-
-    /* Set the mode indicator */
-    _bmp085Mode = mode;
-
-    /* Coefficients need to be read once */
-    readCoefficients();
-
-    return 0;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Gets the compensated pressure level in hPa
-*/
-/**************************************************************************/
-int BMP085::getPressure(float *pressure)
-{
-    /* Get the raw pressure and temperature values */
-    if (!readyPressure)
-        return 1;
-
-    readyPressure = false;
-
-    int32_t  x1, x2, b6, x3, b3, p;
-    uint32_t b4, b7;
-
-    /* Pressure compensation */
-    b6 = lastTemperature - 4000;
-    x1 = (_bmp085_coeffs.b2 * ((b6 * b6) >> 12)) >> 11;
-    x2 = (_bmp085_coeffs.ac2 * b6) >> 11;
-    x3 = x1 + x2;
-    b3 = (((((int32_t)_bmp085_coeffs.ac1) * 4 + x3) << _bmp085Mode) + 2) >> 2;
-    x1 = (_bmp085_coeffs.ac3 * b6) >> 13;
-    x2 = (_bmp085_coeffs.b1 * ((b6 * b6) >> 12)) >> 16;
-    x3 = ((x1 + x2) + 2) >> 2;
-    b4 = (_bmp085_coeffs.ac4 * (uint32_t)(x3 + 32768)) >> 15;
-    b7 = ((uint32_t)(lastPressure - b3) * (50000 >> _bmp085Mode));
-
-    if (b7 < 0x80000000)
-        p = (b7 << 1) / b4;
-
-    else
-        p = (b7 / b4) << 1;
-
-    x1 = (p >> 8) * (p >> 8);
-    x1 = (x1 * 3038) >> 16;
-    x2 = (-7357 * p) >> 16;
-    int32_t compp = p + ((x1 + x2 + 3791) >> 4);
-
-    /* Assign compensated pressure value */
-    *pressure = compp / 100.0F;
-
-    return 0;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Reads the temperatures in degrees Celsius
-*/
-/**************************************************************************/
-int BMP085::getTemperature(float *temp)
-{
-    if (!readyTemperature)
-        return 1;
-
-    readyTemperature = false;
-
-    float t;
-
-    t = (lastTemperature + 8) >> 4;
-    t /= 10;
-
-    *temp = t;
-
-    return 0;
-}
-
-/**************************************************************************/
-/*!
-    Calculates the altitude (in meters) from the specified atmospheric
-    pressure (in hPa), and sea-level pressure (in hPa).
-
-    @param  seaLevel      Sea-level pressure in hPa
-    @param  atmospheric   Atmospheric pressure in hPa
-*/
-/**************************************************************************/
-float BMP085::pressureToAltitude(float seaLevel, float atmospheric)
-{
-    // Equation taken from BMP180 datasheet (page 16):
-    //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
-
-    // Note that using the equation from wikipedia can give bad results
-    // at high altitude.  See this thread for more information:
-    //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
-
-    return 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));
-}
-
-/**************************************************************************/
-/*!
-    Calculates the pressure at sea level (in hPa) from the specified altitude
-    (in meters), and atmospheric pressure (in hPa).
-
-    @param  altitude      Altitude in meters
-    @param  atmospheric   Atmospheric pressure in hPa
-*/
-/**************************************************************************/
-float BMP085::seaLevelForAltitude(float altitude, float atmospheric)
-{
-    // Equation taken from BMP180 datasheet (page 17):
-    //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
-
-    // Note that using the equation from wikipedia can give bad results
-    // at high altitude.  See this thread for more information:
-    //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
-
-    return atmospheric / pow(1.0 - (altitude / 44330.0), 5.255);
-}
-
 
 
 // Write byte to register
 int BMP085::write8(uint8_t reg, uint8_t value)
 {
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.write(reg);
-    Wire.write(value);
+    mWire.write(reg);
+    mWire.write(value);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
     return 0;
 }
@@ -335,23 +334,23 @@ int BMP085::write8(uint8_t reg, uint8_t value)
 // Read byte from register
 int BMP085::read8(uint8_t reg, uint8_t* value)
 {
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 1);
+    mWire.beginTransmission(BMP085_ADDRESS);
+    mWire.requestFrom(BMP085_ADDRESS, (uint8_t) 1);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    *value = Wire.read();
+    *value = mWire.read();
 
     return 0;
 }
@@ -359,24 +358,24 @@ int BMP085::read8(uint8_t reg, uint8_t* value)
 // Read word from register
 int BMP085::read16(uint8_t reg, uint16_t* value)
 {
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
+    mWire.beginTransmission(BMP085_ADDRESS);
+    mWire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
+    uint8_t vha = mWire.read();
+    uint8_t vla = mWire.read();
 
     *value = vha << 8 | vla;
 
@@ -385,24 +384,24 @@ int BMP085::read16(uint8_t reg, uint16_t* value)
 
 int BMP085::read16S(uint8_t reg, int16_t* value)
 {
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
+    mWire.beginTransmission(BMP085_ADDRESS);
+    mWire.requestFrom(BMP085_ADDRESS, (uint8_t) 2);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
+    uint8_t vha = mWire.read();
+    uint8_t vla = mWire.read();
 
     *value = vha << 8 | vla;
 
@@ -411,18 +410,18 @@ int BMP085::read16S(uint8_t reg, int16_t* value)
 
 int BMP085::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse)
 {
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(BMP085_ADDRESS);
+    mWire.beginTransmission(BMP085_ADDRESS);
 
-    Wire.requestFrom(BMP085_ADDRESS, numberBytes);
+    mWire.requestFrom(BMP085_ADDRESS, numberBytes);
 
     uint32_t startMillis = millis();
-    while(Wire.available() < numberBytes)
+    while(mWire.available() < numberBytes)
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
@@ -430,11 +429,11 @@ int BMP085::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool revers
 
     if (!reverse)
         while (numberBytes--)
-            *(buffer++) = Wire.read();
+            *(buffer++) = mWire.read();
 
     else
         while (numberBytes--)
-            buffer[numberBytes] = Wire.read();
+            buffer[numberBytes] = mWire.read();
 
     return 0;
 }

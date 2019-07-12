@@ -207,7 +207,6 @@ int PmmModuleDataLogGroupCore::addImu(pmmImuStructType *pmmImuStructPtr)
 
     if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure)))          return returnVal;
     if ((returnVal = addRawAltitudeBarometer(&pmmImuStructPtr->altitude)))          return returnVal;
-    if ((returnVal = addAltitudeBarometer   (&pmmImuStructPtr->filteredAltitude)))  return returnVal;
     if ((returnVal = addTemperatureBmp      (&pmmImuStructPtr->temperatureBmp)))    return returnVal;
 
     return 0;

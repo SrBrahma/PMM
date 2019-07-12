@@ -44,7 +44,7 @@ public:
 
     // Debug!
     void debugPrintLogHeader ();
-    void debugPrintLogContent();
+    void debugPrintLogContent(bool printHeadersTogether = true);
 
     PmmModuleDataLogGroupCore* getDataLogGroupCore(uint8_t dataLogGroupId = 0); // The argument for now is useless. You can imagine what it's for.
 

@@ -32,6 +32,13 @@ public:
     PmmImu();
 
     int init();     // Must be executed, so the object is passed. Also, inits everything.
+
+    enum
+    {   AllOk = 0,
+        MpuError = 0x001,
+        BarError = 0x010, BarGotPressure = 0x020,
+        MagError = 0x100} ImuUpdateRtn;
+
     int update();   // Gets all the sensors
     enum class ImuMode {Sleep, Active};
     int setImuMode(ImuMode mode);

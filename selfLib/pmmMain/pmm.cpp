@@ -55,33 +55,6 @@ void initDebug()
     #endif
 }
 
-void printMotd() // "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.
-{
-    #if PMM_DEBUG
-        if (!Serial)
-            return;
-
-        PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
-
-        #if PMM_DATA_LOG_DEBUG
-            mPmmModuleDataLog.debugPrintLogHeader();
-            PMM_DEBUG_PRINTLN();
-        #endif
-
-        #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
-            PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
-            for (; !Serial.available(); delay(10));
-
-        #elif PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
-            PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
-            delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
-        #endif
-
-        PMM_DEBUG_PRINTLN("Main loop started!");
-
-    #endif
-}
-
 
 
 

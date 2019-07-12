@@ -20,7 +20,7 @@
 
 PmmGps::PmmGps(){}
 
-PmmGps::InitRtn PmmGps::init()
+int PmmGps::init()
 {
     PMM_GPS_PORT.begin(9600);
     #if PMM_GPS_GET_SPEEDS
@@ -32,12 +32,12 @@ PmmGps::InitRtn PmmGps::init()
     {
         advPrintf("Initialization failed!\n");
         mGpsIsWorking = 0;
-        return InitRtn::Error;
+        return 1;
     }
 
     gpsDebugMorePrintf("Initialized successfully!\n");
     mGpsIsWorking = 1;
-    return InitRtn::Ok;
+    return 0;
 }
 
 // Be aware that there isn't being used the option of a buffer of fixes, present in the NMEAGPS (NMEAGPS_FIX_MAX on NMEAGPS_cfg.h),

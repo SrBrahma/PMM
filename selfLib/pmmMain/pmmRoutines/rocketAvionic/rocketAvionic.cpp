@@ -4,6 +4,10 @@
 
 #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
 
+
+#include <generalUnitsOps.h>
+#include <measuresAnalyzer.h>
+
 #include "pmmHealthSignals/healthSignals.h"
 
 #include "pmmEeprom/eeprom.h"
@@ -26,25 +30,44 @@ RoutineRocketAvionic::RoutineRocketAvionic() {}
 
 void RoutineRocketAvionic::init()
 {
+    int initStatus = 0;
+    if ((initStatus += mAltitudeAnalyzer.init(millisToMicros(30), millisToMicros(100), secondsToMicros(0.5)) ))
+    {
+        advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
+    }
+
+    mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(90, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                   MeasuresAnalyzer::Relation::AreGreaterThan, 0.5, MeasuresAnalyzer::Time::Second);
+
+    mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(90, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                   MeasuresAnalyzer::Relation::AreLesserThan, 0.5, MeasuresAnalyzer::Time::Second);
+
     mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
     mSessionId          = mMainLoopCounter = 0;
     mMillis             = millis();
 
-    mPmmTelemetry.init();
-    mPmmSd.init(mSessionId);
-    mPmmGps.init();
-    mPmmImu.init();
+    pinMode(33, OUTPUT); pinMode(34, OUTPUT); pinMode(35, OUTPUT);
 
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
+
+    initStatus += mPmmTelemetry.init();
+    initStatus += mPmmSd.init(mSessionId);
+    initStatus += mPmmGps.init();
+    initStatus += mPmmImu.init();
+
+    initStatus += mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
         mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
         mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
 
-    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
-    mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
+    initStatus += mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
+    initStatus += mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
 
+    digitalWrite(33, !initStatus);
+    
     recovery0DisableAtMillis = recovery1DisableAtMillis = 0;
 
     mMillis = millis(); // Again!
+
+    printMotd();
 }
 
 void RoutineRocketAvionic::update()
@@ -64,14 +87,30 @@ void RoutineRocketAvionic::update()
             sR_Landed();        break;
     }
 
+    //PMM_DEBUG_PRINTF("Time passed = %lums. Id is %lu\n", millis() - mMillis, mMainLoopCounter);
+
     mMainLoopCounter++; mMillis = millis();
 
-    PMM_DEBUG_PRINTF("\n\n"); delay(500);
 }
 
 void RoutineRocketAvionic::sR_FullActive()
 {
-    mPmmImu.update();
+    int imuRtn = mPmmImu.update();
+
+    if (imuRtn & PmmImu::BarGotPressure) {
+        mAltitudeAnalyzer.addMeasure(mPmmImu.getAltitudeBarometer());
+        PMM_DEBUG_PRINTF("added another bar measure after %lu ms\n", millis() - lastAddedBarAtMillis);
+        lastAddedBarAtMillis = millis();
+
+        if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff))
+            digitalWrite(34, 1);
+        if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))
+            digitalWrite(35, 1);
+            Serial.println();
+    }
+
+
+
     if (mPmmGps.update() == PmmGps::UpdateRtn::GotFix)
     {
         if (mGpsIsFirstCoord && mPmmGps.getFixPtr()->valid.location) {
@@ -101,8 +140,33 @@ void RoutineRocketAvionic::sR_Landed()
 }
 
 
+// "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.
+void RoutineRocketAvionic::printMotd()
+{
+    #if PMM_DEBUG
+        if (!Serial)
+            return;
 
+        PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
 
+        #if PMM_DATA_LOG_DEBUG
+            mPmmModuleDataLog.debugPrintLogHeader();
+            PMM_DEBUG_PRINTLN();
+        #endif
+
+        #if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED
+            PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
+            for (; !Serial.available(); delay(10));
+
+        #elif PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
+            PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
+            delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
+        #endif
+
+        PMM_DEBUG_PRINTLN("Main loop started!");
+
+    #endif
+}
 
 
 #endif

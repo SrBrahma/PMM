@@ -82,10 +82,12 @@ public:
 
 
     // Transmission
+
     int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_LOW);
     int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
 
 
+    // Storage
     int          saveOwnDataLog     ();
 
 
@@ -114,7 +116,7 @@ private:
     int  includeVariable(const char*  variableName,   uint8_t variableType, void* variableAddress);
     int  includeArray   (const char** variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
 
-    int  saveOwnDataLogInfo(); // Automatically called at
+    int  saveOwnDataLogInfo();
 
 
     PmmTelemetry*  mPmmTelemetryPtr;

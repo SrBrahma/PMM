@@ -28,9 +28,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "HMC5883L.h"
 
-bool HMC5883L::begin()
+HMC5883L::HMC5883L(TwoWire &i2cChannel) : mWire(i2cChannel) {}
+
+int HMC5883L::begin()
 {
-    Wire.begin();
+    mWire.begin();
 
     uint8_t valueA, valueB, valueC;
 
@@ -39,7 +41,7 @@ bool HMC5883L::begin()
     read8(HMC5883L_REG_IDENT_C, &valueC);
 
     if ((valueA != 0x48) || (valueB != 0x34) || (valueC != 0x33))
-        return false;
+        return 1;
 
     setMagnetometerRange(HMC5883L_RANGE_1_3GA);
     setMeasurementMode  (HMC5883L_CONTINOUS);
@@ -48,7 +50,7 @@ bool HMC5883L::begin()
 
     mDeclinationDegree = 0;
 
-    return true;
+    return 0;
 }
 
 Vector HMC5883L::readRaw()
@@ -258,34 +260,34 @@ hmc5883l_samples_t HMC5883L::getSamples(void)
 // Write byte to register
 void HMC5883L::write8(uint8_t reg, uint8_t value)
 {
-    Wire.beginTransmission(HMC5883L_ADDRESS);
+    mWire.beginTransmission(HMC5883L_ADDRESS);
 
-    Wire.write(reg);
-    Wire.write(value);
+    mWire.write(reg);
+    mWire.write(value);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 }
 
 // Read byte from register
 int HMC5883L::read8(uint8_t reg, uint8_t* value)
 {
-    Wire.beginTransmission(HMC5883L_ADDRESS);
+    mWire.beginTransmission(HMC5883L_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    Wire.requestFrom(HMC5883L_ADDRESS, 1);
+    mWire.beginTransmission(HMC5883L_ADDRESS);
+    mWire.requestFrom(HMC5883L_ADDRESS, 1);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    *value = Wire.read();
+    *value = mWire.read();
 
     return 0;
 }
@@ -293,24 +295,24 @@ int HMC5883L::read8(uint8_t reg, uint8_t* value)
 // Read word from register
 int HMC5883L::read16S(uint8_t reg, int16_t* value) // S is for Signed (int16_t)
 {
-    Wire.beginTransmission(HMC5883L_ADDRESS);
+    mWire.beginTransmission(HMC5883L_ADDRESS);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    Wire.requestFrom(HMC5883L_ADDRESS, 2);
+    mWire.beginTransmission(HMC5883L_ADDRESS);
+    mWire.requestFrom(HMC5883L_ADDRESS, 2);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
+    uint8_t vha = mWire.read();
+    uint8_t vla = mWire.read();
 
     *value = vha << 8 | vla;
 

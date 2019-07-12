@@ -13,17 +13,19 @@
 
 #include "pmmImu/imu.h"
 
-
-PmmImu::PmmImu() {}
+//https://stackoverflow.com/a/30364704
+PmmImu::PmmImu()
+    : mMpu (PMM_IMU_I2C_CHANNEL), mBarometer(PMM_IMU_I2C_CHANNEL), mMagnetometer(PMM_IMU_I2C_CHANNEL) 
+    {}
 
 int  PmmImu::init()
 {
     int returnValue = 0;
 
-    if (initBmp())
-        returnValue |= 0b001;
-
     if (initMpu())
+        returnValue |= 0b001;
+    
+    if (initBmp())
         returnValue |= 0b010;
 
     if (initMagnetometer())
@@ -37,14 +39,9 @@ int  PmmImu::update()
     int returnValue = 0;
 
     #if PMM_USE_IMU
-        if (updateMpu())
-            returnValue |= 0b001;
-
-        if (updateMagnetometer())
-            returnValue |= 0b010;
-
-        if (updateBmp())
-            returnValue |= 0b100;
+        returnValue |= updateMpu();
+        returnValue |= updateMagnetometer();
+        returnValue |= updateBmp();
     #endif
 
     return returnValue;
@@ -54,7 +51,7 @@ int  PmmImu::update()
 
 int  PmmImu::initMpu()
 {
-    if (!mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
+    if (mMpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
     {
         mMpuIsWorking = 0;
         advPrintf("MPU6050 initialization failed!\n")
@@ -88,7 +85,7 @@ int PmmImu::updateMpu()
 
 int  PmmImu::initMagnetometer()
 {
-    if (!mMagnetometer.begin())
+    if (mMagnetometer.begin())
     {
         mMagnetometerIsWorking = 0;
         advPrintf("Magnetometer initialization failed!\n")
@@ -141,8 +138,10 @@ float PmmImu::getDeclination()
 
 int  PmmImu::initBmp()  //BMP085 Setup
 {
-    if (mBarometer.begin(BMP085_MODE_ULTRAHIGHRES))
+    int rtnVal;
+    if ((rtnVal = mBarometer.begin(BMP085_MODE_ULTRAHIGHRES)))
     {
+        Serial.println(rtnVal);
         mBarometerIsWorking = 0;
         advPrintf("Barometer initialization failed!\n")
         return 1;
@@ -180,7 +179,6 @@ int  PmmImu::setReferencePressure(unsigned samples)
 
     }
     mReferencePressure = sumPressure / samples;
-    mPmmImuStruct.filteredAltitude = 0;
 
     return 0;
 }
@@ -201,6 +199,7 @@ int PmmImu::updateMagnetometer() // READ https://www.meccanismocomplesso.org/en/
 
 int PmmImu::updateBmp()
 {
+    int rtnVal = 0;
     if (!mBarometerIsWorking)
         return 1;
 
@@ -214,11 +213,12 @@ int PmmImu::updateBmp()
         case DATA_READY_PRESSURE:
             mBarometer.getPressure(&mPmmImuStruct.pressure);
             mPmmImuStruct.altitude = mBarometer.pressureToAltitude(mReferencePressure, mPmmImuStruct.pressure);
+            rtnVal |= BarGotPressure;
             break;
     }
 
     imuDebugMorePrintf("Barometer updated!\n")
-    return 0;
+    return rtnVal;
 }
 
 

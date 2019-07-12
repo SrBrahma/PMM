@@ -29,6 +29,8 @@ Edited by Henrique Bruno Fantauzzi de Almeida (SrBrahma) - Minerva Rockets, UFRJ
 #include "WProgram.h"
 #endif
 
+#include <Wire.h>
+
 #define MPU6050_ADDRESS               (0x68) // 0x69 when AD0 pin to Vcc
 
 #define MPU6050_REG_ACCEL_XOFFS_H     (0x06)
@@ -162,8 +164,9 @@ class MPU6050
 {
 
 public:
+    MPU6050(TwoWire &i2cChannel = Wire);
 
-    bool begin(mpu6050_dps_t gyroScale = MPU6050_SCALE_2000DPS, mpu6050_range_t accelRange = MPU6050_RANGE_2G, int mpuAddress = MPU6050_ADDRESS);
+    int begin(mpu6050_dps_t gyroScale = MPU6050_SCALE_2000DPS, mpu6050_range_t accelRange = MPU6050_RANGE_2G, int mpuAddress = MPU6050_ADDRESS);
     
     void resetDevice(mpu6050_dps_t gyroScale = MPU6050_SCALE_2000DPS, mpu6050_range_t accelRange = MPU6050_RANGE_2G, int mpuAddress = MPU6050_ADDRESS);
 
@@ -265,6 +268,7 @@ public:
 
 
 private:
+    TwoWire &mWire;
 
     uint8_t    mMpuAddress;
     Activities mActivities;   // Activities

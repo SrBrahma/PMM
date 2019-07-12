@@ -20,8 +20,7 @@ public:
 
     PmmGps();
 
-    enum class InitRtn {Ok, Error};
-    InitRtn init();
+    int init();
 
     enum class UpdateRtn {OkNoData, GotFix, NotWorking};
     UpdateRtn update();

@@ -9,9 +9,19 @@
 #include "pmmTelemetry/protocols.h"
 #include "pmmTelemetry/telemetry.h"
 
+#if   (PMM_LORA_SPI_CHANNEL == 0)
+    #define PMM_LORA_HW_SPI     hardware_spi
+#elif (PMM_LORA_SPI_CHANNEL == 1)
+    #include <RHHardwareSPI1.h>
+    #define PMM_LORA_HW_SPI     hardware_spi1
+#elif (PMM_LORA_SPI_CHANNEL == 2)
+    #include <RHHardwareSPI2.h>
+    #define PMM_LORA_HW_SPI     hardware_spi2
+#endif
+
 
 PmmTelemetry::PmmTelemetry()
-    : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT) // https://stackoverflow.com/a/12927220
+    : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT, PMM_LORA_HW_SPI) // https://stackoverflow.com/a/12927220
 {
     mHighPriorityQueueStruct.thisPriority   = PMM_TLM_QUEUE_PRIORITY_HIGH  ;
     mNormalPriorityQueueStruct.thisPriority = PMM_TLM_QUEUE_PRIORITY_NORMAL;

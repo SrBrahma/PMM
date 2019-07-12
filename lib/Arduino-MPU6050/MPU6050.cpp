@@ -33,14 +33,14 @@ https://www.digikey.com/en/pdf/i/invensense/mpu-hardware-offset-registers
 
 #define GRAVITY_VALUE 9.80665 // https://en.wikipedia.org/wiki/Gravity_of_Earth
 
+MPU6050::MPU6050(TwoWire &i2cChannel) : mWire(i2cChannel) {}
 
-
-bool MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpuAddress)
+int MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpuAddress)
 {
     // Set Address
     mMpuAddress = mpuAddress;
 
-    Wire.begin();
+    mWire.begin();
 
     // Reset threshold values
     mGyroscopeThreshold = 0;
@@ -51,7 +51,7 @@ bool MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpu
         return 1;
 
     if (!(whoAmI == 0x68 || whoAmI == 0x72)) // For some reason my device returns 0x72
-        return false;
+        return 2;
 
     // Set Clock Source
     setClockSource(MPU6050_CLOCK_PLL_XGYRO);
@@ -63,7 +63,7 @@ bool MPU6050::begin(mpu6050_dps_t gyroScale, mpu6050_range_t accelRange, int mpu
     // Disable Sleep Mode
     setSleepEnabled(false);
 
-    return true;
+    return 0;
 }
 
 void MPU6050::setAccelerometerRange(mpu6050_range_t range)
@@ -681,12 +681,12 @@ void MPU6050::setGyroscopeThreshold(float percentOfMaximumValue) // Argument is 
 // Write byte to register
 int MPU6050::write8(uint8_t reg, uint8_t value)
 {
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.write(reg);
-    Wire.write(value);
+    mWire.write(reg);
+    mWire.write(value);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
     return 0;
 }
@@ -694,23 +694,23 @@ int MPU6050::write8(uint8_t reg, uint8_t value)
 // Read byte from register
 int MPU6050::read8(uint8_t reg, uint8_t* value)
 {
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, (uint8_t) 1);
+    mWire.beginTransmission(mMpuAddress);
+    mWire.requestFrom(mMpuAddress, (uint8_t) 1);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    *value = Wire.read();
+    *value = mWire.read();
 
     return 0;
 }
@@ -718,24 +718,24 @@ int MPU6050::read8(uint8_t reg, uint8_t* value)
 // Read word from register
 int MPU6050::read16S(uint8_t reg, int16_t* value) // S is for Signed (int16_t)
 {
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(mMpuAddress);
-    Wire.requestFrom(mMpuAddress, (uint8_t) 2);
+    mWire.beginTransmission(mMpuAddress);
+    mWire.requestFrom(mMpuAddress, (uint8_t) 2);
 
     uint32_t startMillis = millis();
-    while(!Wire.available())
+    while(!mWire.available())
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
     }
 
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
+    uint8_t vha = mWire.read();
+    uint8_t vla = mWire.read();
 
     *value = vha << 8 | vla;
 
@@ -744,18 +744,18 @@ int MPU6050::read16S(uint8_t reg, int16_t* value) // S is for Signed (int16_t)
 
 int MPU6050::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool reverse)
 {
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.write(reg);
+    mWire.write(reg);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.requestFrom(mMpuAddress, numberBytes);
+    mWire.requestFrom(mMpuAddress, numberBytes);
 
     uint32_t startMillis = millis();
-    while(Wire.available() < numberBytes)
+    while(mWire.available() < numberBytes)
     {
         if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
             return 1;
@@ -763,24 +763,24 @@ int MPU6050::read(uint8_t reg, uint8_t numberBytes, uint8_t buffer[], bool rever
 
     if (!reverse)
         while (numberBytes--)
-            *(buffer++) = Wire.read();
+            *(buffer++) = mWire.read();
 
     else
         while (numberBytes--)
-            buffer[numberBytes] = Wire.read();
+            buffer[numberBytes] = mWire.read();
 
     return 0;
 }
 
 int MPU6050::write16(uint8_t reg, int16_t value)
 {
-    Wire.beginTransmission(mMpuAddress);
+    mWire.beginTransmission(mMpuAddress);
 
-    Wire.write(reg);
-    Wire.write((uint8_t)(value >> 8));
-    Wire.write((uint8_t)value);
+    mWire.write(reg);
+    mWire.write((uint8_t)(value >> 8));
+    mWire.write((uint8_t)value);
 
-    Wire.endTransmission();
+    mWire.endTransmission();
 
     return 0;
 }

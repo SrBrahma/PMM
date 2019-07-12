@@ -43,16 +43,14 @@
 
         #define PMM_DEBUG_MORE                              1  // Additional debug messages, like "MPU6050 initialized successfully!". The [M] indicates it was enabled by this define.
             #define PMM_IMU_DEBUG_MORE                      0
-            #define PMM_GPS_DEBUG_MORE                      0
+            #define PMM_GPS_DEBUG_MORE                      1
             #define PMM_TLM_DEBUG_MORE                      1
 
         // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
         // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
         // the code will proceed, without Serial debugging. It's great if you forgot to disable the Debug before launching your rocket!
         #define PMM_DEBUG_TIMEOUT_ENABLED                   0
-
-            // The maximum wait time for the above option. Default is 10 seconds (10000ms).
-            #define PMM_DEBUG_TIMEOUT_MILLIS            15000
+            #define PMM_DEBUG_TIMEOUT_MILLIS            15000 // The max wait time in millis, for the above option.
 
         // These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
         // The PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
@@ -86,6 +84,10 @@
         #define PMM_USE_IMU_GYROSCOPE                       1
         #define PMM_USE_IMU_MAGNETOMETER                    1
 
+        // Allows using different I2C channels. Default is 'Wire'. Depending on hardware, can be also
+        // 'Wire1', 'Wire2'...
+        #define PMM_IMU_I2C_CHANNEL                     Wire2
+
 
 
 // =======================================================================
@@ -107,9 +109,12 @@
 //  LoRa
 // =======================================================================
 
-    #define PMM_PIN_RFM95_CS                                9
-    #define PMM_PIN_RFM95_RST                              38
-    #define PMM_PIN_RFM95_INT                               5
+    // Selects the SPI channel. Default channel is 0. Can go up to 2. https://github.com/PaulStoffregen/RadioHead
+    #define PMM_LORA_SPI_CHANNEL                            1
+
+    #define PMM_PIN_RFM95_CS                               15
+    #define PMM_PIN_RFM95_RST                              30
+    #define PMM_PIN_RFM95_INT                              29
 
     #define PMM_LORA_FREQUENCY                          915.0
 
@@ -122,7 +127,8 @@
 // =======================================================================
     #define PMM_USE_GPS                                     1
 
-        #define PMM_GPS_PORT                          Serial1
+        // Set the used GPS serial channel (Serial, Serial1...).
+        #define PMM_GPS_PORT                          Serial2
 
 
 #endif // #ifndef PMM_CONSTS_h

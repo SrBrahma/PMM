@@ -37,7 +37,7 @@ public:
     } Measure;
 
     typedef struct {
-        float     minPercent;
+        float     minPositivesRatio; // 0.0 to 1.0, specifies how many (positives/measures) it must have to detect as a true condition.
         CheckType checkType;
         Relation  relation;
         double    checkValue;
@@ -46,19 +46,27 @@ public:
     } Condition;
 
     MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
-    ~MeasuresAnalyzer();
+    
+    // If using the empty constructor, you will need to call init().
+    MeasuresAnalyzer();
 
-    int  addMeasure(double measure);
+    // To free the mConditions.
+    ~MeasuresAnalyzer();
+    
+    // Only needed if constructed the object without arguments. Won't happen anything if used the full constructor.
+    int  init(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
+    
+    // It is float instead of double, to use less space on the circular array. Also, Certainly your measure precision
+    // is lesser than the precision given by double instead of float.
+    int  addMeasure(float measure);
 
     // The condition can be readden as
     // [minPercent]% of [checkType] [relation] [checkValue] units [perTimeUnit]
     // Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
     // Returns the condition index. If error, negative value is returned.
     int  addCondition(float minPercent, CheckType checkType, Relation relation, double checkValue, Time perTimeUnit);
-    bool checkCondition(int conditionIndex);
 
-    // Do both functions above in one.
-    // bool addMeasureAndCheck(double measure); wont use it right now.
+    bool checkCondition(int conditionIndex);
 
     void reset();
 
@@ -67,18 +75,15 @@ private:
     // Also, it increases the Condition.currentPositives, if the pushed measure is a condition positive.
     void      pushMeasure(Measure measure);
 
-    bool      checkMeasureCondition(bool falseFirstTrueLast, const Condition *condition);
+    bool      checkMeasureCondition(int firstItemIs1LastIs0, const Condition *condition);
 
     // Removes the oldested measure in the circular array.
     // Also, it decreases the 'Condition.currentPositives', if the removed measure was a condition positive.
     void      removeOldestMeasure();
 
-    // 
-    void      calculateChecks(int removedXItems);
-    int16_t   getCurrentIndex();
+    void      printMeasures();
 
-
-    Condition mConditions[];
+    Condition *mConditions = NULL;
     uint8_t   mCurrentConditions;
 
     int       mCanCheckCondition;
@@ -90,11 +95,11 @@ private:
 
     uint32_t  mMinMicrosBetween;
     uint32_t  mMaxAvgMicrosBetween;
-    unsigned  mMinPoints;
+    int       mMinMeasures;
 
-    static constexpr uint8_t ADDITIONAL_LENGTH = 2;
+    static constexpr uint8_t ADDITIONAL_LENGTH = 5;
 
-    bool      mIsWorking;
+    bool      mIsWorking = false;
 };
 
 #endif

@@ -13,8 +13,9 @@
 //  Routine
 // =======================================================================
     #define PMM_ROUTINE_ROCKET_AVIONIC                      0
+    #define PMM_ROUTINE_FAKE_LAUNCH                         1
 
-    #define PMM_SYSTEM_ROUTINE     PMM_ROUTINE_ROCKET_AVIONIC
+    #define PMM_SYSTEM_ROUTINE        PMM_ROUTINE_FAKE_LAUNCH
 
 // =======================================================================
 //  General

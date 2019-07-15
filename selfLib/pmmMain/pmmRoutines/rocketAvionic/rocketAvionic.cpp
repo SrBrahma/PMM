@@ -31,23 +31,16 @@ RoutineRocketAvionic::RoutineRocketAvionic() {}
 void RoutineRocketAvionic::init()
 {
     int initStatus = 0;
-    if ((initStatus += mAltitudeAnalyzer.init(millisToMicros(30), millisToMicros(100), secondsToMicros(0.5)) ))
-    {
-        advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
-    }
-
-    mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(90, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                   MeasuresAnalyzer::Relation::AreGreaterThan, 0.5, MeasuresAnalyzer::Time::Second);
-
-    mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(90, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                   MeasuresAnalyzer::Relation::AreLesserThan, 0.5, MeasuresAnalyzer::Time::Second);
 
     mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
     mSessionId          = mMainLoopCounter = 0;
     mMillis             = millis();
 
     pinMode(33, OUTPUT); pinMode(34, OUTPUT); pinMode(35, OUTPUT);
-
+    digitalWrite(33,1);digitalWrite(34,1);digitalWrite(35,1); delay(50);
+    digitalWrite(33,0);digitalWrite(34,0);digitalWrite(35,0); delay(50);
+    digitalWrite(33,1);digitalWrite(34,1);digitalWrite(35,1); delay(50);
+    digitalWrite(33,0);digitalWrite(34,0);digitalWrite(35,0); delay(50);    
 
     initStatus += mPmmTelemetry.init();
     initStatus += mPmmSd.init(mSessionId);
@@ -67,16 +60,29 @@ void RoutineRocketAvionic::init()
 
     mMillis = millis(); // Again!
 
+
+    if ((initStatus += mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1),
+         10, true, 1, 0.1) ))
+        advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
+
+    mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                    MeasuresAnalyzer::Relation::AreGreaterThan, 0.05, MeasuresAnalyzer::Time::Second);
+
+    mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                    MeasuresAnalyzer::Relation::AreLesserThan, -0.05, MeasuresAnalyzer::Time::Second);
+
     printMotd();
 }
 
 void RoutineRocketAvionic::update()
 {
-    if (recovery0DisableAtMillis && (millis() > recovery0DisableAtMillis))
-    { recovery0DisableAtMillis = 0; // disableRec0
+    if (recovery0DisableAtMillis && (millis() > recovery0DisableAtMillis)) {
+        recovery0DisableAtMillis = 0;
+        digitalWrite(34, 0);
     }
-    if (recovery1DisableAtMillis && (millis() > recovery1DisableAtMillis))
-    { recovery1DisableAtMillis = 0; // disableRec0
+    if (recovery1DisableAtMillis && (millis() > recovery1DisableAtMillis)) {
+        recovery1DisableAtMillis = 0;
+        digitalWrite(35, 0);
     }
 
     switch(mSubRoutine)
@@ -92,21 +98,32 @@ void RoutineRocketAvionic::update()
     mMainLoopCounter++; mMillis = millis();
 
 }
-
+float counter = 1;
 void RoutineRocketAvionic::sR_FullActive()
 {
     int imuRtn = mPmmImu.update();
 
     if (imuRtn & PmmImu::BarGotPressure) {
-        mAltitudeAnalyzer.addMeasure(mPmmImu.getAltitudeBarometer());
-        PMM_DEBUG_PRINTF("added another bar measure after %lu ms\n", millis() - lastAddedBarAtMillis);
+
+        float alt = mPmmImu.getAltitudeBarometer();
+        mAltitudeAnalyzer.addMeasure(alt);
+        PMM_DEBUG_PRINTF("Raw Altitude is %f, got after %lu ms\n", alt, millis() - lastAddedBarAtMillis);
         lastAddedBarAtMillis = millis();
 
         if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff))
+        {
             digitalWrite(34, 1);
+            recovery0DisableAtMillis = millis() + 1000;
+        }
         if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))
+        {
             digitalWrite(35, 1);
-            Serial.println();
+            recovery1DisableAtMillis = millis() + 1000;
+        }
+        
+        PMM_DEBUG_PRINTF("Avg Altitude is [%f], avg Altitude speed is [%f].\n",
+                         mAltitudeAnalyzer.getAverage(), mAltitudeAnalyzer.getAverage(MeasuresAnalyzer::CheckType::FirstDerivative));
+        Serial.println();
     }
 
 
@@ -158,7 +175,7 @@ void RoutineRocketAvionic::printMotd()
             PMM_DEBUG_PRINTF("Pmm: Press any key to continue the code. (set PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED (pmmConsts.h) to 0 to disable this!)\n\n");
             for (; !Serial.available(); delay(10));
 
-        #elif PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT
+        #elif PMM_DEBUG_WAIT_AFTER_INIT
             PMM_DEBUG_PRINTF("Pmm: System is halted for %i ms so you can read the init messages.\n\n", PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT)
             delay(PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT);
         #endif

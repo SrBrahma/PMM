@@ -16,7 +16,7 @@ inline uint32_t millisToMicros (double millis ) { return millis  *    1000; }
 // Also check time difference if the time had overflowed.
 inline uint32_t timeDifference(uint32_t newTime, uint32_t oldTime)
 {
-    if (newTime < oldTime) // If the time has 
+    if (newTime < oldTime) // If the time has overflowed.
         return (0xFFFFFFFF - oldTime + newTime);
 
     return (newTime - oldTime);

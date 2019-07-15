@@ -79,8 +79,8 @@ public:
 
 
 private:
-
     int  getLastIndex();
+    int  getCurrentIndex();
 
     // Fixes the given index.
     int  fixIndex(int index);
@@ -129,6 +129,9 @@ template <class T> bool CircularArray<T>::realloc(int maxLength)
 }
 
 
+
+
+
 // Returns how many positions are available. 0 means is full.
 template <class T> int CircularArray<T>::available() { return mMaxLength - mCurrentLength; }
 // Returns the current used length.
@@ -142,9 +145,10 @@ template <class T> int CircularArray<T>::push(T item)
 {
     if (!mMaxLength) return -1;
     if (mCurrentLength >= mMaxLength) return -2;
-    
-    mArray[getLastIndex()] = item;
+
+    mArray[getCurrentIndex()] = item;
     mCurrentLength++;
+
     return 0;
 }
 
@@ -163,7 +167,9 @@ template <class T> int CircularArray<T>::forcePush(T item)
 // Removes the last item. If given a pointer, the item will be copied to it.
 template <class T> int CircularArray<T>::pop(T *item)
 {
-    if (!mCurrentLength) return -1;
+    if (!mMaxLength)     return -1;
+    if (!mCurrentLength) return -2;
+
     if (item)
         *item = mArray[getLastIndex()];
 
@@ -175,12 +181,14 @@ template <class T> int CircularArray<T>::pop(T *item)
 // Removes the first item. If given a pointer, the item will be copied to it.
 template <class T> int CircularArray<T>::shift(T *item)
 {
-    if (!mCurrentLength) return -1;
+    if (!mMaxLength)     return -1;
+    if (!mCurrentLength) return -2;
+
     if (item)
         *item = mArray[mStartIndex];
 
+    mStartIndex = (mStartIndex + 1) % mMaxLength; // increase and cycle if needed.
     mCurrentLength--;
-    mStartIndex = fixIndex(mStartIndex + 1);
     return 0;
 }
 
@@ -188,8 +196,7 @@ template <class T> int CircularArray<T>::shift(T *item)
 // Returns the circular array item, relative to the first item.
 template <class T> T CircularArray<T>::getItemByFirst(int index)
 {
-    index = fixIndex(mStartIndex + index);
-    return mArray[index];
+    return mArray[fixIndex(index)];
 }
 // Returns by the second arg, the circular array item, relative to the first item.
 template <class T> int CircularArray<T>::getItemByFirst(int index, T *returnItem)
@@ -213,30 +220,44 @@ template <class T> int CircularArray<T>::getItemByLast(int index, T *returnItem)
 }
 
 
+// Returns the index of the current index, where the next push() item will enter.
+template <class T> int CircularArray<T>::getCurrentIndex()
+{
+    if (!mMaxLength) return -1;
 
-
-// Returns the index of the last push()ed item.
+    return (mStartIndex + mCurrentLength) % mMaxLength;
+}
+// Returns the index of the current index, where the last push() item has entered.
 template <class T> int CircularArray<T>::getLastIndex()
 {
-    return fixIndex(mStartIndex + mCurrentLength);
+    if (!mMaxLength)     return -1;
+    if (!mCurrentLength) return -2;
+
+    return (mStartIndex + mCurrentLength - 1) % mMaxLength;
 }
 
 // Translates negative indexes, and cicles values that are beyond the current array length.
 // The index argument is absolute (not relative to the mStartIndex). 
 template <class T> int CircularArray<T>::fixIndex(int index)
 {
-    if (!mMaxLength) return -1;
+    if (!mMaxLength)     return -1;
+    if (!mCurrentLength) return -2;
 
-    if (index == 0) return 0;
+    index = (index % mCurrentLength) + mStartIndex;
 
-    index %= mCurrentLength;
-
-    if (index < 0)
-        return (  index + mCurrentLength);
-
-    if (index >= mMaxLength)
-        return (- index + mCurrentLength);
+    // Consider the second argument being the mStartIndex.
+    // ex [4,5,6,7,8,9]. fixIndex(-2, 0) should retrieve 8 (index 4). We just need to sum the length with the negative index,
+    // 6 + (-2) = 4. arr[4] = 8.
+    // ex [,,4,5,6,]. fixIndex(-1, 2), which firstly produces index = 1, should retrieve 6 (index 4). Again, sum length with index.
+    // 3 + 1 (result of (-1 % 3) + 2) = 4;
+    // ex [8,9,,,4,5,6,7]. fixIndex(-2, 4), should retrieve 8 (index 0). Again, sum length with index.
+    // 6 + 2 (result of (-2 % 6) + 4) = 8. Will be % mMaxLength below, which produces 0.
+    if (index < mStartIndex)
+        index += mCurrentLength;
     
+    if (index >= mMaxLength)
+        index %= mMaxLength;
+
     return index;
 }
 

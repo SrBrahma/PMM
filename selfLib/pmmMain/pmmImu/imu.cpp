@@ -15,7 +15,7 @@
 
 //https://stackoverflow.com/a/30364704
 PmmImu::PmmImu()
-    : mMpu (PMM_IMU_I2C_CHANNEL), mBarometer(PMM_IMU_I2C_CHANNEL), mMagnetometer(PMM_IMU_I2C_CHANNEL) 
+    : mMpu(PMM_IMU_I2C_CHANNEL), mBarometer(PMM_IMU_I2C_CHANNEL), mMagnetometer(PMM_IMU_I2C_CHANNEL) 
     {}
 
 int  PmmImu::init()
@@ -147,7 +147,8 @@ int  PmmImu::initBmp()  //BMP085 Setup
         return 1;
     }
     mBarometerIsWorking = 1;
-    setReferencePressure(20);
+    mReferencePressure = 1013.25;
+    // setReferencePressure(20);
 
     imuDebugMorePrintf("Barometer initialized successfully!\n")
     return 0;

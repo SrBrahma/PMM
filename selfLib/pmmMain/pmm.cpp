@@ -45,7 +45,7 @@ void initDebug()
 
         #if PMM_DEBUG_TIMEOUT_ENABLED
             uint32_t serialDebugTimeout = millis();
-            while (!skipDebugDelay && !Serial && (millis() - serialDebugTimeout < PMM_DEBUG_TIMEOUT_MILLIS));
+            while (!Serial && ((millis() - serialDebugTimeout) < PMM_DEBUG_TIMEOUT_MILLIS));
         #else
             while (!Serial);
         #endif

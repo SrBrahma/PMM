@@ -17,6 +17,7 @@
 #define MEASURES_ANALYZER_h
 
 #include <stdint.h> // For uint32_t.
+#include <SimpleKalmanFilter.h.>
 #include <circularArray.h>
 
 //
@@ -37,7 +38,7 @@ public:
     } Measure;
 
     typedef struct {
-        float     minPositivesRatio; // 0.0 to 1.0, specifies how many (positives/measures) it must have to detect as a true condition.
+        double    minPositivesRatio; // 0.0 to 1.0, specifies how many (positives/measures) it must have to detect as a true condition.
         CheckType checkType;
         Relation  relation;
         double    checkValue;
@@ -45,8 +46,8 @@ public:
         int       currentPositives;
     } Condition;
 
-    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
-    
+    MeasuresAnalyzer(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow, int ignoreFirstXMeasures = 0,
+                     bool useKalmanFilter = false, float kFMeasureUncertainty = 1, float kFProcessNoise = 0.01);
     // If using the empty constructor, you will need to call init().
     MeasuresAnalyzer();
 
@@ -54,11 +55,12 @@ public:
     ~MeasuresAnalyzer();
     
     // Only needed if constructed the object without arguments. Won't happen anything if used the full constructor.
-    int  init(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow);
+    int  init(uint32_t minMicrosBetween, uint32_t maxAvgMicrosBetween, uint32_t microsWindow, int ignoreFirstXMeasures = 0,
+              bool useKalmanFilter = false, float kFMeasureUncertainty = 1, float kFProcessNoise = 0.01);
     
     // It is float instead of double, to use less space on the circular array. Also, Certainly your measure precision
     // is lesser than the precision given by double instead of float.
-    int  addMeasure(float measure);
+    int  addMeasure(float measure, uint32_t timeMicros = micros());
 
     // The condition can be readden as
     // [minPercent]% of [checkType] [relation] [checkValue] units [perTimeUnit]
@@ -68,6 +70,10 @@ public:
 
     bool checkCondition(int conditionIndex);
 
+    // Useful for debugging. Returns the average of the values/first derivative etc that are on the mCircularArray.
+    // Second argument isn't needed when first arg is values.
+    float getAverage(CheckType valueType = CheckType::Values, Time time = Time::Second);
+
     void reset();
 
 private:
@@ -75,13 +81,19 @@ private:
     // Also, it increases the Condition.currentPositives, if the pushed measure is a condition positive.
     void      pushMeasure(Measure measure);
 
-    bool      checkMeasureCondition(int firstItemIs1LastIs0, const Condition *condition);
+    bool      checkMeasureCondition(int firstItemIs1LastIs0, Condition &condition);
 
     // Removes the oldested measure in the circular array.
     // Also, it decreases the 'Condition.currentPositives', if the removed measure was a condition positive.
     void      removeOldestMeasure();
 
-    void      printMeasures();
+    void      printMeasures(bool inverted = false);
+
+
+    SimpleKalmanFilter mKalman;
+    int                mUsingKalman;
+
+    int       mMeasuresLeftToIgnore;
 
     Condition *mConditions = NULL;
     uint8_t   mCurrentConditions;
@@ -92,6 +104,8 @@ private:
     CircularArray<Measure> mCircularArray;
 
     uint32_t  mMicrosWindow;
+
+    uint32_t  mCurrentTotalMicros;
 
     uint32_t  mMinMicrosBetween;
     uint32_t  mMaxAvgMicrosBetween;

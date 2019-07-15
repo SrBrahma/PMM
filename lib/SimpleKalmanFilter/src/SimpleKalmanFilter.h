@@ -12,10 +12,17 @@ class SimpleKalmanFilter
 
 public:
   SimpleKalmanFilter(float mea_e, float est_e, float q);
+
+  // Call init after if using the empty constructor!
+  SimpleKalmanFilter();
+
+  // Call if used the empty constructor.
+  void  init(float mea_e, float est_e, float q);
+
   float updateEstimate(float mea);
-  void setMeasurementError(float mea_e);
-  void setEstimateError(float est_e);
-  void setProcessNoise(float q);
+  void  setMeasurementError(float mea_e);
+  void  setEstimateError(float est_e);
+  void  setProcessNoise(float q);
   float getKalmanGain();
   
 private:

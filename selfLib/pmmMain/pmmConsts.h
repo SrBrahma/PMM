@@ -46,17 +46,24 @@
             #define PMM_GPS_DEBUG_MORE                      1
             #define PMM_TLM_DEBUG_MORE                      1
 
-        // [If debug is enabled] If 0, the code will wait indefinitely for the Serial connection with the
+        // [WARNING!!! READ THIS ONE!!!!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // [WARNING!!! READ THIS ONE!!!!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // [WARNING!!! READ THIS ONE!!!!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // If 0, the code will wait indefinitely for the Serial connection with the
         // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
         // the code will proceed, without Serial debugging. It's great if you forgot to disable the Debug before launching your rocket!
-        #define PMM_DEBUG_TIMEOUT_ENABLED                   0
-            #define PMM_DEBUG_TIMEOUT_MILLIS            15000 // The max wait time in millis, for the above option.
+        #define PMM_DEBUG_TIMEOUT_ENABLED                   1
+            #define PMM_DEBUG_TIMEOUT_MILLIS             3000 // The max wait time in millis, for the above option.
+
 
         // These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
-        // The PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
+
         // They only happen if PMM_DEBUG is 1 and if Serial is working.
         #define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED          1
-        #define PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT       5000
+
+        // The PMM_DEBUG_WAIT_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
+        #define PMM_DEBUG_WAIT_AFTER_INIT                   0
+            #define PMM_DEBUG_WAIT_X_MILLIS_AFTER_INIT   5000
 
 
 

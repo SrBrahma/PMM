@@ -45,6 +45,10 @@ int MeasuresAnalyzer::addCondition(float minPercent, CheckType checkType, Relati
         return -1;
     mConditions = newPtr;
 
+    // If the perTimeUnit is invalid to the given checkType, Seconds is selected, to avoid BIG user mistakes.
+    if (checkType == CheckType::FirstDerivative && perTimeUnit == Time::DontApply)
+        perTimeUnit = Time::Second;
+
     // https://stackoverflow.com/a/9269840
     mConditions[mCurrentConditions].minPositivesRatio = minPercent / 100;
     mConditions[mCurrentConditions].checkType         = checkType;
@@ -133,6 +137,7 @@ bool MeasuresAnalyzer::checkCondition(int conditionIndex)
     {
         case CheckType::Values:
             if ((double)mCircularArray.length() < 1)
+                return false;
             positivesRatio = mConditions[conditionIndex].currentPositives / (double)mCircularArray.length();
             break;
 
@@ -143,7 +148,7 @@ bool MeasuresAnalyzer::checkCondition(int conditionIndex)
             break;
     }
 
-    Serial.printf("In cond %i, positivesRatio is %f. Min is %f.\n", conditionIndex, positivesRatio, mConditions[conditionIndex].minPositivesRatio);
+    // Serial.printf("In cond %i, positivesRatio is %f. Min is %f.\n", conditionIndex, positivesRatio, mConditions[conditionIndex].minPositivesRatio);
     if (positivesRatio >= mConditions[conditionIndex].minPositivesRatio)
         return true;
 
@@ -179,7 +184,6 @@ bool MeasuresAnalyzer::checkMeasureCondition(int firstItemIs1LastIs0, Condition 
     {
         case CheckType::Values:
             measure0 = (firstItemIs1LastIs0? mCircularArray.getItemByFirst(0) : mCircularArray.getItemByLast(0));
-            advOnlyPrintln();
             switch (condition.relation)
             {
                 case Relation::AreGreaterThan:
@@ -216,8 +220,8 @@ bool MeasuresAnalyzer::checkMeasureCondition(int firstItemIs1LastIs0, Condition 
             }
             firstDerivative /= timeDiff;
 
-            Serial.printf("FirstDer is %f. CheckVal is %f.\n", firstDerivative, condition.checkValue);
-            Serial.printf("Vals %f & %f. Micros %lu & %lu.\n", measure1.value, measure0.value, measure1.micros, measure0.micros);
+            // Serial.printf("FirstDer is %f. CheckVal is %f.\n", firstDerivative, condition.checkValue);
+            // Serial.printf("Vals %f & %f. Micros %lu & %lu.\n", measure1.value, measure0.value, measure1.micros, measure0.micros);
 
             switch (condition.relation)
             {

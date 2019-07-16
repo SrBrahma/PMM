@@ -1,6 +1,7 @@
 // By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
 
 #include <Arduino.h>
+#include <generalUnitsOps.h> // for randomDouble()
 #include "pmmRoutines/launchSim/launchSim.h"
 
 // LaunchSim(1, 0, 1013.25, 1013.25,
@@ -77,7 +78,7 @@ LaunchSim::Altitudes LaunchSim::getAltitudes(uint32_t timeMillis)
     }
     
     mLastMillis = timeMillis;
-    return {(float)mAltitude, getMeasuredAltitude()};
+    return {(float)mAltitude, float(mAltitude + getMeasuredAltitude())};
 }
 
 void  LaunchSim::applyDrag(double verticalVelocity, double &verticalAcceleration)
@@ -144,17 +145,6 @@ void  LaunchSim::openMain(uint32_t timeMillis)
         changeParachuteState(mMain, mLastMillis, false);
 }
 
-float LaunchSim::getMeasuredAltitude()
-{
-    return random(-mBarometer.uncertainty, mBarometer.uncertainty);
-}
-
-// Hello someone from the future! Improve this!
-double LaunchSim::getMotorVerticalAcceleration(uint32_t timeMillis)
-{
-    return mMotor.parameters.motorAverageAcc;
-}
-
 void  LaunchSim::changeParachuteState(Parachute &parachute, uint32_t timeMillis, bool falseIsNextTrueSelects, ParachuteState state)
 {
     if (falseIsNextTrueSelects == false) {
@@ -199,3 +189,15 @@ void  LaunchSim::changeParachuteState(Parachute &parachute, uint32_t timeMillis,
 
 float LaunchSim::getVerticalVelocity()     { return mVerticalVelocity; }
 float LaunchSim::getVerticalAcceleration() { return mVerticalAcceleration; }
+
+
+float LaunchSim::getMeasuredAltitude()
+{
+    return randomDouble(-mBarometer.uncertainty, mBarometer.uncertainty);
+}
+
+// Hello someone from the future! Improve this!
+double LaunchSim::getMotorVerticalAcceleration(uint32_t timeMillis)
+{
+    return mMotor.parameters.motorAverageAcc;
+}

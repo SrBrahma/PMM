@@ -21,4 +21,10 @@ inline uint32_t timeDifference(uint32_t newTime, uint32_t oldTime)
 
     return (newTime - oldTime);
 }
+
+// https://forum.arduino.cc/index.php?topic=371564.0
+inline double randomDouble(double minf, double maxf)
+{
+  return minf + random(1UL << 31) * (maxf - minf) / (1UL << 31);  // use 1ULL<<63 for max double values)
+}
 #endif

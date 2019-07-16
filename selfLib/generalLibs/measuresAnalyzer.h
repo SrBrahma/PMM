@@ -66,7 +66,8 @@ public:
     // [minPercent]% of [checkType] [relation] [checkValue] units [perTimeUnit]
     // Ex: "90% of the FirstDerivatives AreGreatherThan 10 units/second"
     // Returns the condition index. If error, negative value is returned.
-    int  addCondition(float minPercent, CheckType checkType, Relation relation, double checkValue, Time perTimeUnit);
+    // If the perTimeUnit is invalid for the given checkType, Seconds will be assumed.
+    int  addCondition(float minPercent, CheckType checkType, Relation relation, double checkValue, Time perTimeUnit = Time::DontApply);
 
     bool checkCondition(int conditionIndex);
 

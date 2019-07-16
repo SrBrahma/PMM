@@ -22,15 +22,21 @@ public:
     void update();
 
 private:
+    void  disableRecDeployIfTimePassed(uint32_t timeMillis);
+    void  checkRecoveryMaybeDeploy(uint32_t timeMillis, float altitude);
     void  printMotd();
+
+    uint32_t mTimeMillis;
+    uint32_t mMainLoopCounter;
+
     LaunchSim         mLaunchSim;
     MeasuresAnalyzer  mAltitudeAnalyzer;
 
-    struct { int liftOff; int drogue; int main;} mAltAnalyzerIndexes;
-    bool     mHadLiftOff, mOrderedDrogue, mOrderedMain;
+    struct { int liftOff, drogue, mainAlt, mainVel;  } mAltAnalyzerIndexes;
+    struct { bool liftOff, drogue, main; } mDetections;
+    struct { bool drogue, main;          } mDeploying;
 
-    uint32_t recovery0DisableAtMillis;
-    uint32_t recovery1DisableAtMillis;
+    struct { uint32_t drogue, main;      } mRecoveryStopDeployAtMillis;
 };
 
 #endif

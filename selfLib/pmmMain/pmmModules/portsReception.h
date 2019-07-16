@@ -1,7 +1,7 @@
 /* portsReception.cpp
  * Directs the received package to the respective Extension.
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #ifndef PMM_PORTS_RECEPTION_h
 #define PMM_PORTS_RECEPTION_h

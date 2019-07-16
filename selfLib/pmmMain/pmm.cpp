@@ -4,6 +4,7 @@
 
 #include "pmmConsts.h"
 #include "pmmExtraCodes.h"
+#include "pmmDebug.h"
 #include "pmm.h"
 
 
@@ -16,24 +17,16 @@ void Pmm::init()
     initDebug();     // No need to comment this function. To disable it, change PMM_DEBUG on pmmConsts.h
     runExtraCodes(); // No need to comment this function. To disable it, change PMM_EXTRA_CODES_ENABLE on pmmConsts.h
 
-    #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
-    mRoutineRocketAvionic.init();
+    // The object mRoutine is specified in the pmm.h automatically, based on the routine defined in the pmmConsts.h .
+    mRoutine.init();
 
-    #elif PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
-
-    #endif
 }
 
 
 
 void Pmm::update()
 {
-    #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
-    mRoutineRocketAvionic.update();
-
-    #elif PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
-
-    #endif
+    mRoutine.update();
 }
 
 

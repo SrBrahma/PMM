@@ -2,7 +2,7 @@
  *
  * Just a quick code to test the SafeLog system. This isn't intended at the moment to look good.
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
  * */
 
 

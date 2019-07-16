@@ -1,7 +1,7 @@
 /* crc.h
  * Code for CRC8 and CRC16 calculations.
  * For the authors, sources, and additional informations, > READ the crc.cpp <
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 
 

@@ -1,6 +1,6 @@
 /* pmmTelemetry.cpp
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #include <stdint.h>
 #include <RH_RF95.h>                    // Our current RF module

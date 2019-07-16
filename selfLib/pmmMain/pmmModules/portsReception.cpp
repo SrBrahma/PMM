@@ -1,7 +1,7 @@
 /* portsReception.cpp
  * Directs the received package to the respective Extension.
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #include "pmmModules/ports.h"
 #include "pmmTelemetry/protocols.h" // To know how to decompose the Port field from the received packet

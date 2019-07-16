@@ -1,6 +1,6 @@
 /* byteSelection.h
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #ifndef BYTE_SELECTION_h
 #define BYTE_SELECTION_h

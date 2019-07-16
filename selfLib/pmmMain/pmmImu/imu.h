@@ -1,7 +1,7 @@
 /* pmmImu.h
  * Code for the Inertial Measure Unit (IMU!)
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #define PMM_CALIBRATE_BAROMETER_USING_INITIAL_ALTITUDE
 #define PMM_ALTITUDE_AT_STARTING_PLACE

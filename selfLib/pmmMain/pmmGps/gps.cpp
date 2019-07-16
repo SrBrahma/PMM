@@ -1,6 +1,6 @@
 /* pmmGps.cpp
  * Some commentaries were taken from the neoGps lib.
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #include <Arduino.h>
 #include <NMEAGPS.h>

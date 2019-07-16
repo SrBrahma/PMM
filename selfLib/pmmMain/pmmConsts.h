@@ -1,7 +1,6 @@
-/* pmmConsts.h
- * This .h is for the base PMM uses. For a specific constant, create another .h .
- * PMM pins, PMM only macros etc.
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+// This .h is for the base PMM uses. For a specific constant, create another .h .
+// PMM pins, PMM only macros etc.
+// By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #ifndef PMM_CONSTS_h
 #define PMM_CONSTS_h
@@ -13,9 +12,9 @@
 //  Routine
 // =======================================================================
     #define PMM_ROUTINE_ROCKET_AVIONIC                      0
-    #define PMM_ROUTINE_FAKE_LAUNCH                         1
+    #define PMM_ROUTINE_LAUNCH_SIM                          1
 
-    #define PMM_SYSTEM_ROUTINE        PMM_ROUTINE_FAKE_LAUNCH
+    #define PMM_SYSTEM_ROUTINE         PMM_ROUTINE_LAUNCH_SIM
 
 // =======================================================================
 //  General

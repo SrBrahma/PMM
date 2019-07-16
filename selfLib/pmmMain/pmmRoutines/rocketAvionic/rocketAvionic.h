@@ -1,5 +1,5 @@
 /* pmm.h
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #ifndef PMM_ROUTINE_ROCKET_AVIONIC_h
 #define PMM_ROUTINE_ROCKET_AVIONIC_h

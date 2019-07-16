@@ -1,7 +1,7 @@
 /* crc.cpp
  * Code for a CRC16 calculation.
  * The credits for the crc8 and the crc16 codes goes to the authors. Links to them are found on each function.
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #include <stdint.h>
 #include <crc.h>

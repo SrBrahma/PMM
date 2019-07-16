@@ -164,7 +164,7 @@ void RoutineRocketAvionic::printMotd()
         if (!Serial)
             return;
 
-        PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM - Minerva Rockets - UFRJ =-=-=-=-=-=-=-=-\n\n");
+        PMM_DEBUG_PRINTLN("\n =-=-=-=-=-=-=-=- PMM -=-=-=-=-=-=-=-=-\n\n");
 
         #if PMM_DATA_LOG_DEBUG
             mPmmModuleDataLog.debugPrintLogHeader();

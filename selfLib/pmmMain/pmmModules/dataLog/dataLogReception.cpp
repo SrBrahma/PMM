@@ -1,7 +1,7 @@
 /* PmmPortLogReception.cpp
  * Defines the Package Log (MLOG) and the Package Log Information (MLIN).
  *
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma) - Minerva Rockets, UFRJ, Rio de Janeiro - Brazil */
+ * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
 
 #include "crc.h"
 #include "pmmModules/dataLog/dataLog.h"

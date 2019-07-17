@@ -19,31 +19,24 @@ PmmSd::PmmSd()
 
 int  PmmSd::init()
 {
+
+}
+
+int  PmmSd::init(uint8_t sessionId)
+{
     // 1) Initialize the SD
-    if (!mSdFat.begin())
-    {
+    if (!mSdFat.begin()) {
         mSdIsWorking = 0;
         advPrintf("Error at mSdFat.begin()!\n");
         return 1;
     }
 
-    else
-    {
+    else {
         mSdIsWorking = 1;
-
         mPmmDirPath[0] = '\0';
 
         sdDebugMorePrintf("PmmSd: [M] Initialized successfully.\n");
         return 0;
-    }
-}
-
-int  PmmSd::init(uint8_t sessionId)
-{
-    int returnValue;
-
-    if ((returnValue = init())) {
-        return returnValue;
     }
 
     mThisSessionId = sessionId;

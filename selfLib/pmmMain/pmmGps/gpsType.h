@@ -8,8 +8,8 @@
 typedef struct
 {
     #ifdef GPS_FIX_LOCATION
-        float   latitude;
-        float   longitude;
+        uint32_t   latitude;
+        uint32_t   longitude;
     #endif
 
     #ifdef GPS_FIX_ALTITUDE

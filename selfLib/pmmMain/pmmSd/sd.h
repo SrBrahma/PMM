@@ -7,8 +7,8 @@
 
 #include <SdFat.h>
 #include "pmmConsts.h"
-#include "pmmSd/alloc/safeLog.h"
-#include "pmmSd/split/split.h"
+#include "pmmSd/consts.h"
+
 
 #define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
 
@@ -21,17 +21,16 @@ public:
 
     PmmSd();
 
-    int init();
-    int init(uint8_t sessionId);
+    int init(uint8_t sessionId = 0);
 
     int setPmmCurrentDirectory();
     int setCurrentDirectory   (char fullPath[]);
 
     int removeDirRecursively(char relativePath[]);
 
-
     int getSelfDirectory    (char destination[], uint8_t maxLength, const char additionalPath[] = NULL);
     int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[] = NULL);
+
 
     bool     exists(char filename[]);
 
@@ -49,26 +48,21 @@ public:
     unsigned      getSdIsWorking();
     bool          getSdIsBusy();
 
-    SdFatSdio   * getSdFatPtr();
-    SdioCard    * getCardPtr ();
-    PmmSdSafeLog* getSafeLog ();
-    PmmSdSplit  * getSplit   ();
-    File        * getFile    ();
+    SdFatSdio   *getSdFatPtr();
+    SdioCard    *getCardPtr ();
+    File        *getFile    ();
 
 
 private:
 
+    bool      mSdIsWorking;
+
     SdFatSdio mSdFat;
     File      mFile;
-
-    unsigned  mSdIsWorking;
 
     char      mPmmDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
     uint8_t   mThisSessionId;
-
-    PmmSdSafeLog mSafeLog;
-    PmmSdSplit   mSplit;
 
 };
 

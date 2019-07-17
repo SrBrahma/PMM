@@ -65,8 +65,8 @@ PmmGps::UpdateRtn PmmGps::update()
 void PmmGps::fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct)
 {
     #ifdef GPS_FIX_LOCATION
-        mPmmGpsStruct.latitude        = mFix.latitude();
-        mPmmGpsStruct.longitude       = mFix.longitude();
+        mPmmGpsStruct.latitude        = mFix.latitudeL();
+        mPmmGpsStruct.longitude       = mFix.longitudeL();
     #endif
 
     #ifdef GPS_FIX_ALTITUDE

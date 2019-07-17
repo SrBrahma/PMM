@@ -12,6 +12,7 @@
 
 // Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars,
 
+// Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
 
 class PmmGps
 {
@@ -21,22 +22,16 @@ public:
     PmmGps();
 
     int init();
+    int update();
 
-    enum class UpdateRtn {OkNoData, GotFix, NotWorking};
-    UpdateRtn update();
-
-    // Sleep mode https://forum.arduino.cc/index.php?topic=497410.15
-
-    pmmGpsStructType* getGpsStructPtr();
-    pmmGpsStructType  getGpsStruct   ();
-    gps_fix*          getFixPtr      ();
-    gps_fix           getFix         ();
+    pmmGpsStructType  getGpsStruct   (); pmmGpsStructType* getGpsStructPtr();
+    gps_fix           getFix         (); gps_fix*          getFixPtr      ();
 
 private:
     void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct);
     void debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix &mFix);
 
-    unsigned mGpsIsWorking;
+    bool    mGpsIsWorking;
 
     NMEAGPS mNMEAGPS; // This object parses received characters into the gps.fix() data structure
 

@@ -4,87 +4,81 @@
 
 #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
 
-
+#include <EEPROM.h> // To get the mSessionId
 #include <generalUnitsOps.h>
 #include <measuresAnalyzer.h>
 
-#include "pmmHealthSignals/healthSignals.h"
-
-#include "pmmEeprom/eeprom.h"
-
 #include "pmmTelemetry/telemetry.h"
-#include "pmmModules/portsReception.h"
 #include "pmmSd/sd.h"
 #include "pmmImu/imu.h"
 #include "pmmGps/gps.h"
 
 // Modules
-#include "pmmModules/dataLog/dataLog.h"
-#include "pmmModules/messageLog/messageLog.h"
+#include "pmmModules/portsReception.h"
+#include "pmmModules/simpleDataLog/simpleDataLog.h"
 
 #include "pmmDebug.h"   // For debug prints
 
+#include "pmmRoutines/rocketAvionic/rocketAvionicConsts.h"
 #include "pmmRoutines/rocketAvionic/rocketAvionic.h"
+
 
 RoutineRocketAvionic::RoutineRocketAvionic() {}
 
+
 void RoutineRocketAvionic::init()
 {
+    mMainLoopCounter = 0;
+    mMillis = millis();
+
     int initStatus = 0;
 
-    mGpsIsFirstAltitude = mGpsIsFirstCoord = mGpsIsFirstDate = true;
-    mSessionId          = mMainLoopCounter = 0;
-    mMillis             = millis();
+    mSessionId = EEPROM.read(0); EEPROM.write(0, mSessionId++);
 
-    pinMode(33, OUTPUT); pinMode(34, OUTPUT); pinMode(35, OUTPUT);
-    digitalWrite(33,1);digitalWrite(34,1);digitalWrite(35,1); delay(50);
-    digitalWrite(33,0);digitalWrite(34,0);digitalWrite(35,0); delay(50);
-    digitalWrite(33,1);digitalWrite(34,1);digitalWrite(35,1); delay(50);
-    digitalWrite(33,0);digitalWrite(34,0);digitalWrite(35,0); delay(50);    
-
+    // 2) Main objects
     initStatus += mPmmTelemetry.init();
     initStatus += mPmmSd.init(mSessionId);
     initStatus += mPmmGps.init();
     initStatus += mPmmImu.init();
 
-    initStatus += mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
+    // 3) Modules
+    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
         mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
         mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
-
-    initStatus += mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
-    initStatus += mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
-
-    digitalWrite(33, !initStatus);
-    
-    recovery0DisableAtMillis = recovery1DisableAtMillis = 0;
-
-    mMillis = millis(); // Again!
+    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
+    //mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
 
 
-    if ((initStatus += mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1),
-         10, true, 1, 0.1) ))
+    // 4) Recovery. 20ms as the minTime is a nice value. BMP085/180 has a min value of ~26ms between
+    // each measure on the Ultra-etc precision mode -- the one used here.
+    if (mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1),
+         10)) {
+        initStatus ++;
         advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
-
+    }
     mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreGreaterThan, 0.05, MeasuresAnalyzer::Time::Second);
-
+                                    MeasuresAnalyzer::Relation::AreGreaterThan, 5, MeasuresAnalyzer::Time::Second);
     mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreLesserThan, -0.05, MeasuresAnalyzer::Time::Second);
+                                    MeasuresAnalyzer::Relation::AreLesserThan, -5, MeasuresAnalyzer::Time::Second);
+    mAltAnalyzerIndexes.mainAlt = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::Values,
+                                    MeasuresAnalyzer::Relation::AreLesserThan, 650);
+    mAltAnalyzerIndexes.mainVel = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                    MeasuresAnalyzer::Relation::AreLesserThan, -5, MeasuresAnalyzer::Time::Second);
 
+    pinMode(ROCKET_AVIONIC_PIN_DROGUE, OUTPUT); pinMode(ROCKET_AVIONIC_PIN_MAIN, OUTPUT);
+    digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0); digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0); // Just to ensure! 
+
+    mDetections.liftOff = mDetections.drogue = mDetections.main = false;
+    mDeploying.drogue   = mDeploying.main    = false;
+    mRecoveryStopDeployAtMillis.drogue = mRecoveryStopDeployAtMillis.main = 0;
+
+    // 5) End!
+    mMillis = millis(); // Again!
     printMotd();
 }
 
 void RoutineRocketAvionic::update()
 {
-    if (recovery0DisableAtMillis && (millis() > recovery0DisableAtMillis)) {
-        recovery0DisableAtMillis = 0;
-        digitalWrite(34, 0);
-    }
-    if (recovery1DisableAtMillis && (millis() > recovery1DisableAtMillis)) {
-        recovery1DisableAtMillis = 0;
-        digitalWrite(35, 0);
-    }
-
     switch(mSubRoutine)
     {
         case SubRoutines::FullActive:
@@ -93,68 +87,68 @@ void RoutineRocketAvionic::update()
             sR_Landed();        break;
     }
 
-    //PMM_DEBUG_PRINTF("Time passed = %lums. Id is %lu\n", millis() - mMillis, mMainLoopCounter);
-
     mMainLoopCounter++; mMillis = millis();
-
 }
-float counter = 1;
+
 void RoutineRocketAvionic::sR_FullActive()
 {
-    int imuRtn = mPmmImu.update();
+    disableRecDeployIfTimePassed(mMillis);
 
-    if (imuRtn & PmmImu::BarGotPressure) {
+    // Check if we have a new pressure measure
+    if (mPmmImu.update() & PmmImu::BarGotPressure)
+        deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getAltitudeBarometer());
 
-        float alt = mPmmImu.getAltitudeBarometer();
-        mAltitudeAnalyzer.addMeasure(alt);
-        PMM_DEBUG_PRINTF("Raw Altitude is %f, got after %lu ms\n", alt, millis() - lastAddedBarAtMillis);
-        lastAddedBarAtMillis = millis();
+    mPmmGps.update();
 
-        if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff))
-        {
-            digitalWrite(34, 1);
-            recovery0DisableAtMillis = millis() + 1000;
-        }
-        if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))
-        {
-            digitalWrite(35, 1);
-            recovery1DisableAtMillis = millis() + 1000;
-        }
-        
-        PMM_DEBUG_PRINTF("Avg Altitude is [%f], avg Altitude speed is [%f].\n",
-                         mAltitudeAnalyzer.getAverage(), mAltitudeAnalyzer.getAverage(MeasuresAnalyzer::CheckType::FirstDerivative));
-        Serial.println();
-    }
-
-
-
-    if (mPmmGps.update() == PmmGps::UpdateRtn::GotFix)
-    {
-        if (mGpsIsFirstCoord && mPmmGps.getFixPtr()->valid.location) {
-            mPmmImu.setDeclination(mPmmGps.getGpsStructPtr()->latitude, mPmmGps.getGpsStructPtr()->longitude);
-            mGpsIsFirstCoord = false; }
-
-        // if (mGpsIsFirstAltitude && mPmmGps.getFixPtr()->valid.altitude) {
-        //     // calibrate barometer to get real altitude
-        //     mGpsIsFirstAltitude = false; }
-
-        // if (mGpsIsFirstDate && mPmmGps.getFixPtr()->valid.date) {
-        //     // save the date as message.
-        //     mGpsIsFirstDate = false; }
-    }
-    mPmmModuleDataLog.update();
-    mPmmModuleDataLog.debugPrintLogContent(); // There is on the start #if PMM_DEBUG && PMM_DATA_LOG_DEBUG
-
-    if(mPmmTelemetry.updateReception())
-        mPmmPortsReception.receivedPacket(mPmmTelemetry.getReceivedPacketAllInfoStructPtr());
-    mPmmTelemetry.updateTransmission();
 }
 
 
-
+// Don't want to do it right now. But, should a be subroutine where it uses far less energy, to keep the system
+// alive for a looooong time.
 void RoutineRocketAvionic::sR_Landed()
 {
 }
+
+
+
+void RoutineRocketAvionic::disableRecDeployIfTimePassed(uint32_t timeMillis)
+{
+    if (mRecoveryStopDeployAtMillis.drogue && (timeMillis > mRecoveryStopDeployAtMillis.drogue)) {
+        mRecoveryStopDeployAtMillis.drogue = 0;
+        mDeploying.drogue = false;
+        digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0);
+    }
+    if (mRecoveryStopDeployAtMillis.main   && (timeMillis > mRecoveryStopDeployAtMillis.main  )) {
+        mRecoveryStopDeployAtMillis.main   = 0;
+        mDeploying.main   = false;
+        digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0);
+    }
+}
+
+void RoutineRocketAvionic::deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude)
+{
+    mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMillis));
+
+    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff)) {
+        mDetections.liftOff = true;
+    }
+    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))  {
+        mDetections.drogue = true;
+        mDeploying.drogue  = true;
+        mRecoveryStopDeployAtMillis.drogue = timeMillis + ROCKET_AVIONIC_DROGUE_ACTIVE_TIME_MS;
+        digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 1);
+    }
+    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainAlt) &&
+        mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainVel)) {
+        mDetections.main = true;
+        mDeploying.main  = true;
+        mRecoveryStopDeployAtMillis.main   = timeMillis + ROCKET_AVIONIC_MAIN_ACTIVE_TIME_MS;
+        digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 1);
+    }
+}
+
+
+
 
 
 // "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.

@@ -2,7 +2,7 @@
 #include <crc.h>
 #include <byteSelection.h>
 
-int  PmmModuleMessageLog::sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId)
+int  PmmModuleMessageLog::sendString(uint8_t destinationAddress, uint8_t stringId)
 {
     char tempString[MESSAGE_LOG_MAX_STRING_LENGTH_STORAGE];
 
@@ -14,10 +14,9 @@ int  PmmModuleMessageLog::sendString(uint8_t destinationAddress, telemetryQueueP
     return 0;
 }
 
-int  PmmModuleMessageLog::sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId, char string[])
+int  PmmModuleMessageLog::sendString(uint8_t destinationAddress, uint8_t stringId, char string[])
 {
-    if (!string)
-        return 1;
+    if (!string)  return 1;
 
     PacketToBeSent packetToBeSent;
 

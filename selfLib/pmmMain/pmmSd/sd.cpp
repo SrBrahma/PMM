@@ -42,21 +42,18 @@ int  PmmSd::init(uint8_t sessionId)
 {
     int returnValue;
 
-    if ((returnValue = init()))
-    {
+    if ((returnValue = init())) {
         return returnValue;
     }
 
     mThisSessionId = sessionId;
 
-    if ((returnValue = setPmmCurrentDirectory()))
-    {
+    if ((returnValue = setPmmCurrentDirectory())) {
         advPrintf("Error at setPmmCurrentDirectory()!\n")
         return returnValue;
     }
 
     return 0;
-
 }
 
 
@@ -66,8 +63,7 @@ int  PmmSd::setPmmCurrentDirectory()
 {
 
     // 1) Make sure we are at root dir
-    if (!mSdFat.chdir())
-    {
+    if (!mSdFat.chdir()) {
         advPrintf("Error at chdir() to root!\n")
         return 1;
     }
@@ -82,8 +78,7 @@ int  PmmSd::setPmmCurrentDirectory()
         if (mSdFat.exists(mPmmDirPath))
         {
             unsigned counter = 1;
-            do
-            {
+            do {
                 snprintf(mPmmDirPath, PMM_SD_FILENAME_MAX_LENGTH, "%s/%s/Session %02u - %02u", PMM_SD_BASE_DIRECTORY, PMM_THIS_NAME_DEFINE, mThisSessionId, counter);
                 counter++;
             } while (mSdFat.exists(mPmmDirPath));
@@ -91,15 +86,13 @@ int  PmmSd::setPmmCurrentDirectory()
     }
 
     // 3) Create the new dir
-    if (!mSdFat.mkdir(mPmmDirPath))
-    {
+    if (!mSdFat.mkdir(mPmmDirPath)) {
         advPrintf("Error at mkdir()!\n")
         return 3;
     }
 
     // 4) Change to the dir
-    if (!mSdFat.chdir(mPmmDirPath))
-    {
+    if (!mSdFat.chdir(mPmmDirPath)) {
         advPrintf("Error at chdir() to mPmmDirPath!\n")
         return 4;
     }

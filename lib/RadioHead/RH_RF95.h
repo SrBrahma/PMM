@@ -825,7 +825,8 @@ public:
 
     // PMM
     int  receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct);
-    int  isPacketBeingSent();
+    bool isSendAvailable();
+    bool  isPacketBeingSent();
     int  sendIfAvailable(uint8_t data[], uint8_t length);
 
 protected:

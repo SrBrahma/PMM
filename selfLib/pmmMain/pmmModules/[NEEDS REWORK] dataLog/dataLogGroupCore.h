@@ -83,8 +83,8 @@ public:
 
     // Transmission
 
-    int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_LOW);
-    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
+    int  sendDataLog(uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST);
+    int  sendDataLogInfo(uint8_t requestedPacket, uint8_t destinationAddress = PMM_TLM_ADDRESS_BROADCAST);
 
 
     // Storage

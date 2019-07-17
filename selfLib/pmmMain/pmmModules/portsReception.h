@@ -7,23 +7,24 @@
 #define PMM_PORTS_RECEPTION_h
 
 #include "pmmTelemetry/protocols.h"
-#include "pmmModules/dataLog/dataLog.h"
-#include "pmmModules/messageLog/messageLog.h"
+
+// #include "pmmModules/dataLog/dataLog.h"
+// #include "pmmModules/messageLog/messageLog.h"
 
 
 class PmmPortsReception
 {
-
-private:
-
-    PmmModuleDataLog   * mPmmModuleDataLog;
-    PmmModuleMessageLog* mPmmModuleMessageLog;
-
 public:
     PmmPortsReception();
-    int init(PmmModuleDataLog* PmmModuleDataLog, PmmModuleMessageLog* PmmModuleMessageLog);
+
+    void addSimpleDataLog(PmmModuleSimpleDataLog *moduleSimpleDataLog);
     void receivedPacket(receivedPacketAllInfoStructType* PacketInfo);
 
-}; // End of the class
+private:
+    PmmModuleSimpleDataLog *mModuleSimpleDataLog = NULL;
+    // PmmModuleDataLog   * mPmmModuleDataLog;
+    // PmmModuleMessageLog* mPmmModuleMessageLog;
+
+};
 
 #endif

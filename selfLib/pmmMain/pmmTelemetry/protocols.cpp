@@ -24,9 +24,9 @@ uint8_t protocolHeaderLength(uint8_t protocol)
 int  buildPacket(uint8_t destinationArray[], uint8_t* destinationPacketLength, PacketToBeSent* packetToBeSent)
 {
     // 1) Test the given array
-    if (!destinationArray)     return 1;
-    if (!destinationPacketLength)         return 2;
-    if (!packetToBeSent) return 3;
+    if (!destinationArray)        return 1;
+    if (!destinationPacketLength) return 2;
+    if (!packetToBeSent)          return 3;
 
     // 2) Which protocol are we using?
     switch (packetToBeSent->getProtocol())

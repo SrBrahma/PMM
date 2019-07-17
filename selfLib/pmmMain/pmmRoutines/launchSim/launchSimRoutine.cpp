@@ -59,7 +59,7 @@ void RoutineLaunchSim::update()
     LaunchSim::Altitudes altitude = mLaunchSim.getAltitudes(mTimeMillis);
 
 
-    checkRecoveryMaybeDeploy(mTimeMillis, altitude.measuredAltitude);
+    deployRecoveriesIfConditionsMet(mTimeMillis, altitude.measuredAltitude);
 
     // VsCode/PlatformIO has a max terminal scroll length of a little more than 1000 lines.
     // So, as we don't need every point of the simulation, we output the results at a multiplus of X (10, here).
@@ -93,7 +93,7 @@ void RoutineLaunchSim::disableRecDeployIfTimePassed(uint32_t timeMillis)
 
 
 
-void RoutineLaunchSim::checkRecoveryMaybeDeploy(uint32_t timeMillis, float altitude)
+void RoutineLaunchSim::deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude)
 {
     mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMillis));
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff)) {

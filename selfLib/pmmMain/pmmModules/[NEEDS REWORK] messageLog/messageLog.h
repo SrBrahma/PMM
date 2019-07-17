@@ -33,8 +33,8 @@ public:
 
     void receivedPackageString(receivedPacketAllInfoStructType* packetInfo);
 
-    int  sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId); // Here the string will be loaded from the SD.
-    int  sendString(uint8_t destinationAddress, telemetryQueuePriorities priority, uint8_t stringId, char string[]);
+    int  sendString(uint8_t destinationAddress, uint8_t stringId); // Here the string will be loaded from the SD.
+    int  sendString(uint8_t destinationAddress, uint8_t stringId, char string[]);
 
     int  loadSelfString(char stringDestination[], uint16_t requestedStringId);
     int  loadReceivedString(uint8_t sourceAddress, uint8_t sourceSession, char stringDestination[], uint16_t requestedStringId);

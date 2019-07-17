@@ -10,31 +10,24 @@
 
 #include <measuresAnalyzer.h>
 
-#include "pmmHealthSignals/healthSignals.h"
-
-
 #include "pmmTelemetry/telemetry.h"
 #include "pmmImu/imu.h"
 #include "pmmGps/gps.h"
 #include "pmmSd/sd.h"
 
 // Modules
-#include "pmmModules/dataLog/dataLog.h"
-#include "pmmModules/messageLog/messageLog.h"
 #include "pmmModules/portsReception.h"
 
 
 
 class RoutineRocketAvionic
 {
-
 public:
 
     RoutineRocketAvionic();
 
     void init();
     void update();
-
 
 private:
 
@@ -43,16 +36,23 @@ private:
 
     enum class SubRoutines {FullActive, Landed};
     SubRoutines  mSubRoutine;
+
     void setSubRoutine(SubRoutines subRoutine);
     void sR_FullActive();
     void sR_Landed();
 
-    MeasuresAnalyzer mAltitudeAnalyzer;
-
-    struct { int liftOff; int drogue; int main;} mAltAnalyzerIndexes;
+    void deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude);
+    void disableRecDeployIfTimePassed(uint32_t timeMillis);
 
     uint8_t      mSessionId;
     uint32_t     mMainLoopCounter, mMillis;
+
+    MeasuresAnalyzer mAltitudeAnalyzer;
+    struct { int liftOff, drogue, mainAlt, mainVel;  } mAltAnalyzerIndexes;
+    struct { bool liftOff, drogue, main; } mDetections;
+    struct { bool drogue, main;          } mDeploying;
+    struct { uint32_t drogue, main;      } mRecoveryStopDeployAtMillis;
+
 
     // Main objects
     PmmTelemetry mPmmTelemetry;
@@ -60,19 +60,6 @@ private:
     PmmGps       mPmmGps;
     PmmSd        mPmmSd;
 
-    // Modules
-    PmmModuleMessageLog mPmmModuleMessageLog;
-    PmmPortsReception   mPmmPortsReception;
-    PmmModuleDataLog    mPmmModuleDataLog;
-
-    bool mGpsIsFirstAltitude;
-    bool mGpsIsFirstCoord;
-    bool mGpsIsFirstDate;
-
-    uint32_t recovery0DisableAtMillis;
-    uint32_t recovery1DisableAtMillis;
-
-    uint32_t lastAddedBarAtMillis = 0;
 };
 
 #endif

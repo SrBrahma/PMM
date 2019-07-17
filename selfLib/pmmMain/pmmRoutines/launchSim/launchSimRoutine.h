@@ -23,7 +23,7 @@ public:
 
 private:
     void  disableRecDeployIfTimePassed(uint32_t timeMillis);
-    void  checkRecoveryMaybeDeploy(uint32_t timeMillis, float altitude);
+    void  deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude);
     void  printMotd();
 
     uint32_t mTimeMillis;

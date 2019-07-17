@@ -12,9 +12,7 @@
 
 
 
-PmmModuleDataLog::PmmModuleDataLog()
-{
-}
+PmmModuleDataLog::PmmModuleDataLog() {}
 
 
 

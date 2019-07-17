@@ -72,8 +72,7 @@
 
 
 
-typedef struct
-{
+typedef struct {
     uint8_t* payload;
     int8_t   snr;                // in dBm
     int8_t   rssi;               // in dBm
@@ -84,39 +83,31 @@ typedef struct
     uint8_t  payloadLength;
 } receivedPacketAllInfoStructType;
 
-typedef struct
-{
+typedef struct {
     uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH];
     uint8_t packetLength;
-    int8_t  snr;
+    int8_t  snr;  //in dBm
     int8_t  rssi; //in dBm
 } receivedPacketPhysicalLayerInfoStructType;
 
-typedef enum
-{
-    PMM_TLM_QUEUE_PRIORITY_HIGH,
-    PMM_TLM_QUEUE_PRIORITY_NORMAL,
-    PMM_TLM_QUEUE_PRIORITY_LOW
-} telemetryQueuePriorities;
+
 
 class PacketToBeSent
 {
 public:
     uint8_t payload[PMM_TLM_MAX_PAYLOAD_LENGTH]; // Yes, public; so you can write into it directly.
-    void    addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength, telemetryQueuePriorities priority = PMM_TLM_QUEUE_PRIORITY_NORMAL);
+    void    addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength);
     uint8_t getProtocol();
     uint8_t getSourceAddress();
     uint8_t getDestinationAddress();
     uint8_t getPort();
     uint8_t getPayloadLength();
-    telemetryQueuePriorities getPriority();
 private:
     uint8_t mProtocol;
     uint8_t mSourceAddress;
     uint8_t mDestinationAddress;
     uint8_t mPort;
     uint8_t mPayloadLength;
-    telemetryQueuePriorities mPriority;
 };
 
 // ===== Reception functions =====

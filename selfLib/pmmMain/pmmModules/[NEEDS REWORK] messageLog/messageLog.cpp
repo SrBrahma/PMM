@@ -11,7 +11,7 @@ int PmmModuleMessageLog::init(uint32_t* mainLoopCounterPtr, PmmTelemetry* pmmTel
     mPmmSdPtr           = pmmSd;
     mMainLoopCounterPtr = mainLoopCounterPtr;
 
-    mStringTransmissionCounter = 0;
+    mStringTransmissionCounter   = 0;
     mCurrentlNumberOfStrings     = 0;
 
     return 0;

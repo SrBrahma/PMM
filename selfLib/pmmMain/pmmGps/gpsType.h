@@ -7,32 +7,17 @@
 // Also, makes the entire PMM code easier to mantain, in the case we change the GPS lib.
 typedef struct
 {
-    #ifdef GPS_FIX_LOCATION
-        uint32_t   latitude;
-        uint32_t   longitude;
-    #endif
+    uint32_t  latitude;
+    uint32_t  longitude;
+    float     altitude;
+    uint8_t   satellites;
 
-    #ifdef GPS_FIX_ALTITUDE
-        float   altitude;
-    #endif
+    float     headingDegree;
 
-    #ifdef GPS_FIX_SATELLITES
-        uint8_t satellites;
-    #endif
-
-    #ifdef GPS_FIX_HEADING
-        float   headingDegree;
-    #endif
-
-    #ifdef GPS_FIX_SPEED
-        float   horizontalSpeed;
-        float   upSpeed;
-        #ifdef GPS_FIX_HEADING
-            float northSpeed;
-            float eastSpeed;
-        #endif
-    #endif
-
+    float     horizontalSpeed;
+    float     upSpeed;
+    float     northSpeed;
+    float     eastSpeed;
 } pmmGpsStructType;
 
 #endif

@@ -14,7 +14,6 @@ void printMotd();
 class Pmm
 {
 public:
-
     Pmm();
 
     void init();

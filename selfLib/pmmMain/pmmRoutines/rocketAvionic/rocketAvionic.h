@@ -1,5 +1,4 @@
-/* pmm.h
- * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil */
+// By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
 
 #ifndef PMM_ROUTINE_ROCKET_AVIONIC_h
 #define PMM_ROUTINE_ROCKET_AVIONIC_h
@@ -16,7 +15,8 @@
 #include "pmmSd/sd.h"
 
 // Modules
-#include "pmmModules/portsReception.h"
+#include "pmmModules/simpleDataLog/transmitter.h"
+#include "pmmModules/ports.h"
 
 
 
@@ -30,6 +30,8 @@ public:
     void update();
 
 private:
+    // Add the values to the Module SimpleDataLog
+    void addVarsSimpleDataLog();
 
     // "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.
     void printMotd();
@@ -59,6 +61,10 @@ private:
     PmmImu       mPmmImu;
     PmmGps       mPmmGps;
     PmmSd        mPmmSd;
+
+    // Modules
+    PortsReception mPortsReception;
+    ModuleSimpleDataLogTx mSimpleDataLogTx;
 
 };
 

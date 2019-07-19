@@ -155,20 +155,18 @@ int getReceivedPacketAllInfoStruct(receivedPacketPhysicalLayerInfoStructType* re
     return 0;
 }
 
-void  PacketToBeSent::addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength, telemetryQueuePriorities priority)
+void  PacketToBeSent::addInfo(uint8_t protocol, uint8_t sourceAddress, uint8_t destinationAddress, uint8_t port, uint8_t payloadLength)
 {
     mProtocol           = protocol;
     mSourceAddress      = sourceAddress;
     mDestinationAddress = destinationAddress;
     mPort               = port;
     mPayloadLength      = payloadLength;
-    mPriority           = priority;
 }
 
-uint8_t  PacketToBeSent::getProtocol()                 { return mProtocol;      }
-uint8_t  PacketToBeSent::getSourceAddress()            { return mSourceAddress; }
+uint8_t  PacketToBeSent::getProtocol()                 { return mProtocol;          }
+uint8_t  PacketToBeSent::getSourceAddress()            { return mSourceAddress;     }
 uint8_t  PacketToBeSent::getDestinationAddress()       { return mDestinationAddress;}
-uint8_t  PacketToBeSent::getPort()                     { return mPort;          }
-uint8_t  PacketToBeSent::getPayloadLength()            { return mPayloadLength; }
-telemetryQueuePriorities PacketToBeSent::getPriority() { return mPriority;      }
+uint8_t  PacketToBeSent::getPort()                     { return mPort;              }
+uint8_t  PacketToBeSent::getPayloadLength()            { return mPayloadLength;     }
 

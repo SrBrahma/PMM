@@ -33,6 +33,7 @@ public:
 
     int init();     // Must be executed, so the object is passed. Also, inits everything.
 
+    // You can get those values by using a & (bitwise And) on the return value.
     enum
     {   AllOk = 0,
         MpuError = 0x001,
@@ -51,28 +52,24 @@ public:
     // MPU
     int    initMpu();
     int    updateMpu();
-    void   getAccelerometer(float destinationArray[3]);
-    void   getGyroscope(float destinationArray[3]);
-    float  getMpuTemperature();
-
-    float* getAccelerometerPtr();
-    float* getGyroscopePtr();
-    float* getMpuTemperaturePtr();
+    void   getAccelerometer(float destinationArray[3]);  float* getAccelerometerPtr();
+    void   getGyroscope(float destinationArray[3]);      float* getGyroscopePtr();
+    float  getMpuTemperature();                          float* getMpuTemperaturePtr();
     // -=-=-=-=-=-
 
     // Barometer
     int    initBmp();
     int    updateBmp();
 
-    int    setReferencePressure(unsigned samples = 10);
+    // This function should be reworked. (by HB 18/07/2019)
+    // To REALLY calibrate the barometer, you actually need the initial altitude at the measured location,
+    // then use the seaLevelForAltitude() from the bmp lib, to get the sea-level pressure at the given time
+    // (as weather conditions changes).
+    // int    setReferencePressure(int samples = 10);
 
-    float  getBarometer();
-    float  getAltitudeBarometer();
-    float  getBarometerTemperature();
-
-    float* getBarometerPtr();
-    float* getAltitudeBarometerPtr();
-    float* getBarometerTemperaturePtr();
+    float  getBarometerPressure();     float* getBarometerPressurePtr();
+    float  getBarometerAltitudePtr();  float* getAltitudeBarometerPtr();
+    float  getBarometerTemperature();  float* getBarometerTemperaturePtr();
     // -=-=-=-=-=-
 
 
@@ -86,8 +83,7 @@ public:
     int    setDeclination(uint32_t latitude, uint32_t longitude); // Same as above, but using the uint32_t type for the coordinates.
     float  getDeclination();
 
-    void   getMagnetometer(float destinationArray[3]);
-    float* getMagnetometerPtr();
+    void   getMagnetometer(float destinationArray[3]);  float* getMagnetometerPtr();
     // -=-=-=-=-=-
 
 
@@ -98,17 +94,17 @@ private:
 
     // MPU
     MPU6050  mMpu;
-    int      mMpuIsWorking;
+    bool     mMpuIsWorking;
     // -=-=-=-=-=-
 
     // Barometer
     BMP085   mBarometer;
     double   mReferencePressure;
-    int      mBarometerIsWorking;
+    bool     mBarometerIsWorking;
 
     // Magnetometer
     HMC5883L mMagnetometer;
-    int      mMagnetometerIsWorking;
+    bool     mMagnetometerIsWorking;
     // -=-=-=-=-=-
 
 };

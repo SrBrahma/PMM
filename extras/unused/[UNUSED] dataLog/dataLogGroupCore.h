@@ -17,22 +17,22 @@
 
 
 // 000X 0-1 (1 byte)
-#define MODULE_DATA_LOG_TYPE_UINT8      0
-#define MODULE_DATA_LOG_TYPE_INT8       1
+#define TYPE_ID_UINT8      0
+#define TYPE_ID_INT8       1
 
 // 00X0 2-3 (2 bytes)
-#define MODULE_DATA_LOG_TYPE_UINT16     2
-#define MODULE_DATA_LOG_TYPE_INT16      3
+#define TYPE_ID_UINT16     2
+#define TYPE_ID_INT16      3
 
 // 0X00 4-8 (4 bytes)
-#define MODULE_DATA_LOG_TYPE_UINT32     4
-#define MODULE_DATA_LOG_TYPE_INT32      5
-#define MODULE_DATA_LOG_TYPE_FLOAT      6
+#define TYPE_ID_UINT32     4
+#define TYPE_ID_INT32      5
+#define TYPE_ID_FLOAT      6
 
 // X000 8-15 (8 bytes)
-#define MODULE_DATA_LOG_TYPE_INT64      8
-#define MODULE_DATA_LOG_TYPE_UINT64     9
-#define MODULE_DATA_LOG_TYPE_DOUBLE     10
+#define TYPE_ID_INT64      8
+#define TYPE_ID_UINT64     9
+#define TYPE_ID_DOUBLE     10
 
 
 
@@ -76,7 +76,7 @@ public:
     int  addGps(pmmGpsStructType* pmmGpsStruct   );
 
         // For a quick way to add a variable to the group. Make sure the given variable name and the variable itself is static, global,
-        // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like MODULE_DATA_LOG_TYPE_UINT8;
+        // "const PROGMEM", or any other way that the variable isn't lost during the program run. Variable type follows the #define's like TYPE_ID_UINT8;
     int  addCustomVariable(const char *variableName, uint8_t variableType, void *variableAddress);
     // -=-=-=-=-=-=-=-=
 
@@ -103,10 +103,10 @@ public:
     uint8_t      getDataLogGroupId();
 
     uint8_t      getNumberOfVariables();
-    const char** getVariableNameArray();
-    uint8_t*     getVariableTypeArray();
-    uint8_t*     getVariableSizeArray();
-    uint8_t**    getVariableAdrsArray();
+    const char** getVarNameArray();
+    uint8_t*     getVarTypeArray();
+    uint8_t*     getVarSizeArray();
+    uint8_t**    getVarAdrsArray();
     uint8_t      getGroupLength();
 
 

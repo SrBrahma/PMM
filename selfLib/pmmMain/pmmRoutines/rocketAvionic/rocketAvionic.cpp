@@ -14,8 +14,8 @@
 #include "pmmGps/gps.h"
 
 // Modules
-#include "pmmModules/portsReception.h"
-#include "pmmModules/simpleDataLog/simpleDataLog.h"
+#include "pmmModules/ports.h"
+#include "pmmModules/simpleDataLog/transmitter.h"
 
 #include "pmmDebug.h"   // For debug prints
 
@@ -33,7 +33,10 @@ void RoutineRocketAvionic::init()
 
     int initStatus = 0;
 
-    mSessionId = EEPROM.read(0); EEPROM.write(0, mSessionId++);
+    int adrs = 0;
+    mSessionId = EEPROM.read(adrs); 
+    EEPROM.write(adrs, mSessionId + 1);
+    EEPROM.read(adrs);
 
     // 2) Main objects
     initStatus += mPmmTelemetry.init();
@@ -42,17 +45,13 @@ void RoutineRocketAvionic::init()
     initStatus += mPmmImu.init();
 
     // 3) Modules
-    mPmmModuleDataLog.init(&mPmmTelemetry, &mPmmSd, mSessionId, 0, &mMainLoopCounter, &mMillis);
-        mPmmModuleDataLog.getDataLogGroupCore()->addGps(mPmmGps.getGpsStructPtr());
-        mPmmModuleDataLog.getDataLogGroupCore()->addImu(mPmmImu.getImuStructPtr());
-    mPmmModuleMessageLog.init(&mMainLoopCounter, &mPmmTelemetry, &mPmmSd); // PmmModuleMessageLog
-    //mPmmPortsReception.init(&mPmmModuleDataLog, &mPmmModuleMessageLog);    // PmmPortsReception
+    mSimpleDataLogTx.init(&mPmmTelemetry, &mPmmSd, mSessionId);
+    addVarsSimpleDataLog();
 
 
     // 4) Recovery. 20ms as the minTime is a nice value. BMP085/180 has a min value of ~26ms between
     // each measure on the Ultra-etc precision mode -- the one used here.
-    if (mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1),
-         10)) {
+    if (mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1), 10)) {
         initStatus ++;
         advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
     }
@@ -88,6 +87,7 @@ void RoutineRocketAvionic::update()
     }
 
     mMainLoopCounter++; mMillis = millis();
+    advOnlyPrintln();
 }
 
 void RoutineRocketAvionic::sR_FullActive()
@@ -96,9 +96,11 @@ void RoutineRocketAvionic::sR_FullActive()
 
     // Check if we have a new pressure measure
     if (mPmmImu.update() & PmmImu::BarGotPressure)
-        deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getAltitudeBarometer());
+        deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getBarometerAltitudePtr());
 
     mPmmGps.update();
+    mSimpleDataLogTx.send();
+    mSimpleDataLogTx.storeOnSd();
 
 }
 
@@ -109,6 +111,21 @@ void RoutineRocketAvionic::sR_Landed()
 {
 }
 
+
+// This MUST be exactly the same, for both transmitter and receiver.
+void RoutineRocketAvionic::addVarsSimpleDataLog()
+{
+    mSimpleDataLogTx.addBasicInfo(&mMainLoopCounter, &mMillis);
+    mSimpleDataLogTx.addAccelerometer(mPmmImu.getAccelerometerPtr());
+    mSimpleDataLogTx.addGyroscope(mPmmImu.getGyroscopePtr());
+    mSimpleDataLogTx.addMpuTemperature(mPmmImu.getMpuTemperaturePtr());
+    mSimpleDataLogTx.addBarometerPressure(mPmmImu.getBarometerPressurePtr());
+    mSimpleDataLogTx.addBarometerAltitude(mPmmImu.getBarometerPressurePtr());
+    mSimpleDataLogTx.addMagnetometer(mPmmImu.getMagnetometerPtr());
+    mSimpleDataLogTx.addGpsLatLong( &mPmmGps.getGpsStructPtr()->latitude, &mPmmGps.getGpsStructPtr()->longitude);
+    mSimpleDataLogTx.addGpsAltitude(&mPmmGps.getGpsStructPtr()->altitude);
+    mSimpleDataLogTx.addGpsSatellites(&mPmmGps.getGpsStructPtr()->satellites);
+}
 
 
 void RoutineRocketAvionic::disableRecDeployIfTimePassed(uint32_t timeMillis)
@@ -121,7 +138,7 @@ void RoutineRocketAvionic::disableRecDeployIfTimePassed(uint32_t timeMillis)
     if (mRecoveryStopDeployAtMillis.main   && (timeMillis > mRecoveryStopDeployAtMillis.main  )) {
         mRecoveryStopDeployAtMillis.main   = 0;
         mDeploying.main   = false;
-        digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0);
+        digitalWrite(ROCKET_AVIONIC_PIN_MAIN,   0);
     }
 }
 
@@ -132,7 +149,7 @@ void RoutineRocketAvionic::deployRecoveriesIfConditionsMet(uint32_t timeMillis, 
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff)) {
         mDetections.liftOff = true;
     }
-    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))  {
+    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue )) {
         mDetections.drogue = true;
         mDeploying.drogue  = true;
         mRecoveryStopDeployAtMillis.drogue = timeMillis + ROCKET_AVIONIC_DROGUE_ACTIVE_TIME_MS;

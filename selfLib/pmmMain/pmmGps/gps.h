@@ -22,7 +22,9 @@ public:
     PmmGps();
 
     int init();
-    int update();
+
+    enum class UpdateRtn {NotWorking, OkNoData, GotFix};
+    UpdateRtn update();
 
     pmmGpsStructType  getGpsStruct   (); pmmGpsStructType* getGpsStructPtr();
     gps_fix           getFix         (); gps_fix*          getFixPtr      ();
@@ -38,12 +40,6 @@ private:
     gps_fix mFix;
 
     pmmGpsStructType mPmmGpsStruct;
-
-    #if (defined GPS_FIX_SPEED && defined GPS_FIX_ALTITUDE) // https://stackoverflow.com/a/38474505
-        unsigned long mLastReadMillis;
-        unsigned long mTempLastReadMillis;
-        float mLastAltitude;
-    #endif
 
 };
 

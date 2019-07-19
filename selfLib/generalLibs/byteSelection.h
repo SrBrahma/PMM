@@ -24,6 +24,8 @@ inline uint8_t LSB1(uint32_t value) { return value >> 8;  }
 inline uint8_t LSB2(uint32_t value) { return value >> 16; }
 inline uint8_t LSB3(uint32_t value) { return value >> 24; }
 
+inline uint16_t join2Bytes(uint8_t MSB, uint8_t LSB) { return (MSB << 8) | LSB; }
+
 
 
 inline bool getBit(unsigned value, unsigned bitPositionLsb)

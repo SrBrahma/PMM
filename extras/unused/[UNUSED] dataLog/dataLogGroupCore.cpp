@@ -8,12 +8,13 @@ PmmModuleDataLogGroupCore::PmmModuleDataLogGroupCore()
     reset();
 }
 
-int PmmModuleDataLogGroupCore::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, PmmSdSafeLog* pmmSdSafeLog, uint8_t systemSession)
+int PmmModuleDataLogGroupCore::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, PmmSdSafeLog* pmmSdSafeLog, uint8_t systemSession, uint8_t dataLogGroupId)
 {
     mPmmTelemetryPtr   = pmmTelemetry;
     mPmmSdPtr          = pmmSd;
     mPmmSdSafeLogPtr   = pmmSdSafeLog;
 
+    mDataLogGroupId = dataLogGroupId;
     mSystemSession  = systemSession;
 
     return 0;
@@ -22,10 +23,12 @@ int PmmModuleDataLogGroupCore::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, Pm
 int PmmModuleDataLogGroupCore::reset()
 {
     mTransmissionCounter = 0;
+    mIsGroupLocked       = 0;
     mDataLogGroupId      = 0;
     mNumberVariables     = 0;
     mGroupLength         = 0;
 
+    mDataLogInfoPackets = 0;
     return 0;
 }
 
@@ -33,25 +36,25 @@ uint8_t variableTypeToVariableSize(uint8_t variableType)
 {
     switch (variableType)
     {
-        case MODULE_DATA_LOG_TYPE_UINT8:
+        case TYPE_ID_UINT8:
             return 1;
-        case MODULE_DATA_LOG_TYPE_INT8:
+        case TYPE_ID_INT8:
             return 1;
-        case MODULE_DATA_LOG_TYPE_UINT16:
+        case TYPE_ID_UINT16:
             return 2;
-        case MODULE_DATA_LOG_TYPE_INT16:
+        case TYPE_ID_INT16:
             return 2;
-        case MODULE_DATA_LOG_TYPE_UINT32:
+        case TYPE_ID_UINT32:
             return 4;
-        case MODULE_DATA_LOG_TYPE_INT32:
+        case TYPE_ID_INT32:
             return 4;
-        case MODULE_DATA_LOG_TYPE_FLOAT:
+        case TYPE_ID_FLOAT:
             return 4;
-        case MODULE_DATA_LOG_TYPE_UINT64:
+        case TYPE_ID_UINT64:
             return 8;
-        case MODULE_DATA_LOG_TYPE_INT64:
+        case TYPE_ID_INT64:
             return 8;
-        case MODULE_DATA_LOG_TYPE_DOUBLE:
+        case TYPE_ID_DOUBLE:
             return 8;
         default:    // Maybe will avoid internal crashes?
             advPrintf("Invalid variable type to size!\n");
@@ -61,21 +64,30 @@ uint8_t variableTypeToVariableSize(uint8_t variableType)
 
 int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
 {
-    if (!variableName)    return 1;
-    if (!variableAddress) return 2;
+    if (!variableName)
+        return 1;
+
+    if (!variableAddress)
+        return 2;
+
+    if (mIsGroupLocked)
+    {
+        advPrintf("Failed to add the variable \"%s\". DataLog is already locked.\n", variableName)
+        return 3;
+    }
 
     uint8_t varSize = variableTypeToVariableSize(variableType);
 
     if (mNumberVariables >= MODULE_DATA_LOG_MAX_VARIABLES)
     {
         advPrintf("Failed to add the variable \"%s\". Exceeds the maximum number of variables in the DataLog.", variableName)
-        return 3;
+        return 4;
     }
 
     if ((mGroupLength + varSize) >= PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
     {
         advPrintf("Failed to add the variable \"%s\". Exceeds the maximum content byte size (tried to be %u, max is %u).", variableName, mGroupLength + varSize, PORT_DATA_LOG_MAX_PAYLOAD_LENGTH)
-        return 4;
+        return 5;
     }
 
     mVariableNameArray[mNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
@@ -92,8 +104,10 @@ int PmmModuleDataLogGroupCore::includeVariable(const char *variableName, uint8_t
 
 int PmmModuleDataLogGroupCore::includeArray(const char **variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
 {
-    if (!variableName) return 1;
-    if (!arrayAddress) return 2;
+    if (!variableName)
+        return 1;
+    if (!arrayAddress)
+        return 2;
 
     uint8_t counter;
     for (counter = 0; counter < arraySize; counter++)
@@ -106,17 +120,17 @@ int PmmModuleDataLogGroupCore::includeArray(const char **variableName, uint8_t a
 
 int PmmModuleDataLogGroupCore::addTransmissionCounter()
 {
-    return includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING, MODULE_DATA_LOG_TYPE_UINT32, &mTransmissionCounter);
+    return includeVariable(PMM_DATA_LOG_TRANSMISSION_COUNTER_STRING, TYPE_ID_UINT32, &mTransmissionCounter);
 }
 
 int PmmModuleDataLogGroupCore::addMainLoopCounter    (uint32_t* mainLoopCounterPtr)
 {
-    return includeVariable(PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING,   MODULE_DATA_LOG_TYPE_UINT32, mainLoopCounterPtr);
+    return includeVariable(PMM_DATA_LOG_MAIN_LOOP_COUNTER_STRING,   TYPE_ID_UINT32, mainLoopCounterPtr);
 }
 
 int PmmModuleDataLogGroupCore::addTimeMillis         (uint32_t* timeMillisPtr)
 {
-    return includeVariable(PMM_DATA_LOG_SYSTEM_TIME_MILLIS_STRING,   MODULE_DATA_LOG_TYPE_UINT32, timeMillisPtr);
+    return includeVariable(PMM_DATA_LOG_SYSTEM_TIME_MILLIS_STRING,   TYPE_ID_UINT32, timeMillisPtr);
 }
 
 int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* mainLoopCounter, uint32_t* timeMillis) // Adds the three above.
@@ -132,38 +146,51 @@ int PmmModuleDataLogGroupCore::addBasicInfo          (uint32_t* mainLoopCounter,
 
 
 
-int PmmModuleDataLogGroupCore::addAccelerometer(void* array) {
+int PmmModuleDataLogGroupCore::addAccelerometer(void* array)
+{
     const PROGMEM char* arrayString[3] = {"accelerometerX(g)", "accelerometerY(g)", "accelerometerZ(g)"};
-    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, TYPE_ID_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroupCore::addGyroscope(void* array) {
+int PmmModuleDataLogGroupCore::addGyroscope(void* array)
+{
     const PROGMEM char* arrayString[3] = {"gyroscopeX(degree/s)", "gyroscopeY(degree/s)", "gyroscopeZ(degree/s)"};
-    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, TYPE_ID_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroupCore::addTemperatureMpu(void* temperatureMpu) {
+int PmmModuleDataLogGroupCore::addTemperatureMpu(void* temperatureMpu)
+{
     const PROGMEM char* mpuTemperatureString = "temperatureMpu(C)";
-    return includeVariable(mpuTemperatureString, MODULE_DATA_LOG_TYPE_FLOAT, temperatureMpu);
+    return includeVariable(mpuTemperatureString, TYPE_ID_FLOAT, temperatureMpu);
 }
 
-int PmmModuleDataLogGroupCore::addMagnetometer(void* array) {
+int PmmModuleDataLogGroupCore::addMagnetometer(void* array)
+{
     const PROGMEM char* arrayString[3] = {"magnetometerX(uT)", "magnetometerY(uT)", "magnetometerZ(uT)"};
-    return includeArray(arrayString, MODULE_DATA_LOG_TYPE_FLOAT, array, 3);
+    return includeArray(arrayString, TYPE_ID_FLOAT, array, 3);
 }
 
-int PmmModuleDataLogGroupCore::addBarometer(void* barometer) {
+int PmmModuleDataLogGroupCore::addBarometer(void* barometer)
+{
     const PROGMEM char* barometerPressureString = "barometerPressure(hPa)";
-    return includeVariable(barometerPressureString, MODULE_DATA_LOG_TYPE_FLOAT, barometer);
+    return includeVariable(barometerPressureString, TYPE_ID_FLOAT, barometer);
 }
 
-int PmmModuleDataLogGroupCore::addAltitudeBarometer(void* altitude) {
-    return includeVariable(PMM_DATA_LOG_ALTITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, altitude);
+// Without filtering
+int PmmModuleDataLogGroupCore::addRawAltitudeBarometer(void* rawAltitudePressure)
+{
+    return includeVariable(PMM_DATA_LOG_RAW_ALTITUDE_STRING, TYPE_ID_FLOAT, rawAltitudePressure);
 }
 
-int PmmModuleDataLogGroupCore::addTemperatureBmp(void* barometerTempPtr) {
+int PmmModuleDataLogGroupCore::addAltitudeBarometer(void* altitude)
+{
+    return includeVariable(PMM_DATA_LOG_ALTITUDE_STRING, TYPE_ID_FLOAT, altitude);
+}
+
+int PmmModuleDataLogGroupCore::addTemperatureBmp(void* barometerTempPtr)
+{
     const PROGMEM char* barometerTempString = "temperatureBmp(C)";
-    return includeVariable(barometerTempString, MODULE_DATA_LOG_TYPE_FLOAT, barometerTempPtr);
+    return includeVariable(barometerTempString, TYPE_ID_FLOAT, barometerTempPtr);
 }
 
 
@@ -179,6 +206,7 @@ int PmmModuleDataLogGroupCore::addImu(pmmImuStructType *pmmImuStructPtr)
     if ((returnVal = addMagnetometer        (pmmImuStructPtr->magnetometerArray)))  return returnVal;
 
     if ((returnVal = addBarometer           (&pmmImuStructPtr->pressure)))          return returnVal;
+    if ((returnVal = addRawAltitudeBarometer(&pmmImuStructPtr->altitude)))          return returnVal;
     if ((returnVal = addTemperatureBmp      (&pmmImuStructPtr->temperatureBmp)))    return returnVal;
 
     return 0;
@@ -191,36 +219,36 @@ int PmmModuleDataLogGroupCore::addGps(pmmGpsStructType* pmmGpsStruct)
     int returnVal;
 
     #ifdef GPS_FIX_LOCATION
-        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LATITUDE_STRING,  MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->latitude ))) return returnVal;
-        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LONGITUDE_STRING, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->longitude))) return returnVal;
+        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LATITUDE_STRING,  TYPE_ID_FLOAT, &pmmGpsStruct->latitude ))) return returnVal;
+        if ((returnVal = includeVariable(PMM_DATA_LOG_GPS_LONGITUDE_STRING, TYPE_ID_FLOAT, &pmmGpsStruct->longitude))) return returnVal;
     #endif
 
     #ifdef GPS_FIX_ALTITUDE
         const PROGMEM char* gpsAltitudeString        = "gpsAltitude(m)";
-        if ((returnVal = includeVariable(gpsAltitudeString,      MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->altitude)))      return returnVal;
+        if ((returnVal = includeVariable(gpsAltitudeString,      TYPE_ID_FLOAT, &pmmGpsStruct->altitude)))      return returnVal;
     #endif
 
     #ifdef GPS_FIX_SATELLITES
         const PROGMEM char* gpsSatellitesString      = "gpsSatellites";
-        if ((returnVal = includeVariable(gpsSatellitesString,    MODULE_DATA_LOG_TYPE_UINT8, &pmmGpsStruct->satellites)))    return returnVal;
+        if ((returnVal = includeVariable(gpsSatellitesString,    TYPE_ID_UINT8, &pmmGpsStruct->satellites)))    return returnVal;
     #endif
 
     #ifdef GPS_FIX_HEADING
         const PROGMEM char* gpsHeadingDegreeString   = "gpsHeadingDegree";
-        if ((returnVal = includeVariable(gpsHeadingDegreeString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;
+        if ((returnVal = includeVariable(gpsHeadingDegreeString, TYPE_ID_FLOAT, &pmmGpsStruct->headingDegree))) return returnVal;
     #endif
 
     #ifdef GPS_FIX_SPEED
         const PROGMEM char* gpsUpSpeedString         = "gpsSpeedUp(m/s)";
         const PROGMEM char* gpsHorizontalSpeedString = "gpsHorizontalSpeed(m/s)";
-        if ((returnVal = includeVariable(gpsUpSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
-        if ((returnVal = includeVariable(gpsHorizontalSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
+        if ((returnVal = includeVariable(gpsUpSpeedString, TYPE_ID_FLOAT, &pmmGpsStruct->upSpeed))) return returnVal;
+        if ((returnVal = includeVariable(gpsHorizontalSpeedString, TYPE_ID_FLOAT, &pmmGpsStruct->horizontalSpeed))) return returnVal;
 
         #ifdef GPS_FIX_HEADING
             const PROGMEM char* gpsNorthSpeedString  = "gpsNorthSpeed(m/s)";
             const PROGMEM char* gpsEastSpeedString   = "gpsEastSpeed(m/s)";
-            if ((returnVal = includeVariable(gpsNorthSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;
-            if ((returnVal = includeVariable(gpsEastSpeedString, MODULE_DATA_LOG_TYPE_FLOAT, &pmmGpsStruct->eastSpeed)))   return returnVal;
+            if ((returnVal = includeVariable(gpsNorthSpeedString, TYPE_ID_FLOAT, &pmmGpsStruct->northSpeed))) return returnVal;
+            if ((returnVal = includeVariable(gpsEastSpeedString, TYPE_ID_FLOAT, &pmmGpsStruct->eastSpeed))) return returnVal;
         #endif
     #endif
 
@@ -235,10 +263,15 @@ int PmmModuleDataLogGroupCore::addCustomVariable(const char* variableName, uint8
 }
 
 
+/* Getters! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
+uint8_t PmmModuleDataLogGroupCore::getNumberOfVariables()       { return mNumberVariables; }
+int     PmmModuleDataLogGroupCore::getIsGroupLocked()           { return mIsGroupLocked;   }
 
 
-uint8_t      PmmModuleDataLogGroupCore::getNumberOfVariables()  { return mNumberVariables; }
-const char** PmmModuleDataLogGroupCore::getVariableNameArray()  { return (const char**) mVariableNameArray  ;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableTypeArray()  { return mVariableTypeArray                 ;}
-uint8_t*     PmmModuleDataLogGroupCore::getVariableSizeArray()  { return mVariableSizeArray                 ;}
-uint8_t**    PmmModuleDataLogGroupCore::getVariableAdrsArray()  { return mVariableAdrsArray                 ;}
+const char** PmmModuleDataLogGroupCore::getVarNameArray()  { return (const char**) mVariableNameArray  ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVarTypeArray()  { return mVariableTypeArray                 ;}
+uint8_t*     PmmModuleDataLogGroupCore::getVarSizeArray()  { return mVariableSizeArray                 ;}
+uint8_t**    PmmModuleDataLogGroupCore::getVarAdrsArray()  { return mVariableAdrsArray                 ;}
+
+
+uint8_t      PmmModuleDataLogGroupCore::getDataLogInfoPackets() { return mDataLogInfoPackets                ;}

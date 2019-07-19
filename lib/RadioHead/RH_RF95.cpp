@@ -283,9 +283,12 @@ int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructTy
 
 bool  RH_RF95::isSendAvailable()
 {
-    if(isPacketBeingSent()) return false;
+    if(isPacketBeingSent())
+        return false;
     setModeIdle();
-    if (isChannelActive())  return false;  // Check channel activity
+    if (isChannelActive())
+        return false;  // Check channel activity
+    return true;
 }
 bool  RH_RF95::isPacketBeingSent()
 {

@@ -10,7 +10,7 @@
 #include "pmmSd/consts.h"
 
 
-#define PMM_SD_BASE_DIRECTORY               "Minerva Rockets - PMM"
+#define PMM_SD_BASE_DIRECTORY               "PMM"
 
 
 
@@ -21,18 +21,27 @@ public:
 
     PmmSd();
 
-    int init(uint8_t sessionId = 0);
+    int init(uint8_t sessionId);
 
-    int setPmmCurrentDirectory();
-    int setCurrentDirectory   (char fullPath[]);
+    // Set as current directory the default PMM directory, using the given Session and this system name.
+    // PMM/$SYSTEM_NAME$/Session $SESSION_ID$
+    int setPmmCurrentDirectory(uint8_t sessionId);
 
+    // For removing directories recursively.
     int removeDirRecursively(char relativePath[]);
 
-    int getSelfDirectory    (char destination[], uint8_t maxLength, const char additionalPath[] = NULL);
-    int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession, const char additionalPath[] = NULL);
+    // Returns by the first arg the string of the 'Self' directory, the directory of 'this' system.
+    int getSelfDirectory    (char destination[], uint8_t maxLength);
+
+    // Returns by the first arg the string of the 'Received' directory, the directory path using
+    // the source address and session.
+    int getReceivedDirectory(char destination[], uint8_t maxLength, uint8_t sourceAddress, uint8_t sourceSession);
 
 
     bool     exists(char filename[]);
+
+    // Create directories if they don't exist and open the file with the given parameters.
+    int      createDirsAndOpen(File *file, const char path[], oflag_t mode = O_RDWR | O_CREAT);
 
     int      createDirsAndOpen(const char path[], oflag_t mode = O_RDWR | O_CREAT);
     int      open (const char filename[], oflag_t mode = O_READ);
@@ -45,8 +54,8 @@ public:
     int      close();
     uint32_t size ();
 
-    unsigned      getSdIsWorking();
-    bool          getSdIsBusy();
+    bool     getSdIsWorking();
+    bool     getSdIsBusy();
 
     SdFatSdio   *getSdFatPtr();
     SdioCard    *getCardPtr ();
@@ -62,7 +71,7 @@ private:
 
     char      mPmmDirPath[PMM_SD_FILENAME_MAX_LENGTH];
 
-    uint8_t   mThisSessionId;
+    uint8_t   mSessionId;
 
 };
 

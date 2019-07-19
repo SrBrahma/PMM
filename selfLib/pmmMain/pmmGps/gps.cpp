@@ -23,10 +23,6 @@ PmmGps::PmmGps(){}
 int PmmGps::init()
 {
     PMM_GPS_PORT.begin(9600);
-    #if PMM_GPS_GET_SPEEDS
-        mTempLastReadMillis = 0;
-        mLastReadMillis = 0;
-    #endif
 
     if (!PMM_GPS_PORT)
     {
@@ -53,12 +49,11 @@ PmmGps::UpdateRtn PmmGps::update()
         return UpdateRtn::OkNoData;
 
     mFix = mNMEAGPS.read();
-
     debugPrintFix(Serial, mNMEAGPS, mFix);
 
     fixToOurType(mFix, mPmmGpsStruct);
 
-    return UpdateRtn::GotFix; // ?? not necessarily coord
+    return UpdateRtn::GotFix; // not necessarily coord
 }
 
 // All info below on https://github.com/SlashDevin/NeoGPS/blob/master/extras/doc/Data%20Model.md !!
@@ -101,7 +96,7 @@ void PmmGps::debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix
 {
     #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_GPS_DEBUG_MORE
         gpsDebugMorePrintf("GPS updated. trace_all(): ")
-        gpsDebugMorePrintf("Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars");
+        gpsDebugMorePrintf("Status,UTC Date/Time,Lat,Lon,Hdg,Spd,Alt,Sats,Rx ok,Rx err,Rx chars\n");
         trace_all(Serial, mNMEAGPS, mFix);
     #endif
 }

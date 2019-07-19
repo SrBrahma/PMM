@@ -124,7 +124,7 @@ private:
 // These steps can be slightly different from protocol to protocol.
 int  validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisAddress, int promiscuousMode);
 
-int  getReceivedPacketAllInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
+int  getRxPacketAllInfo(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
 
 // ===== Transmissin functions =====
 int  buildPacket (uint8_t packet[], uint8_t* packetLength, PacketToBeSent* toBeSentTelemetryPacketInfoStruct);

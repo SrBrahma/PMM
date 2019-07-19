@@ -68,7 +68,7 @@ public:
     // int    setReferencePressure(int samples = 10);
 
     float  getBarometerPressure();     float* getBarometerPressurePtr();
-    float  getBarometerAltitudePtr();  float* getAltitudeBarometerPtr();
+    float  getBarometerAltitude();     float* getBarometerAltitudePtr();
     float  getBarometerTemperature();  float* getBarometerTemperaturePtr();
     // -=-=-=-=-=-
 

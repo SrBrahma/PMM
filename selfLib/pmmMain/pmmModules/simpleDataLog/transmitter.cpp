@@ -63,9 +63,9 @@ int  ModuleSimpleDataLogTx::storeOnSd(bool writeOnBckupToo)
     char data[dataMaxLength];
 
     if (mIsFirstStoreOnSd) {
-        mPmmSdPtr->getSelfDirectory(mFilePath, PMM_SD_FILENAME_MAX_LENGTH);
+        mPmmSdPtr->getSelfDirectory(mFilePath2, PMM_SD_FILENAME_MAX_LENGTH);
 
-        snprintf(mFilePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath, "/simpleDataLog.csv");
+        snprintf(mFilePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath2, "/simpleDataLog.csv");
         if (writeOnBckupToo)
             snprintf(mFilePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath2, "/simpleDataLogBckup.csv");
 

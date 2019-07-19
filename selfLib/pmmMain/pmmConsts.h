@@ -12,7 +12,8 @@
 //  Routine
 // =======================================================================
     #define PMM_ROUTINE_ROCKET_AVIONIC                      0
-    #define PMM_ROUTINE_LAUNCH_SIM                          1
+    #define PMM_ROUTINE_PDA                                 1
+    #define PMM_ROUTINE_LAUNCH_SIM                          2
 
     #define PMM_SYSTEM_ROUTINE     PMM_ROUTINE_ROCKET_AVIONIC
 
@@ -22,7 +23,11 @@
     #define PMM_THIS_NAME_DEFINE                     "Aurora" // Used in messageLog.cpp.
 
     // This system address. Two systems MUST NOT have the same address.
-    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     1   
+    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     1
+
+    // For the PDA/Receiver:
+    // Indicates the address which the SimpleDataLog Module will be listening to.
+    #define PMM_TLM_SIMPLE_DATA_LOG_SOURCE_ADDRESS          1
 
 
     #define PMM_USE_BUZZER                                  0

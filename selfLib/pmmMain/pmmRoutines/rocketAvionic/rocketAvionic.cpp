@@ -93,11 +93,9 @@ void RoutineRocketAvionic::update()
 void RoutineRocketAvionic::sR_FullActive()
 {
     disableRecDeployIfTimePassed(mMillis);
-
     // Check if we have a new pressure measure
     if (mPmmImu.update() & PmmImu::BarGotPressure)
-        deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getBarometerAltitudePtr());
-
+        deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getBarometerAltitude());
     mPmmGps.update();
     mSimpleDataLogTx.send();
     mSimpleDataLogTx.storeOnSd();
@@ -120,9 +118,9 @@ void RoutineRocketAvionic::addVarsSimpleDataLog()
     mSimpleDataLogTx.addGyroscope(mPmmImu.getGyroscopePtr());
     mSimpleDataLogTx.addMpuTemperature(mPmmImu.getMpuTemperaturePtr());
     mSimpleDataLogTx.addBarometerPressure(mPmmImu.getBarometerPressurePtr());
-    mSimpleDataLogTx.addBarometerAltitude(mPmmImu.getBarometerPressurePtr());
+    mSimpleDataLogTx.addBarometerAltitude(mPmmImu.getBarometerAltitudePtr());
     mSimpleDataLogTx.addMagnetometer(mPmmImu.getMagnetometerPtr());
-    mSimpleDataLogTx.addGpsLatLong( &mPmmGps.getGpsStructPtr()->latitude, &mPmmGps.getGpsStructPtr()->longitude);
+    mSimpleDataLogTx.addGpsLatLong(&mPmmGps.getGpsStructPtr()->latitude, &mPmmGps.getGpsStructPtr()->longitude);
     mSimpleDataLogTx.addGpsAltitude(&mPmmGps.getGpsStructPtr()->altitude);
     mSimpleDataLogTx.addGpsSatellites(&mPmmGps.getGpsStructPtr()->satellites);
 }

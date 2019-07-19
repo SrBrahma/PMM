@@ -2,7 +2,7 @@
 
 #include "pmmConsts.h"
 
-#if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
+#if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
 
 #include <EEPROM.h> // To get the mSessionId
 
@@ -43,18 +43,26 @@ void RoutinePda::init()
     initStatus += mPmmImu.init();
 
     // 3) Modules
-    mSimpleDataLogRx.init(&mPmmSd, mSessionId);
+    mSimpleDataLogRx.init(&mPmmSd, mSessionId, PMM_TLM_SIMPLE_DATA_LOG_SOURCE_ADDRESS);
     addVarsSimpleDataLog();
+    mPortsReception.addSimpleDataLogRx(&mSimpleDataLogRx);
 
-    // 5) End!
+    // 4) End!
     mMillis = millis(); // Again!
     printMotd();
 }
 
 void RoutinePda::update()
 {
-
-
+    if (mPmmTelemetry.updateReception())
+        switch(mPmmTelemetry.getRxPacketAllInfoPtr()->port)
+            case PORT_ID_SIMPLE_DATA_LOG:
+                return mModuleSimpleDataLog->receivedPacket(packetInfo);
+            default:;
+        }
+        return 0;
+    }
+        mPortsReception.
     mMainLoopCounter++; mMillis = millis();
     advOnlyPrintln();
 }

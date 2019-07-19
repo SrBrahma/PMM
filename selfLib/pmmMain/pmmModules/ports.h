@@ -1,6 +1,7 @@
 #ifndef PMM_PORTS_h
 #define PMM_PORTS_h
 
+#define PORT_ID_NONE                0x00 // None!
 #define PORT_ID_DATA_LOG            0x01
 #define PORT_ID_DATA_LOG_INFO       0x02
 #define PORT_ID_MESSAGE_LOG         0x03

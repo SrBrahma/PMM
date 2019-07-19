@@ -36,12 +36,13 @@ int HMC5883L::begin()
 
     uint8_t valueA, valueB, valueC;
 
-    read8(HMC5883L_REG_IDENT_A, &valueA);
-    read8(HMC5883L_REG_IDENT_B, &valueB);
-    read8(HMC5883L_REG_IDENT_C, &valueC);
+    // Those are returns for timeout.
+    if (read8(HMC5883L_REG_IDENT_A, &valueA)) return 1;
+    if (read8(HMC5883L_REG_IDENT_B, &valueB)) return 2;
+    if (read8(HMC5883L_REG_IDENT_C, &valueC)) return 3;
 
     if ((valueA != 0x48) || (valueB != 0x34) || (valueC != 0x33))
-        return 1;
+        return 4;
 
     setMagnetometerRange(HMC5883L_RANGE_1_3GA);
     setMeasurementMode  (HMC5883L_CONTINOUS);
@@ -282,10 +283,8 @@ int HMC5883L::read8(uint8_t reg, uint8_t* value)
 
     uint32_t startMillis = millis();
     while(!mWire.available())
-    {
-        if (millis() > startMillis + 5) // Maximum wait of 5ms. Avoid infinite loop.
+        if (millis() > startMillis + 10) // Maximum wait of 10ms. Avoid infinite loop.
             return 1;
-    }
 
     *value = mWire.read();
 

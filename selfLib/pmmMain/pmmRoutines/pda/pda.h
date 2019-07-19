@@ -15,7 +15,6 @@
 
 // Modules
 #include "pmmModules/simpleDataLog/receiver.h"
-#include "pmmModules/ports.h"
 
 
 
@@ -49,6 +48,16 @@ private:
     // Modules
     PortsReception        mPortsReception;
     ModuleSimpleDataLogRx mSimpleDataLogRx;
+
+    struct mReceivedVars {
+        int      transmissionCounterIndex;
+        uint32_t gpsNoCoordMillis;
+        int      gpsNoCoordMillisIndex;
+        int      gpsLatIndex;
+        int      gpsLonIndex;
+        int      gpsSatsIndex;
+        int      barAltIndex;
+    };
 
 };
 

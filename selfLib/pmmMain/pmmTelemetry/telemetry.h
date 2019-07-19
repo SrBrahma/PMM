@@ -15,10 +15,12 @@ class PmmTelemetry
 public:
     PmmTelemetry();
 
-    int init();
+    int  init();
 
-    int updateReception();
+    // Returns true if received anything, else, false.
+    bool updateReception();
 
+    // Returns true if you can send a packet *right now*. False if you can't. Read the other funcs description below.
     bool isSendAvailable();
 
     // Sends the packet. Will wait a previous packet being sent, and will wait if is detected channel activity.
@@ -34,16 +36,16 @@ public:
     // Returns 0 if successfully sent. Else, error or wasn't sent.
     int sendIfAvailable(PacketToBeSent *packet);
 
-    receivedPacketAllInfoStructType* getReceivedPacketAllInfoStructPtr();
+    receivedPacketAllInfoStructType* getRxPacketAllInfoPtr();
 
 
 private:
 
     RH_RF95  mRf95;
-    int      mTelemetryIsWorking;
+    bool     mTelemetryIsWorking;
 
-    receivedPacketPhysicalLayerInfoStructType   mReceivedPacketPhysicalLayerInfoStruct;
-    receivedPacketAllInfoStructType             mReceivedPacketAllInfoStruct          ;
+    receivedPacketPhysicalLayerInfoStructType   mRxPacketPhysicalLayerInfo;
+    receivedPacketAllInfoStructType             mRxPacketAllInfo          ;
 
     #if PMM_TLM_SIMULATE_RECEPTION
         int    mNewSimulatedPacket;

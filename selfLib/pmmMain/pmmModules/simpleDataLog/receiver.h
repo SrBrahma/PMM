@@ -43,6 +43,16 @@ public:
     // Returns -1 if null destination, -2 if invalid index.
     int  getVarByIndex(void *destination, int index);
 
+    // You can add other types.
+    // The values are updated after a successful receivedPacket();
+    uint8_t  getVar_uint8_t (int index);
+    uint32_t getVar_uint32_t(int index);
+    float    getVar_float   (int index);
+
+    // Get the session of the transmitter.
+    // The value is updated after a successful receivedPacket();
+    uint8_t  getSourceSession();
+
 
     // Also adds the Transmission counter
     int  addBasicInfo           (); 
@@ -68,6 +78,8 @@ private:
     int     includeVariable(const char  variableName[], uint8_t variableType);
 
     uint8_t mSourceAddress;
+    uint8_t mSourceSession;
+
     uint8_t mSessionId; // Id from this receiver system.
 
     uint8_t mVarsData[TLM_MAX_PAYLOAD_LENGTH];

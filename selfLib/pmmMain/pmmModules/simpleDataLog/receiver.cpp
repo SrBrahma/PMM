@@ -30,15 +30,16 @@ int ModuleSimpleDataLogRx::getVarByIndex(void *destination, int index) {
     if (!destination)                           return -1;
     if (index < 0 || index >= mNumberVariables) return -2;
     memcpy(destination, mVarsAdrsArray[index], mVarsSizeArray[index]);
+    return 0;
 }
 
 
 
 // Received Package Log Info Package
-bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* packet, bool autoStoreOnSd = false)
+bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* packet, bool autoStoreOnSd)
 {
     if (!packet)                                 return false;
-    if (packet->payloadLength < 1)               return false;
+    if (packet->payloadLength < 3)               return false; // Should at least have the 2 bytes of crc16, and the session.
     if (packet->sourceAddress != mSourceAddress) return false;
 
     // 1) First, check the CRC-16 of this packet.
@@ -46,6 +47,8 @@ bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* pack
 
     if (crc16(packet->payload + TLM_CRC_LENGTH, packet->payloadLength - TLM_CRC_LENGTH) != receivedCrc)
         return false; // Ignore this packet
+
+    mSourceSession = packet->payload[TLM_INDEX_SESSION_ID];
 
     memcpy(mVarsData, packet->payload + TLM_HEADER_LENGTH, min(packet->payloadLength, TLM_MAX_PAYLOAD_LENGTH));
     storeOnSd(packet->payload[TLM_INDEX_SESSION_ID]);

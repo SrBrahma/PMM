@@ -20,9 +20,19 @@ public:
     int updateReception();
 
     bool isSendAvailable();
-    int send(PacketToBeSent* packetToBeSent);
-   
 
+    // Sends the packet. Will wait a previous packet being sent, and will wait if is detected channel activity.
+    // Basically, it WILL send. Can take some time waiting (nothing else on you code will happen!
+    //                                                            Advanced info: Yield() happens.
+    // Returns 0 if successfully sent. Else, error.
+    int send(PacketToBeSent *packet);
+   
+    // Sends the packet, if the sending is available *right now*. If is detected that
+    // a previous packet still being sent, or detected channel activity, it won't wait.
+    // You should also run isSendAvaible() before this function, to know beforehand that building
+    // the packet will be useless..
+    // Returns 0 if successfully sent. Else, error or wasn't sent.
+    int sendIfAvailable(PacketToBeSent *packet);
 
     receivedPacketAllInfoStructType* getReceivedPacketAllInfoStructPtr();
 

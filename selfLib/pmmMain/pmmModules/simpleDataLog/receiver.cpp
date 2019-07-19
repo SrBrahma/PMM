@@ -18,40 +18,24 @@ int  ModuleSimpleDataLogRx::init(PmmSd* pmmSd, uint8_t systemSession, uint8_t so
     return 0;
 }
 
-int  ModuleSimpleDataLogRx::storeOnSd(uint8_t sourceSession, bool writeOnBckupToo) {
-    #define dataMaxLength 1024
-    char data[dataMaxLength];
-    File file, file2;
-    char filePath[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
-    char filePath2[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
 
-    mPmmSdPtr->getReceivedDirectory(filePath2, PMM_SD_FILENAME_MAX_LENGTH, mSourceAddress, sourceSession);
-    snprintf(filePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath, "/simpleDataLog.csv");
-    if (writeOnBckupToo)
-        snprintf(filePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath2, "/simpleDataLogBckup.csv");
 
-    if (!mPmmSdPtr->exists(filePath)) {
-        buildCsvHeader(data, dataMaxLength);
-        mPmmSdPtr->createDirsAndOpen(&file, filePath); mPmmSdPtr->createDirsAndOpen(&file2, filePath2);
-        file.print(data);
-        
-        if (writeOnBckupToo) {
-            mPmmSdPtr->createDirsAndOpen(&file2, filePath2);
-            file2.print(data);
-        }
-    }
-
-    buildCsvData(data, dataMaxLength);
-
-    file.print(data);  file.close();
-    if (writeOnBckupToo)
-        file2.print(data); file2.close();
-
-    return 0;
+int  ModuleSimpleDataLogRx::getVarIndex(char varExactName[]) {
+    for (int i = 0; i < mNumberVariables; i++)
+        if (strcmp(varExactName, mVarsNameArray[i]) == 0)
+            return i;
+    return -1;
+}
+int ModuleSimpleDataLogRx::getVarByIndex(void *destination, int index) {
+    if (!destination)                           return -1;
+    if (index < 0 || index >= mNumberVariables) return -2;
+    memcpy(destination, mVarsAdrsArray[index], mVarsSizeArray[index]);
 }
 
+
+
 // Received Package Log Info Package
-bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* packet)
+bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* packet, bool autoStoreOnSd = false)
 {
     if (!packet)                                 return false;
     if (packet->payloadLength < 1)               return false;
@@ -67,6 +51,40 @@ bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* pack
     storeOnSd(packet->payload[TLM_INDEX_SESSION_ID]);
 
     return true;
+}
+
+
+
+int  ModuleSimpleDataLogRx::storeOnSd(uint8_t sourceSession, bool writeOnBckupToo) {
+    #define dataMaxLength 1024
+    char data[dataMaxLength];
+    File file, file2;
+    char filePath[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
+    char filePath2[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
+
+    mPmmSdPtr->getReceivedDirectory(filePath2, PMM_SD_FILENAME_MAX_LENGTH, mSourceAddress, sourceSession);
+    snprintf(filePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath2, "/simpleDataLog.csv");
+    if (writeOnBckupToo)
+        snprintf(filePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath2, "/simpleDataLogBckup.csv");
+
+    if (!mPmmSdPtr->exists(filePath)) {
+        buildCsvHeader(data, dataMaxLength);
+        mPmmSdPtr->createDirsAndOpen(&file, filePath);
+        file.print(data);
+        
+        if (writeOnBckupToo) {
+            mPmmSdPtr->createDirsAndOpen(&file2, filePath2);
+            file2.print(data);
+        }
+    }
+
+    buildCsvData(data, dataMaxLength);
+
+    file.print(data);  file.close();
+    if (writeOnBckupToo)
+        file2.print(data); file2.close();
+
+    return 0;
 }
 
 

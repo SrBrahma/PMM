@@ -281,8 +281,9 @@ int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructTy
     return true;
 }
 
-bool  RH_RF95::isSendAvailable()
-{
+// Checks if this system isn't already sending a message AND if there isn't channel activity.
+// By Henrique Bruno (aka SrBrahma).
+bool  RH_RF95::isSendAvailable() {
     if(isPacketBeingSent())
         return false;
     setModeIdle();
@@ -290,30 +291,28 @@ bool  RH_RF95::isSendAvailable()
         return false;  // Check channel activity
     return true;
 }
-bool  RH_RF95::isPacketBeingSent()
-{
+
+// Checks if this system isn't already sending a message.
+// By Henrique Bruno (aka SrBrahma).
+bool  RH_RF95::isPacketBeingSent() {
     if (_mode == RHModeTx)
         return true;
     else
         return false;
 }
 
-// Won't add the default RadioHead headers
-int  RH_RF95::sendIfAvailable(uint8_t data[], uint8_t len)
+// The functions fails if there is any packet being sent by this system, or if
+// detected activity on the current channel (CAD).
+// Won't add the default RadioHead headers. They sucks.
+// By Henrique Bruno (aka SrBrahma).
+int  RH_RF95::sendIfAvailable(const uint8_t data[], uint8_t len)
 {
-    if (!data)
-        return 1;
-
-    if (len > RH_RF95_MAX_PAYLOAD_LEN)
-        return 2;
-
-    if(isPacketBeingSent()) // Make sure we dont interrupt an outgoing message.
-        return 3;
+    if (!data)                          return 1;
+    if (len > RH_RF95_MAX_PAYLOAD_LEN)  return 2;
+    if(isPacketBeingSent())             return 3;
 
     setModeIdle();
-
-    if (isChannelActive())
-        return 4;  // Check channel activity
+    if (isChannelActive())              return 4;  // Check channel activity
 
     // Position at the beginning of the FIFO
     spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
@@ -321,6 +320,32 @@ int  RH_RF95::sendIfAvailable(uint8_t data[], uint8_t len)
     // The message data
     spiBurstWrite(RH_RF95_REG_00_FIFO, data, len);
     spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, len);
+
+    setModeTx(); // Start the transmitter
+    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
+    return 0;
+}
+
+// The functions will wait until the send is available (default 'send' function behaviour)
+// Won't add the default RadioHead headers. They sucks.
+// By Henrique Bruno (aka SrBrahma).
+int RH_RF95::sendWithoutHeaders(const uint8_t data[], uint8_t len)
+{
+    if (!data)                          return 1;
+    if (len > RH_RF95_MAX_MESSAGE_LEN)  return 2;
+
+    waitPacketSent(); // Make sure we dont interrupt an outgoing message
+    setModeIdle();
+
+    if (!waitCAD())
+        return false;  // Check channel activity
+
+    // Position at the beginning of the FIFO
+    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
+
+    // The message data
+    spiBurstWrite(RH_RF95_REG_00_FIFO, data, len);
+    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, len + RH_RF95_HEADER_LEN);
 
     setModeTx(); // Start the transmitter
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY

@@ -19,12 +19,30 @@ class ModuleSimpleDataLogRx : public ModuleSimpleDataLogCore
 public:
     ModuleSimpleDataLogRx();
 
+    // The sourceAddres is the address of the transmitter, the one who you want to listen to.
     int  init(PmmSd* pmmSd, uint8_t systemSession, uint8_t sourceAddress);
 
-    //    Returns true if received a valid packet.
-    bool  receivedPacket(receivedPacketAllInfoStructType* packetInfo);
+    // Returns true if received a valid packet.
+    bool receivedPacket(receivedPacketAllInfoStructType* packetInfo, bool autoStoreOnSd = false);
 
-    
+    // Stores the last received packet on the SD.
+    // Should be runned after successful receivedPacket(). (can be automatically called using
+    // autoStoreOnSd, on receivedPacket arg.
+    int  storeOnSd(uint8_t sourceSession, bool writeOnBckupToo = true);
+
+    // Returns the index of the variable, to be used on getVarByIndex function.
+    // You can get the varExactName on pmmModules/simpleDataLog/varsNames.h,
+    // or by calling this receiver object with 'mReceiver'.mStr.'names!', where the fields between ' ' are
+    // your choices! Only yours!
+    // Returns -1 if not found.
+    int  getVarIndex(char varExactName[]);
+
+    // Copies to the first arg the var value of the last received packet. Be sure before that the types match.
+    // It won't know if there was already a received packet. You should check the return value of
+    // receivedPacket before. The index you can get by using getVarIndex function.
+    // Returns -1 if null destination, -2 if invalid index.
+    int  getVarByIndex(void *destination, int index);
+
 
     // Also adds the Transmission counter
     int  addBasicInfo           (); 
@@ -48,9 +66,6 @@ public:
 private:
 
     int     includeVariable(const char  variableName[], uint8_t variableType);
-
-    // Should be runned after successful receivedPacket().
-    int  storeOnSd(uint8_t sourceSession, bool writeOnBckupToo = true);
 
     uint8_t mSourceAddress;
     uint8_t mSessionId; // Id from this receiver system.

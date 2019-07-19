@@ -48,21 +48,42 @@ int PmmTelemetry::init()
 
 
 
-// Returns 0 if added to the queue successfully, 1 ifn't.
 int PmmTelemetry::send(PacketToBeSent* packetToBeSent)
 {
     if (!mTelemetryIsWorking)   return 1;
     if (!packetToBeSent)        return 2;
-    if (!isSendAvailable())     return 3; // Avoids building the packets uselessly.
 
-    uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH];
-    uint8_t packetLength;
+    uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH]; uint8_t packetLength;
+
+    buildPacket(packet, &packetLength, packetToBeSent);
+
+    // 4) Send it!
+    if (mRf95.sendWithoutHeaders(packet, packetLength))
+        return 3;   // Send not successful!
+
+    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
+        tlmDebugMorePrintf("Transmitted packet content:\n");
+        printArrayHex(packet, packetLength);
+    #endif
+
+    return 0;
+}
+
+int PmmTelemetry::sendIfAvailable(PacketToBeSent* packetToBeSent)
+{
+    if (!mTelemetryIsWorking)   return 1;
+    if (!packetToBeSent)        return 2;
+    // It won't runs isSendAvailable() before, as it may take up some time.
+    // But, you should run the isSendAvailable() on the function that builds the
+    // packetToBeSent object, before you start building it!
+
+    uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH]; uint8_t packetLength;
 
     buildPacket(packet, &packetLength, packetToBeSent);
 
     // 4) Send it!
     if (mRf95.sendIfAvailable(packet, packetLength))
-        return 4;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
+        return 3;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
 
     #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
         tlmDebugMorePrintf("Transmitted packet content:\n");

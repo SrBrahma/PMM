@@ -823,11 +823,12 @@ public:
     /// \patam[in] on bool, true turns the payload CRC on, false turns it off
     void setPayloadCRC(bool on);
 
-    // PMM
+    // PMM - By Henrique Bruno (aka SrBrahma)
     int  receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct);
     bool isSendAvailable();
-    bool  isPacketBeingSent();
-    int  sendIfAvailable(uint8_t data[], uint8_t length);
+    bool isPacketBeingSent();
+    int  sendIfAvailable(const uint8_t data[], uint8_t length);
+    int  sendWithoutHeaders(const uint8_t data[], uint8_t len);
 
 protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF95.

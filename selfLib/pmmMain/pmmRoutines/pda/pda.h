@@ -1,21 +1,56 @@
-#ifndef PDA_MAIN_h
-#define PDA_MAIN_h
+// By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
 
-// Based on Layers.
-// Layer 0  = Main application
-// Layer 1+ = Popups
+#ifndef PMM_ROUTINE_PDA_h
+#define PMM_ROUTINE_PDA_h
 
-#include "pmm.h"
+#include "pmmConsts.h"
 
-class PmmPda
+#if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_PDA
+
+
+#include "pmmTelemetry/telemetry.h"
+#include "pmmImu/imu.h"
+#include "pmmGps/gps.h"
+#include "pmmSd/sd.h"
+
+// Modules
+#include "pmmModules/simpleDataLog/receiver.h"
+#include "pmmModules/ports.h"
+
+
+
+class RoutinePda
 {
 public:
-    int init(bool showSplash = true);
-    int drawSplash(int display, int splashId);
-    int blinkDisplay();
-    int changeControlledDisplay();
+
+    RoutinePda();
+
+    void init();
+    void update();
+
 private:
-    uint8_t mControlledDisplay;
+    // Add the values to the Module SimpleDataLog
+    void addVarsSimpleDataLog();
+
+    // "Message of the day" (MOTD). Just a initial text upon the startup, with a optional requirement of a key press.
+    void printMotd();
+
+
+    uint8_t      mSessionId;
+    uint32_t     mMainLoopCounter, mMillis;
+
+
+    // Main objects
+    PmmTelemetry mPmmTelemetry;
+    PmmImu       mPmmImu;
+    PmmGps       mPmmGps;
+    PmmSd        mPmmSd;
+
+    // Modules
+    PortsReception        mPortsReception;
+    ModuleSimpleDataLogRx mSimpleDataLogRx;
+
 };
 
+#endif
 #endif

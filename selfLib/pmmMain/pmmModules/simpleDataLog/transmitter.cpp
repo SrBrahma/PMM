@@ -15,34 +15,6 @@ int  ModuleSimpleDataLogTx::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8
 }
 
 
-int  ModuleSimpleDataLogTx::storeOnSd(bool writeOnBckupToo)
-{
-    #define dataMaxLength 1024
-    char data[dataMaxLength];
-
-    if (mIsFirstStoreOnSd) {
-        mPmmSdPtr->getSelfDirectory(mFilePath, PMM_SD_FILENAME_MAX_LENGTH);
-
-        snprintf(mFilePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath, "/simpleDataLog.csv");
-        if (writeOnBckupToo)
-            snprintf(mFilePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath2, "/simpleDataLogBckup.csv");
-
-        mPmmSdPtr->createDirsAndOpen(&mFile, mFilePath); mPmmSdPtr->createDirsAndOpen(&mFile2, mFilePath2);
-        
-        buildCsvHeader(data, dataMaxLength);
-        mFile.print(data);
-        if (writeOnBckupToo) 
-            mFile2.print(data);
-        mIsFirstStoreOnSd = false;
-    }
-
-    buildCsvData(data, dataMaxLength);
-    mFile.print(data);  mFile.flush();
-    if (writeOnBckupToo)
-        mFile2.print(data);  mFile2.flush();
-
-    return 0;
-}
 
 // ---------- SimpleDataLog Header 1.0 ---------------
 // [Positions] : [Function] : [ Length in Bytes ]
@@ -55,13 +27,13 @@ int  ModuleSimpleDataLogTx::storeOnSd(bool writeOnBckupToo)
 
 int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
 {
-    PacketToBeSent packet;
+    if (!mPmmTelemetryPtr->isSendAvailable())   return 1; // Won't waste time building the packet.
 
+    PacketToBeSent packet;
     uint8_t payloadLength;
 
-    // 1) Add the Session Identifier
+    // 1) Add the Session Identifier. The CRC16 is added on 3).
     packet.payload[TLM_INDEX_SESSION_ID]  = mSystemSession;
-
     payloadLength = TLM_HEADER_LENGTH;
 
     // 2) Add the Log data.
@@ -78,10 +50,43 @@ int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
     // 5) Add the remaining fields and add it to the queue!
     packet.addInfo(PMM_NEO_PROTOCOL_ID, PMM_TLM_ADDRESS_THIS_SYSTEM, destinationAddress, PORT_ID_SIMPLE_DATA_LOG, payloadLength);
     
-    mTxCounter++;
+    if (mPmmTelemetryPtr->sendIfAvailable(&packet) == 0)    // If successfully sent,
+        mTxCounter++;                                       // Increase the transmission counter.
     return 0;
 }
 
+
+
+int  ModuleSimpleDataLogTx::storeOnSd(bool writeOnBckupToo)
+{
+    #define dataMaxLength 1024
+    char data[dataMaxLength];
+
+    if (mIsFirstStoreOnSd) {
+        mPmmSdPtr->getSelfDirectory(mFilePath, PMM_SD_FILENAME_MAX_LENGTH);
+
+        snprintf(mFilePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath, "/simpleDataLog.csv");
+        if (writeOnBckupToo)
+            snprintf(mFilePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", mFilePath2, "/simpleDataLogBckup.csv");
+
+        mPmmSdPtr->createDirsAndOpen(&mFile, mFilePath);
+        
+        buildCsvHeader(data, dataMaxLength);
+        mFile.print(data);
+        if (writeOnBckupToo) {
+            mPmmSdPtr->createDirsAndOpen(&mFile2, mFilePath2);
+            mFile2.print(data);
+        }
+        mIsFirstStoreOnSd = false;
+    }
+
+    buildCsvData(data, dataMaxLength);
+    mFile.print(data);  mFile.flush();
+    if (writeOnBckupToo)
+        mFile2.print(data);  mFile2.flush();
+
+    return 0;
+}
 
 
 

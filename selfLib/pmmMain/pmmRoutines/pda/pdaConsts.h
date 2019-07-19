@@ -1,21 +1,12 @@
-#ifndef PDA_CONSTS_h
-#define PDA_CONSTS_h
+// This .h is for the specific PDA uses.
+// By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
 
-#define PDA_NUMBER_DISPLAYS 1
-
-#define PDA_PIN_BUTTON_ENTER
-#define PDA_PIN_BUTTON_BACK
-#define PDA_PIN_BUTTON_CHANGE_SCREEN
-#define PDA_PIN_BUTTON_UP
-#define PDA_PIN_BUTTON_DOWN
-#define PDA_PIN_BUTTON_LEFT
-#define PDA_PIN_BUTTON_RIGHT
-
-#define PDA_SPLASH_ID_BRAZIL    0
-#define PDA_SPLASH_ID_ROCKETS   1
+#ifndef PMM_ROUTINES_PDA_CONSTS_h
+#define PMM_ROUTINES_PDA_CONSTS_h
 
 
-#define PDA_DISPLAY_HEIGHT      64
-#define PDA_DISPLAY_WIDTH       128
+#define PDA_CHAR_DISPLAY_I2C_CHANNEL
+
+
 
 #endif

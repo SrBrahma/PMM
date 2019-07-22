@@ -3,13 +3,12 @@
 
 #include "pmmDebug.h"                               // For advPrintf().
 #include "pmmModules/ports.h"
-#include "pmmModules/simpleDataLog/core.h"
 #include "pmmModules/simpleDataLog/transmitter.h"
 
 ModuleSimpleDataLogTx::ModuleSimpleDataLogTx() {}
 
 int  ModuleSimpleDataLogTx::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession) {
-    mPmmTelemetryPtr = pmmTelemetry; mPmmSdPtr = pmmSd; mSystemSession = systemSession;
+    mPmmTlmPtr = pmmTelemetry; mPmmSdPtr = pmmSd; mSystemSession = systemSession;
     mIsFirstStoreOnSd = true;
     return 0;
 }
@@ -27,7 +26,7 @@ int  ModuleSimpleDataLogTx::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8
 
 int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
 {
-    if (!mPmmTelemetryPtr->isSendAvailable())   return 1; // Won't waste time building the packet.
+    if (!mPmmTlmPtr->isSendAvailable())   return 1; // Won't waste time building the packet.
 
     PacketToBeSent packet;
     uint8_t payloadLength;
@@ -50,7 +49,7 @@ int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
     // 5) Add the remaining fields and add it to the queue!
     packet.addInfo(PMM_NEO_PROTOCOL_ID, PMM_TLM_ADDRESS_THIS_SYSTEM, destinationAddress, PORT_ID_SIMPLE_DATA_LOG, payloadLength);
     
-    if (mPmmTelemetryPtr->sendIfAvailable(&packet) == 0)    // If successfully sent,
+    if (mPmmTlmPtr->sendIfAvailable(&packet) == 0)    // If successfully sent,
         mTxCounter++;                                       // Increase the transmission counter.
     return 0;
 }
@@ -156,102 +155,3 @@ void ModuleSimpleDataLogTx::printContent(bool printHeadersTogether)
 
     #endif
 } // end of function debugPrintLogContent()
-
-
-
-
-
-
-int ModuleSimpleDataLogTx::addBasicInfo(uint32_t* mainLoopCounter, uint32_t* timeMillis) {
-    int returnValue;
-    if ((returnValue = includeVariable(mStr.transmissionCounter, TYPE_ID_UINT32, &mTxCounter    ))) return returnValue;
-    if ((returnValue = includeVariable(mStr.mainLoopCounter,     TYPE_ID_UINT32, mainLoopCounter))) return returnValue;
-    if ((returnValue = includeVariable(mStr.timeMillis,          TYPE_ID_UINT32, timeMillis     ))) return returnValue;
-    return 0;
-}
-
-int ModuleSimpleDataLogTx::addAccelerometer    (float  array[] ) {
-    int returnValue;
-    if ((returnValue = includeVariable(mStr.accelerometerX, TYPE_ID_FLOAT, &array[0])));
-    if ((returnValue = includeVariable(mStr.accelerometerY, TYPE_ID_FLOAT, &array[1])));
-    if ((returnValue = includeVariable(mStr.accelerometerZ, TYPE_ID_FLOAT, &array[2])));
-    return 0;
-}
-int ModuleSimpleDataLogTx::addGyroscope        (float  array[] ) {
-    int returnValue;
-    if ((returnValue = includeVariable(mStr.gyroscopeX, TYPE_ID_FLOAT, &array[0])));
-    if ((returnValue = includeVariable(mStr.gyroscopeY, TYPE_ID_FLOAT, &array[1])));
-    if ((returnValue = includeVariable(mStr.gyroscopeZ, TYPE_ID_FLOAT, &array[2])));
-    return 0;
-}
-int ModuleSimpleDataLogTx::addMagnetometer     (float  array[] ) {
-    int returnValue;
-    if ((returnValue = includeVariable(mStr.gyroscopeX, TYPE_ID_FLOAT, &array[0])));
-    if ((returnValue = includeVariable(mStr.gyroscopeY, TYPE_ID_FLOAT, &array[1])));
-    if ((returnValue = includeVariable(mStr.gyroscopeZ, TYPE_ID_FLOAT, &array[2])));
-    return 0;
-}
-int ModuleSimpleDataLogTx::addMpuTemperature   (float *mpuTemp ) { return includeVariable(mStr.mpuTemperature,    TYPE_ID_FLOAT, mpuTemp ); }
-
-int ModuleSimpleDataLogTx::addBarometerPressure(float *barPress) { return includeVariable(mStr.barometerPressure, TYPE_ID_FLOAT, barPress); }
-int ModuleSimpleDataLogTx::addBarometerAltitude(float *altitude) { return includeVariable(mStr.barometerAltitude, TYPE_ID_FLOAT, altitude); }
-int ModuleSimpleDataLogTx::addBmpTemperature   (float *barTemp ) { return includeVariable(mStr.bmpTemperature,    TYPE_ID_FLOAT, barTemp ); }
-
-int  ModuleSimpleDataLogTx::addGpsLatLong(uint32_t *latitude, uint32_t *longitude) {
-    int returnVal;
-    if ((returnVal = includeVariable(mStr.gpsLatitude,  TYPE_ID_UINT32, latitude ))) return returnVal;
-    if ((returnVal = includeVariable(mStr.gpsLongitude, TYPE_ID_UINT32, longitude))) return returnVal;
-    return 0;
-}
-
-int  ModuleSimpleDataLogTx::addGpsAltitude     (float   *altitude  ) { return includeVariable(mStr.gpsAltitude,   TYPE_ID_FLOAT, altitude);}
-int  ModuleSimpleDataLogTx::addGpsSatellites   (uint8_t *satellites) { return includeVariable(mStr.gpsSatellites, TYPE_ID_UINT8, satellites); }
-
-
-
-
-
-int ModuleSimpleDataLogTx::addCustomVariable(const char* variableName, uint8_t variableType, void* variableAddress) {
-    return includeVariable(variableName, variableType, variableAddress);
-}
-
-int ModuleSimpleDataLogTx::includeVariable(const char *variableName, uint8_t variableType, void *variableAddress)
-{
-    if (!variableName)    return 1;
-    if (!variableAddress) return 2;
-
-    uint8_t varSize = getVarSize(variableType);
-
-    if (mNumberVariables >= MAX_VARIABLES) {
-        advPrintf("Failed to add the variable \"%s\". Exceeds the maximum number of variables in the DataLog.", variableName)
-        return 3;
-    }
-
-    if ((mTotalBytes + varSize) >= TLM_MAX_PAYLOAD_LENGTH) {
-        advPrintf("Failed to add the variable \"%s\". Exceeds the maximum content byte size (tried to be %u, max is %u).", variableName, mTotalBytes + varSize, TLM_MAX_PAYLOAD_LENGTH)
-        return 4;
-    }
-
-    mVarsNameArray[mNumberVariables] = (char*) variableName; // Typecast from (const char*) to (char*)
-    mVarsTypeArray[mNumberVariables] = variableType;
-    mVarsSizeArray[mNumberVariables] = varSize;
-    mVarsAdrsArray[mNumberVariables] = (uint8_t*) variableAddress;
-    mNumberVariables++;
-    mTotalBytes += varSize;
-
-    return 0;
-}
-
-
-// int ModuleSimpleDataLogTx::includeArray(const char* const* variableName, uint8_t arrayType, void *arrayAddress, uint8_t arraySize)
-// {
-//     if (!variableName) return 1;
-//     if (!arrayAddress) return 2;
-
-//     int returnVal;
-//     for (int counter = 0; counter < arraySize; counter++)
-//         if ((returnVal = includeVariable(*variableName++, arrayType, (uint8_t*) arrayAddress + (getVarSize(arrayType) * counter))))
-//             return returnVal;
-
-//     return 0;
-// }

@@ -1,18 +1,18 @@
-#include "pmmSd/extraCodes/formatter.h"
-#include "pmmSd/extraCodes/safeLogTest.h"
+#include <Arduino.h>
+#include "pmmImu/extraCodes/calibration.h"
 
-class PmmSdExtraCodes
+class PmmImuExtraCodes
 {
     public:
-        PmmSdExtraCodes()
+        PmmImuExtraCodes()
         {
             int doQuit = 0;
 
             while (!doQuit)
             {
-                Serial.println("=-= PMM SD Extra Codes =-=");
-                Serial.println("Press 1 to run the Formatting tool");
-                //Serial.println("Press 2 to run the SafeLog test");
+                Serial.println("=-= PMM IMU Extra Codes =-=");
+                Serial.println("Press 1 to calibrate Accelerometer and Gyroscope (just let it stand still until Ok message is printed!");
+                Serial.println("Press 2 to calibrate the Magnetometer");
                 Serial.println("Anything else to quit\n");
 
                 while (!Serial.available())

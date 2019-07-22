@@ -5,6 +5,7 @@
  * By Henrique Bruno Fantauzzi de Almeida (aka SrBrahma), Rio de Janeiro - Brazil
  * */
 
+#if 0
 
 #ifndef SAFE_LOG_h
 #define SAFE_LOG_h
@@ -269,3 +270,4 @@ void printPossibleGroupSizesToFitEntirelly(unsigned clusterSize, unsigned filePa
 
 
 }*/
+#endif

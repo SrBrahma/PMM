@@ -68,15 +68,15 @@ public:
         float realAltitude;
         float measuredAltitude;
     } Altitudes;
-    Altitudes getAltitudes(uint32_t timeMillis);
+    Altitudes getAltitudes(uint32_t timeMs);
 
     float getVerticalVelocity();
     float getVerticalAcceleration();
 
     // Those 3 below assumes the millis as the last millis entered by getAltitudes(millis).
-    void  launch(uint32_t timeMillis);
-    void  openDrogue(uint32_t timeMillis);
-    void  openMain(uint32_t timeMillis);
+    void  launch(uint32_t timeMs);
+    void  openDrogue(uint32_t timeMs);
+    void  openMain(uint32_t timeMs);
     bool  getHasLanded();
 
 private:
@@ -97,12 +97,12 @@ private:
 
     float    getMeasuredAltitude();
 
-    double getMotorVerticalAcceleration(uint32_t timeMillis);
+    double getMotorVerticalAcceleration(uint32_t timeMs);
 
     void     applyDrag(double verticalVelocity, double &verticalAcceleration);
-    void     applyParachutesChanges(double &verticalVelocity, double &verticalAcceleration, uint32_t timeMillis);
+    void     applyParachutesChanges(double &verticalVelocity, double &verticalAcceleration, uint32_t timeMs);
     //
-    void     changeParachuteState(Parachute &parachute, uint32_t timeMillis, bool falseIsNextTrueSelects, ParachuteState state = ParachuteState::Unopened);
+    void     changeParachuteState(Parachute &parachute, uint32_t timeMs, bool falseIsNextTrueSelects, ParachuteState state = ParachuteState::Unopened);
 
     RoughVerticalDrag  mDrag;
     BarometerArg       mBarometer;

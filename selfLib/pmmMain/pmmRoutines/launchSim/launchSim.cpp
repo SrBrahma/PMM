@@ -44,24 +44,24 @@ void LaunchSim::reset()
     mMain.millisNextState   = 0;
 }
 
-LaunchSim::Altitudes LaunchSim::getAltitudes(uint32_t timeMillis)
+LaunchSim::Altitudes LaunchSim::getAltitudes(uint32_t timeMs)
 {
     if (mMotor.hadIgnited && !mMotor.hasLanded)
     {
-        uint32_t timeDiffMillis  = timeMillis - mLastMillis;
+        uint32_t timeDiffMillis  = timeMs - mLastMillis;
         double   timeDiffSeconds = timeDiffMillis / ((double) 1000);
 
         mVerticalAcceleration = 0;
         if (mMotor.isActive)
         {
-            mVerticalAcceleration = getMotorVerticalAcceleration(timeMillis);
-            if (timeMillis >= mMotor.willStopAtMillis)
+            mVerticalAcceleration = getMotorVerticalAcceleration(timeMs);
+            if (timeMs >= mMotor.willStopAtMillis)
                 mMotor.isActive = false;
         }
         
         mVerticalAcceleration -= mGravity;
         applyDrag(mVerticalVelocity, mVerticalAcceleration);
-        applyParachutesChanges(mVerticalVelocity, mVerticalAcceleration, timeMillis);
+        applyParachutesChanges(mVerticalVelocity, mVerticalAcceleration, timeMs);
 
 
         mVerticalVelocity += mVerticalAcceleration * timeDiffSeconds;
@@ -77,7 +77,7 @@ LaunchSim::Altitudes LaunchSim::getAltitudes(uint32_t timeMillis)
         }
     }
     
-    mLastMillis = timeMillis;
+    mLastMillis = timeMs;
     return {(float)mAltitude, float(mAltitude + getMeasuredAltitude())};
 }
 
@@ -91,13 +91,13 @@ void  LaunchSim::applyDrag(double verticalVelocity, double &verticalAcceleration
     verticalAcceleration += calcAcc; // the value should already be negative.
 }
 
-void  LaunchSim::applyParachutesChanges(double &verticalVelocity, double &verticalAcceleration, uint32_t timeMillis)
+void  LaunchSim::applyParachutesChanges(double &verticalVelocity, double &verticalAcceleration, uint32_t timeMs)
 {
     // Change parachute state if it's time.
-    if (mDrogue.millisNextState && (timeMillis > mDrogue.millisNextState))
-        changeParachuteState(mDrogue, timeMillis, false);
-    if (mMain.millisNextState && (timeMillis > mMain.millisNextState))
-        changeParachuteState(mMain, timeMillis, false);
+    if (mDrogue.millisNextState && (timeMs > mDrogue.millisNextState))
+        changeParachuteState(mDrogue, timeMs, false);
+    if (mMain.millisNextState && (timeMs > mMain.millisNextState))
+        changeParachuteState(mMain, timeMs, false);
 
     // Those 3 are for fully opened parachutes.
     if ((mDrogue.state == ParachuteState::Opened) &&
@@ -126,36 +126,36 @@ bool  LaunchSim::getHasLanded()
     return mMotor.hasLanded;
 }
 
-void  LaunchSim::launch(uint32_t timeMillis)
+void  LaunchSim::launch(uint32_t timeMs)
 {
     mMotor.hadIgnited = true;
     mMotor.isActive   = true;
     mMotor.willStopAtMillis = mLastMillis + mMotor.parameters.motorPropulsionMillis;
 }
 
-void  LaunchSim::openDrogue(uint32_t timeMillis)
+void  LaunchSim::openDrogue(uint32_t timeMs)
 {
     if (mDrogue.state == ParachuteState::Unopened)
         changeParachuteState(mDrogue, mLastMillis, false);
 }
 
-void  LaunchSim::openMain(uint32_t timeMillis)
+void  LaunchSim::openMain(uint32_t timeMs)
 {
     if (mMain.state == ParachuteState::Unopened)
         changeParachuteState(mMain, mLastMillis, false);
 }
 
-void  LaunchSim::changeParachuteState(Parachute &parachute, uint32_t timeMillis, bool falseIsNextTrueSelects, ParachuteState state)
+void  LaunchSim::changeParachuteState(Parachute &parachute, uint32_t timeMs, bool falseIsNextTrueSelects, ParachuteState state)
 {
     if (falseIsNextTrueSelects == false) {
         switch(parachute.state)
         {
             case ParachuteState::Unopened:
-                parachute.millisNextState = timeMillis + parachute.parameters.millisToDeploy;
+                parachute.millisNextState = timeMs + parachute.parameters.millisToDeploy;
                 parachute.state           = ParachuteState::Deploying;
                 break;
             case ParachuteState::Deploying:
-                parachute.millisNextState = timeMillis + parachute.parameters.millisToFullyOpen;
+                parachute.millisNextState = timeMs + parachute.parameters.millisToFullyOpen;
                 parachute.state           = ParachuteState::Opening;
                 break;
             case ParachuteState::Opening:
@@ -173,11 +173,11 @@ void  LaunchSim::changeParachuteState(Parachute &parachute, uint32_t timeMillis,
                 parachute.state           = ParachuteState::Unopened;
                 break;
             case ParachuteState::Deploying:
-                parachute.millisNextState = timeMillis + parachute.parameters.millisToDeploy;
+                parachute.millisNextState = timeMs + parachute.parameters.millisToDeploy;
                 parachute.state           = ParachuteState::Deploying;
                 break;
             case ParachuteState::Opening:
-                parachute.millisNextState = timeMillis + parachute.parameters.millisToFullyOpen;
+                parachute.millisNextState = timeMs + parachute.parameters.millisToFullyOpen;
                 parachute.state           = ParachuteState::Opening;
                 break;
             case ParachuteState::Opened:
@@ -197,7 +197,7 @@ float LaunchSim::getMeasuredAltitude()
 }
 
 // Hello someone from the future! Improve this!
-double LaunchSim::getMotorVerticalAcceleration(uint32_t timeMillis)
+double LaunchSim::getMotorVerticalAcceleration(uint32_t timeMs)
 {
     return mMotor.parameters.motorAverageAcc;
 }

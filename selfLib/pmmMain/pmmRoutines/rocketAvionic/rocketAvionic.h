@@ -43,21 +43,21 @@ private:
     void sR_FullActive();
     void sR_Landed();
 
-    void deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude);
-    void disableRecDeployIfTimePassed(uint32_t timeMillis);
+    void deployRecoveriesIfConditionsMet(uint32_t timeMs, float altitude);
+    void disableRecDeployIfTimePassed(uint32_t timeMs);
 
     uint8_t      mSessionId;
     uint32_t     mMainLoopCounter, mMillis;
 
     MeasuresAnalyzer mAltitudeAnalyzer;
-    struct { int liftOff, drogue, mainAlt, mainVel;  } mAltAnalyzerIndexes;
+    struct { int liftOff, drogue, mainAlt, mainVel, mainVel2;  } mAltAnalyzerIndexes;
     struct { bool liftOff, drogue, main; } mDetections;
     struct { bool drogue, main;          } mDeploying;
     struct { uint32_t drogue, main;      } mRecoveryStopDeployAtMillis;
 
 
     // Main objects
-    PmmTelemetry mPmmTelemetry;
+    PmmTelemetry mPmmTlm;
     PmmImu       mPmmImu;
     PmmGps       mPmmGps;
     PmmSd        mPmmSd;

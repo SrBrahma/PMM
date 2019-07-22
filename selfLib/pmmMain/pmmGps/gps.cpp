@@ -22,6 +22,10 @@ PmmGps::PmmGps(){}
 
 int PmmGps::init()
 {
+    NeoGPS::Location_t loc1(-17.0, -62.0);
+    NeoGPS::Location_t loc2(0.0, -46.0);
+    advPrintf("%f\n", NeoGPS::Location_t::BearingToDegrees(loc1, loc2));
+
     PMM_GPS_PORT.begin(9600);
 
     if (!PMM_GPS_PORT)
@@ -33,6 +37,7 @@ int PmmGps::init()
 
     gpsDebugMorePrintf("Initialized successfully!\n");
     mGpsIsWorking = 1;
+    mLastLocationTimeMs = 0;
     return 0;
 }
 
@@ -40,7 +45,7 @@ int PmmGps::init()
 // So if >1 packets arrive without you running this update(), you will lose the first fix that arrived.
 // I won't lose time right now managing this, as the main loop is fast enought, so it won't happen. And if it happens, for some temporary freeze
 // in the program, it will be only one fix that will be lost.
-PmmGps::UpdateRtn PmmGps::update()
+PmmGps::UpdateRtn PmmGps::update(uint32_t timeMs)
 {
     if (!mGpsIsWorking)
         return UpdateRtn::NotWorking;
@@ -49,6 +54,9 @@ PmmGps::UpdateRtn PmmGps::update()
         return UpdateRtn::OkNoData;
 
     mFix = mNMEAGPS.read();
+    if (mFix.valid.location)
+        mLastLocationTimeMs = timeMs;
+
     debugPrintFix(Serial, mNMEAGPS, mFix);
 
     fixToOurType(mFix, mPmmGpsStruct);
@@ -101,7 +109,20 @@ void PmmGps::debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix
     #endif
 }
 
+double PmmGps::distanceToInMeters(int32_t targetLatitude, int32_t targetLongitude) {
+    NeoGPS::Location_t targetLoc(targetLatitude, targetLongitude);
+    return mFix.location.DistanceKm(targetLoc) * 1000;
+}
+
+float PmmGps::bearingToInDegrees(int32_t targetLatitude, int32_t targetLongitude) {
+    NeoGPS::Location_t targetLoc(targetLatitude, targetLongitude);
+    return mFix.location.BearingToDegrees(targetLoc);
+}
+
 pmmGpsStructType* PmmGps::getGpsStructPtr() { return &mPmmGpsStruct;}
 pmmGpsStructType  PmmGps::getGpsStruct   () { return  mPmmGpsStruct;}
 gps_fix*          PmmGps::getFixPtr      () { return &mFix         ;}
 gps_fix           PmmGps::getFix         () { return  mFix         ;}
+
+uint32_t  PmmGps::getLastLocationTimeMs()    { return  mLastLocationTimeMs; }
+uint32_t* PmmGps::getLastLocationTimeMsPtr() { return &mLastLocationTimeMs; }

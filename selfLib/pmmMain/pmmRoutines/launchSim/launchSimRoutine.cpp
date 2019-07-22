@@ -40,7 +40,7 @@ void RoutineLaunchSim::init()
     mDeploying.drogue   = mDeploying.main    = false;
     mRecoveryStopDeployAtMillis.drogue = mRecoveryStopDeployAtMillis.main = 0;
 
-    mTimeMillis      = 0;
+    mTimeMs      = 0;
     mMainLoopCounter = 0;
 
     printMotd();
@@ -50,16 +50,16 @@ void RoutineLaunchSim::init()
 
 void RoutineLaunchSim::update()
 {
-    disableRecDeployIfTimePassed(mTimeMillis);
+    disableRecDeployIfTimePassed(mTimeMs);
 
     if (mMainLoopCounter == 10) // Wait just a little bit before the launch.
-        mLaunchSim.launch(mTimeMillis);
+        mLaunchSim.launch(mTimeMs);
 
 
-    LaunchSim::Altitudes altitude = mLaunchSim.getAltitudes(mTimeMillis);
+    LaunchSim::Altitudes altitude = mLaunchSim.getAltitudes(mTimeMs);
 
 
-    deployRecoveriesIfConditionsMet(mTimeMillis, altitude.measuredAltitude);
+    deployRecoveriesIfConditionsMet(mTimeMs, altitude.measuredAltitude);
 
     // VsCode/PlatformIO has a max terminal scroll length of a little more than 1000 lines.
     // So, as we don't need every point of the simulation, we output the results at a multiplus of X (10, here).
@@ -67,24 +67,24 @@ void RoutineLaunchSim::update()
     // BUT TAKES LESS THAN A MINUTE TO SIMULATE IT!
     if ((mMainLoopCounter % 10 == 0) && ((mMainLoopCounter / 10) < 1000) && !mLaunchSim.getHasLanded())
     {
-        Serial.printf("%f,%f,%f,%f,%f,%s,%s,%s\n", mTimeMillis / 1000.0, altitude.realAltitude, altitude.measuredAltitude,
+        Serial.printf("%f,%f,%f,%f,%f,%s,%s,%s\n", mTimeMs / 1000.0, altitude.realAltitude, altitude.measuredAltitude,
                       mLaunchSim.getVerticalVelocity(), mLaunchSim.getVerticalAcceleration(),
                       mDetections.liftOff?"1":"", mDetections.drogue?"50":"", mDetections.main?"100":"");
     }
 
-    mTimeMillis += PMM_LAUNCH_SIMULATOR_INTERVAL_MS;
+    mTimeMs += PMM_LAUNCH_SIMULATOR_INTERVAL_MS;
     mMainLoopCounter++;
  
 }
 
-void RoutineLaunchSim::disableRecDeployIfTimePassed(uint32_t timeMillis)
+void RoutineLaunchSim::disableRecDeployIfTimePassed(uint32_t timeMs)
 {
-    if (mRecoveryStopDeployAtMillis.drogue && (timeMillis > mRecoveryStopDeployAtMillis.drogue)) {
+    if (mRecoveryStopDeployAtMillis.drogue && (timeMs > mRecoveryStopDeployAtMillis.drogue)) {
         mRecoveryStopDeployAtMillis.drogue = 0;
         mDeploying.drogue = false;
         digitalWrite(34, 0);
     }
-    if (mRecoveryStopDeployAtMillis.main   && (timeMillis > mRecoveryStopDeployAtMillis.main  )) {
+    if (mRecoveryStopDeployAtMillis.main   && (timeMs > mRecoveryStopDeployAtMillis.main  )) {
         mRecoveryStopDeployAtMillis.main   = 0;
         mDeploying.main   = false;
         digitalWrite(35, 0);
@@ -93,26 +93,26 @@ void RoutineLaunchSim::disableRecDeployIfTimePassed(uint32_t timeMillis)
 
 
 
-void RoutineLaunchSim::deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude)
+void RoutineLaunchSim::deployRecoveriesIfConditionsMet(uint32_t timeMs, float altitude)
 {
-    mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMillis));
+    mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMs));
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff)) {
         mDetections.liftOff = true;
     }
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue))  {
         mDetections.drogue = true;
         mDeploying.drogue  = true;
-        mRecoveryStopDeployAtMillis.drogue = timeMillis + 1000;
+        mRecoveryStopDeployAtMillis.drogue = timeMs + 1000;
         //digitalWrite(34, 1);
-        mLaunchSim.openDrogue(timeMillis);
+        mLaunchSim.openDrogue(timeMs);
     }
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainAlt) &&
         mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainVel))    {
         mDetections.main = true;
         mDeploying.main  = true;
-        mRecoveryStopDeployAtMillis.main   = timeMillis + 1000;
+        mRecoveryStopDeployAtMillis.main   = timeMs + 1000;
         //digitalWrite(35, 1);
-        //mLaunchSim.openMain(timeMillis);
+        //mLaunchSim.openMain(timeMs);
     }
 }
 

@@ -35,7 +35,7 @@ public:
     // or by calling this receiver object with 'mReceiver'.mStr.'names!', where the fields between ' ' are
     // your choices! Only yours!
     // Returns -1 if not found.
-    int  getVarIndex(char varExactName[]);
+    int  getVarIndex(const char varExactName[]);
 
     // Copies to the first arg the var value of the last received packet. Be sure before that the types match.
     // It won't know if there was already a received packet. You should check the return value of
@@ -45,7 +45,9 @@ public:
 
     // You can add other types.
     // The values are updated after a successful receivedPacket();
+    // Be sure that the given index is valid. If invalid, 0 is returned.
     uint8_t  getVar_uint8_t (int index);
+    int32_t  getVar_int32_t (int index);
     uint32_t getVar_uint32_t(int index);
     float    getVar_float   (int index);
 
@@ -66,6 +68,7 @@ public:
     int  addBmpTemperature      ();
 
     int  addGpsLatLong          ();
+    int  addGpsLastLocationTimeMs();
     int  addGpsAltitude         ();
     int  addGpsSatellites       ();
 

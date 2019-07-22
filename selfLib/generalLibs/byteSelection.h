@@ -25,6 +25,9 @@ inline uint8_t LSB2(uint32_t value) { return value >> 16; }
 inline uint8_t LSB3(uint32_t value) { return value >> 24; }
 
 inline uint16_t join2Bytes(uint8_t MSB, uint8_t LSB) { return (MSB << 8) | LSB; }
+inline uint32_t join4Bytes(uint8_t LSB3, uint8_t LSB2, uint8_t LSB1, uint8_t LSB0) {
+    return ((LSB3 << 24) | (LSB2 << 16) | (LSB1 << 8) | (LSB0));
+}
 
 
 

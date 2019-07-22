@@ -24,10 +24,16 @@ public:
     int init();
 
     enum class UpdateRtn {NotWorking, OkNoData, GotFix};
-    UpdateRtn update();
+    UpdateRtn update(uint32_t timeMs);
 
-    pmmGpsStructType  getGpsStruct   (); pmmGpsStructType* getGpsStructPtr();
-    gps_fix           getFix         (); gps_fix*          getFixPtr      ();
+    pmmGpsStructType  getGpsStruct   (); pmmGpsStructType*  getGpsStructPtr();
+    gps_fix           getFix         (); gps_fix*           getFixPtr      ();
+    uint32_t    getLastLocationTimeMs(); uint32_t* getLastLocationTimeMsPtr();
+
+    // For now only accepts lat and lon in int32_t format. It's the best option actually.
+    // Uses 'this' current position.
+    double distanceToInMeters(int32_t targetLatitude, int32_t targetLongitude);
+    float  bearingToInDegrees(int32_t targetLatitude, int32_t targetLongitude);
 
 private:
     void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct);
@@ -39,6 +45,7 @@ private:
 
     gps_fix mFix;
 
+    uint32_t mLastLocationTimeMs;
     pmmGpsStructType mPmmGpsStruct;
 
 };

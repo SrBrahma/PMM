@@ -17,6 +17,8 @@
 
     #define PMM_SYSTEM_ROUTINE     PMM_ROUTINE_ROCKET_AVIONIC
 
+
+
 // =======================================================================
 //  General
 // =======================================================================
@@ -76,35 +78,27 @@
 
 
 // =======================================================================
-//  Extra Codes
-// =======================================================================
-    // Extra codes are a fast way of testing a system, individually. It is very useful for debugging, testing and calibrating sensors,
-    // formatting the SD, and whatever I may add on the future.
-    // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
-    #define PMM_EXTRA_CODES_ENABLE                          0
-
-        #define PMM_SD_EXTRA_CODES                          0
-        #define PMM_GPS_EXTRA_CODES                         0
-        #define PMM_IMU_EXTRA_CODES                         0
-        #define PMM_TLM_EXTRA_CODES                         0
-
-
-
-// =======================================================================
 //  IMU
 // =======================================================================
 
     // Allows using different I2C channels. Default is 'Wire'. Depending on hardware, can be also
     // 'Wire1', 'Wire2'...
-    #define PMM_IMU_I2C_CHANNEL                     Wire2
+    #define PMM_IMU_I2C_CHANNEL                         Wire2
+
+    // This translates the magnetic north to the real Earth north.
+    // You can use websites like this http://www.magnetic-declination.com/
+    // to get the declination at your desired coordinates.
+    // I (HB!) made a look up table that translates the given coordinates
+    // to the declination, directly in the PMM code. (magneticDeclinationByCoord lib, right in selfLib dir).
+    // But, didn't used it in the default routines.
+    #define PMM_MAGNETIC_DECLINATION_DEGREE             -23.0
+
 
 
 // =======================================================================
-//  SD
+//  EEPROM
 // =======================================================================
-
-
-
+    #define PMM_EEPROM_INDEX_SESSION_ID                     0
 
 // =======================================================================
 //  LoRa
@@ -130,6 +124,24 @@
 
         // Set the used GPS serial channel (Serial, Serial1...).
         #define PMM_GPS_PORT                          Serial2
+
+
+
+// =======================================================================
+//  Extra Codes
+// =======================================================================
+// WARNING! THOSE ARE OLD STUFF. They certainly won't work now. You may fix them if you want to.
+
+    // Extra codes are a fast way of testing a system, individually. It is very useful for debugging, testing and calibrating sensors,
+    // formatting the SD, and whatever I may add on the future.
+    // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
+    #define PMM_EXTRA_CODES_ENABLE                          1
+
+        #define PMM_SD_EXTRA_CODES                          1
+        #define PMM_GPS_EXTRA_CODES                         0
+        #define PMM_IMU_EXTRA_CODES                         0
+        #define PMM_TLM_EXTRA_CODES                         0
+
 
 
 #endif // #ifndef PMM_CONSTS_h

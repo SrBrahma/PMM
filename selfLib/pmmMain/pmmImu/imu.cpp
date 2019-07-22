@@ -8,6 +8,8 @@
 #include <Adafruit_BMP085_U.h>
 #include <generalUnitsOps.h> // For coord32ToFloat()
 
+#include "pmmEeprom/eeprom.h"
+
 #include "pmmConsts.h"
 #include "pmmDebug.h"
 
@@ -87,6 +89,9 @@ int  PmmImu::initMagnetometer()
 
     mMagnetometer.setSamples(HMC5883L_SAMPLES_8);
     mMagnetometer.setDataRate(HMC5883L_DATARATE_75HZ);
+
+    PmmEeprom pmmEeprom;
+    mMagnetometer.setOffset(pmmEeprom.getMagnetometerCalibrationX(), pmmEeprom.getMagnetometerCalibrationY());
 
     imuDebugMorePrintf("Magnetometer initialized successfully!\n")
     return 0;
@@ -251,3 +256,6 @@ float* PmmImu::getBarometerPressurePtr   () { return &mPmmImuStruct.pressure;   
 float* PmmImu::getBarometerAltitudePtr   () { return &mPmmImuStruct.altitude;          }
 float* PmmImu::getBarometerTemperaturePtr() { return &mPmmImuStruct.temperatureBmp;    }
 pmmImuStructType* PmmImu::getImuStructPtr() { return &mPmmImuStruct;                   }
+
+MPU6050*  PmmImu::getMPU6050Ptr()       { return &mMpu;             }
+HMC5883L* PmmImu::getHMC5883LPtr()      { return &mMagnetometer;    }

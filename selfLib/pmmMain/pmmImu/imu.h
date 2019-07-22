@@ -86,7 +86,7 @@ public:
     void   getMagnetometer(float destinationArray[3]);  float* getMagnetometerPtr();
     // -=-=-=-=-=-
 
-
+    MPU6050* getMPU6050Ptr(); HMC5883L* getHMC5883LPtr();
 
 private:
 

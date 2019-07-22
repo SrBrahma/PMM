@@ -52,9 +52,9 @@ public:
             timeSum = 0;
             for (int counter = 0; counter < TESTS_PER_LENGTH; counter++)
             {
-                while(!mPmmTelemetry.sendIfAvailableDebug(data, length)); // Keeps trying to send.
+                while(!mPmmTlm.sendIfAvailableDebug(data, length)); // Keeps trying to send.
                 timeStart = micros();
-                while(mPmmTelemetry.isPacketBeingSent());
+                while(mPmmTlm.isPacketBeingSent());
                 timeSum += micros() - timeStart;
             }
             PMM_DEBUG_PRINTF("%.3f", timeSum / (TESTS_PER_LENGTH * 1000.0));
@@ -66,11 +66,11 @@ public:
     } // End of constructor
 
 private:
-    PmmTelemetry mPmmTelemetry;
+    PmmTelemetry mPmmTlm;
 
     int init()
     {
-        return mPmmTelemetry.init();
+        return mPmmTlm.init();
     }
 
 };

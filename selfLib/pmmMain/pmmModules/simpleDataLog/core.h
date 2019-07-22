@@ -51,11 +51,12 @@ public:
 
     static VarsNames mStr;
 
-    ModuleSimpleDataLogCore();
+protected:
+
+    ModuleSimpleDataLogCore(); // Protected constructor!
+
     int buildCsvHeader(char destination[], int maxLength);
     int buildCsvData(char destination[], int maxLength);
-
-protected:
 
     uint8_t  getVarSize(uint8_t variableType);
 

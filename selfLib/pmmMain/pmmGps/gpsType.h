@@ -7,8 +7,9 @@
 // Also, makes the entire PMM code easier to mantain, in the case we change the GPS lib.
 typedef struct
 {
-    uint32_t  latitude;
-    uint32_t  longitude;
+    int32_t   latitude;
+    int32_t   longitude;
+
     float     altitude;
     uint8_t   satellites;
 

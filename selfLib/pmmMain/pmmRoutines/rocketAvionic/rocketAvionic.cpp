@@ -39,13 +39,13 @@ void RoutineRocketAvionic::init()
     EEPROM.read(adrs);
 
     // 2) Main objects
-    initStatus += mPmmTelemetry.init();
+    initStatus += mPmmTlm.init();
     initStatus += mPmmSd.init(mSessionId);
     initStatus += mPmmGps.init();
     initStatus += mPmmImu.init();
 
     // 3) Modules
-    mSimpleDataLogTx.init(&mPmmTelemetry, &mPmmSd, mSessionId);
+    mSimpleDataLogTx.init(&mPmmTlm, &mPmmSd, mSessionId);
     addVarsSimpleDataLog();
 
 
@@ -63,6 +63,8 @@ void RoutineRocketAvionic::init()
                                     MeasuresAnalyzer::Relation::AreLesserThan, 650);
     mAltAnalyzerIndexes.mainVel = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
                                     MeasuresAnalyzer::Relation::AreLesserThan, -5, MeasuresAnalyzer::Time::Second);
+    mAltAnalyzerIndexes.mainVel2 = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
+                                    MeasuresAnalyzer::Relation::AreLesserThan, -150, MeasuresAnalyzer::Time::Second);
 
     pinMode(ROCKET_AVIONIC_PIN_DROGUE, OUTPUT); pinMode(ROCKET_AVIONIC_PIN_MAIN, OUTPUT);
     digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0); digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0); // Just to ensure! 
@@ -96,7 +98,7 @@ void RoutineRocketAvionic::sR_FullActive()
     // Check if we have a new pressure measure
     if (mPmmImu.update() & PmmImu::BarGotPressure)
         deployRecoveriesIfConditionsMet(mMillis, mPmmImu.getBarometerAltitude());
-    mPmmGps.update();
+    mPmmGps.update(mMillis);
     mSimpleDataLogTx.send();
     mSimpleDataLogTx.storeOnSd();
 
@@ -121,28 +123,29 @@ void RoutineRocketAvionic::addVarsSimpleDataLog()
     mSimpleDataLogTx.addBarometerAltitude(mPmmImu.getBarometerAltitudePtr());
     mSimpleDataLogTx.addMagnetometer(mPmmImu.getMagnetometerPtr());
     mSimpleDataLogTx.addGpsLatLong(&mPmmGps.getGpsStructPtr()->latitude, &mPmmGps.getGpsStructPtr()->longitude);
+    mSimpleDataLogTx.addGpsLastLocationTimeMs(mPmmGps.getLastLocationTimeMsPtr());
     mSimpleDataLogTx.addGpsAltitude(&mPmmGps.getGpsStructPtr()->altitude);
     mSimpleDataLogTx.addGpsSatellites(&mPmmGps.getGpsStructPtr()->satellites);
 }
 
 
-void RoutineRocketAvionic::disableRecDeployIfTimePassed(uint32_t timeMillis)
+void RoutineRocketAvionic::disableRecDeployIfTimePassed(uint32_t timeMs)
 {
-    if (mRecoveryStopDeployAtMillis.drogue && (timeMillis > mRecoveryStopDeployAtMillis.drogue)) {
+    if (mDeploying.drogue && (timeMs > mRecoveryStopDeployAtMillis.drogue)) {
         mRecoveryStopDeployAtMillis.drogue = 0;
         mDeploying.drogue = false;
         digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0);
     }
-    if (mRecoveryStopDeployAtMillis.main   && (timeMillis > mRecoveryStopDeployAtMillis.main  )) {
+    if (mDeploying.main   && (timeMs > mRecoveryStopDeployAtMillis.main  )) {
         mRecoveryStopDeployAtMillis.main   = 0;
         mDeploying.main   = false;
         digitalWrite(ROCKET_AVIONIC_PIN_MAIN,   0);
     }
 }
 
-void RoutineRocketAvionic::deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude)
+void RoutineRocketAvionic::deployRecoveriesIfConditionsMet(uint32_t timeMs, float altitude)
 {
-    mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMillis));
+    mAltitudeAnalyzer.addMeasure(altitude, millisToMicros(timeMs));
 
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.liftOff)) {
         mDetections.liftOff = true;
@@ -150,14 +153,15 @@ void RoutineRocketAvionic::deployRecoveriesIfConditionsMet(uint32_t timeMillis, 
     if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.drogue )) {
         mDetections.drogue = true;
         mDeploying.drogue  = true;
-        mRecoveryStopDeployAtMillis.drogue = timeMillis + ROCKET_AVIONIC_DROGUE_ACTIVE_TIME_MS;
+        mRecoveryStopDeployAtMillis.drogue = timeMs + ROCKET_AVIONIC_DROGUE_ACTIVE_TIME_MS;
         digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 1);
     }
-    if (mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainAlt) &&
-        mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainVel)) {
+    if ((mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainAlt) &&
+        mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainVel)) ||
+        mAltitudeAnalyzer.checkCondition(mAltAnalyzerIndexes.mainVel2)) {
         mDetections.main = true;
         mDeploying.main  = true;
-        mRecoveryStopDeployAtMillis.main   = timeMillis + ROCKET_AVIONIC_MAIN_ACTIVE_TIME_MS;
+        mRecoveryStopDeployAtMillis.main   = timeMs + ROCKET_AVIONIC_MAIN_ACTIVE_TIME_MS;
         digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 1);
     }
 }

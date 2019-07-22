@@ -11,17 +11,21 @@
 #include "pmmImu/imu.h"
 #include "pmmGps/gps.h"
 
+#include "Location.h"
+
 // Modules
 #include "pmmModules/ports.h"
 #include "pmmModules/simpleDataLog/receiver.h"
 
-#include "pmmDebug.h"   // For debug prints
+#include "LiquidCrystal_I2C.h" // For the 2004 char display
+
+#include "pmmDebug.h"       // For debug prints
 
 #include "pmmRoutines/pda/pdaConsts.h"
 #include "pmmRoutines/pda/pda.h"
 
 
-RoutinePda::RoutinePda() {}
+RoutinePda::RoutinePda() : mLiquidCrystal(PDA_DISPLAY_ADDRESS, PDA_DISPLAY_COLUMNS, PDA_DISPLAY_ROWS) {}
 
 
 void RoutinePda::init()
@@ -31,13 +35,12 @@ void RoutinePda::init()
 
     int initStatus = 0;
 
-    int adrs = 0;
-    mSessionId = EEPROM.read(adrs); 
-    EEPROM.write(adrs, mSessionId + 1);
-    EEPROM.read(adrs);
+    // 1) Get and increase the SessionID.
+    mSessionId = EEPROM.read(PMM_EEPROM_INDEX_SESSION_ID); 
+    EEPROM.write(PMM_EEPROM_INDEX_SESSION_ID, mSessionId + 1);
 
     // 2) Main objects
-    initStatus += mPmmTelemetry.init();
+    initStatus += mPmmTlm.init();
     initStatus += mPmmSd.init(mSessionId);
     initStatus += mPmmGps.init();
     initStatus += mPmmImu.init();
@@ -45,33 +48,98 @@ void RoutinePda::init()
     // 3) Modules
     mSimpleDataLogRx.init(&mPmmSd, mSessionId, PMM_TLM_SIMPLE_DATA_LOG_SOURCE_ADDRESS);
     addVarsSimpleDataLog();
-    mPortsReception.addSimpleDataLogRx(&mSimpleDataLogRx);
 
-    // 4) End!
+    // 4) Display
+    mLiquidCrystal.begin();
+
     mMillis = millis(); // Again!
+    mLiquidCrystal.backlight();
+    mLiquidCrystal.printf("aaaaaaaa!\n");
     printMotd();
 }
 
 void RoutinePda::update()
 {
-    if (mPmmTelemetry.updateReception())
-        switch(mPmmTelemetry.getRxPacketAllInfoPtr()->port)
+    mPmmGps.update(mMillis);
+    mPmmImu.update();
+
+    if (updateTelemetryReception() == PORT_ID_SIMPLE_DATA_LOG)  {
+        updatePdaData();
+        mSimpleDataLogRx.storeOnSd(mSimpleDataLogRx.getSourceSession(), true);
+    }
+
+    // Avoids the display updating too much frequently.
+    if (millis() > (mLastMillisRefreshedDisplay + PDA_DISPLAY_MIN_TIME_MS_BETWEEN_UPDATES))   {
+        updateDisplay();
+        mLastMillisRefreshedDisplay = millis();
+    }
+
+    mMainLoopCounter++; mMillis = millis();
+}
+
+
+
+//   12345678901234567890
+//  .____________________.
+// 1|TxCt 999999 Sess 256|
+// 2|MLCt 999999 H 99999m|
+// 3|Dist 99999m Bear 360|
+// 4|NTxP   999s NRx 999s|
+void RoutinePda::updateDisplay()
+{
+    mLiquidCrystal.home();
+    uint32_t TxCt = mTxData.txCounter       % 999999; // It cycles if overflows
+    uint32_t MLCt = mTxData.mainLoopCounter % 999999; // It cycles if overflows
+    float H = min(mTxData.barometerAltitude, 99999);
+
+    float Dist = mPmmGps.distanceToInMeters(mTxData.gpsLat, mTxData.gpsLon);
+    if (Dist > 99999) Dist = 99999;
+
+    float Bear = mPmmGps.bearingToInDegrees(mTxData.gpsLat, mTxData.gpsLon);
+    
+    uint32_t NTxP = floor((mTxData.timeMillis - mTxData.lastGpsLocationTimeMs) / 1000.0);
+    if (NTxP > 999) NTxP = 999;
+    uint32_t NRxP = floor((mMillis - mPmmGps.getLastLocationTimeMs()) / 1000.0);
+    advPrintf("NRxP %u\n", NRxP);
+    if (NRxP > 999) NRxP = 999;
+
+    mLiquidCrystal.printf("TxCt %06lu Sess %03hu", TxCt, mSimpleDataLogRx.getSourceSession());
+    mLiquidCrystal.printf("MLCt %06lu H %05.fm",   MLCt, H);
+    mLiquidCrystal.printf("Dist %05.fm Bear %03.f", Dist, Bear);
+    mLiquidCrystal.printf("NTxP   %03us NRx %03us", NTxP, NRxP);
+}
+
+
+
+void RoutinePda::updatePdaData()    {
+    mTxData.txCounter             = mSimpleDataLogRx.getVar_uint32_t(mTxIndexes.txCounter);
+    mTxData.mainLoopCounter       = mSimpleDataLogRx.getVar_uint32_t(mTxIndexes.mainLoopCounter);
+    mTxData.timeMillis            = mSimpleDataLogRx.getVar_uint32_t(mTxIndexes.timeMillis);
+    mTxData.gpsLat                = mSimpleDataLogRx.getVar_int32_t(mTxIndexes.gpsLat);
+    mTxData.gpsLon                = mSimpleDataLogRx.getVar_int32_t(mTxIndexes.gpsLon);
+    mTxData.lastGpsLocationTimeMs = mSimpleDataLogRx.getVar_uint32_t(mTxIndexes.lastGpsLocationTimeMs);
+    mTxData.barometerAltitude     = mSimpleDataLogRx.getVar_float(mTxIndexes.barometerAltitude);
+}
+
+
+
+int RoutinePda::updateTelemetryReception()  {
+    if (mPmmTlm.updateReception())  {
+        switch(mPmmTlm.getRxPacketAllInfoPtr()->port)   {
             case PORT_ID_SIMPLE_DATA_LOG:
-                return mModuleSimpleDataLog->receivedPacket(packetInfo);
+                if (mSimpleDataLogRx.receivedPacket(mPmmTlm.getRxPacketAllInfoPtr()))
+                    return PORT_ID_SIMPLE_DATA_LOG;
+                break;
             default:;
         }
-        return 0;
     }
-        mPortsReception.
-    mMainLoopCounter++; mMillis = millis();
-    advOnlyPrintln();
+    return 0;
 }
 
 
 
 // This MUST be exactly the same, for both transmitter and receiver.
-void RoutinePda::addVarsSimpleDataLog()
-{
+void RoutinePda::addVarsSimpleDataLog()         {
     mSimpleDataLogRx.addBasicInfo        ();
     mSimpleDataLogRx.addAccelerometer    ();
     mSimpleDataLogRx.addGyroscope        ();
@@ -80,8 +148,18 @@ void RoutinePda::addVarsSimpleDataLog()
     mSimpleDataLogRx.addBarometerAltitude();
     mSimpleDataLogRx.addMagnetometer     ();
     mSimpleDataLogRx.addGpsLatLong       ();
+    mSimpleDataLogRx.addGpsLastLocationTimeMs();
     mSimpleDataLogRx.addGpsAltitude      ();
     mSimpleDataLogRx.addGpsSatellites    ();
+
+    // These are only for the receiver.
+    mTxIndexes.txCounter             = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.transmissionCounter);
+    mTxIndexes.mainLoopCounter       = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.mainLoopCounter);
+    mTxIndexes.timeMillis            = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.timeMs);
+    mTxIndexes.gpsLat                = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.gpsLatitude);
+    mTxIndexes.gpsLon                = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.gpsLongitude);
+    mTxIndexes.lastGpsLocationTimeMs = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.gpsLastLocationTimeMs);
+    mTxIndexes.barometerAltitude     = mSimpleDataLogRx.getVarIndex(mSimpleDataLogRx.mStr.barometerAltitude);
 }
 
 
@@ -113,6 +191,5 @@ void RoutinePda::printMotd()
 
     #endif
 }
-
 
 #endif

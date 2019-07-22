@@ -22,11 +22,11 @@ public:
     void update();
 
 private:
-    void  disableRecDeployIfTimePassed(uint32_t timeMillis);
-    void  deployRecoveriesIfConditionsMet(uint32_t timeMillis, float altitude);
+    void  disableRecDeployIfTimePassed(uint32_t timeMs);
+    void  deployRecoveriesIfConditionsMet(uint32_t timeMs, float altitude);
     void  printMotd();
 
-    uint32_t mTimeMillis;
+    uint32_t mTimeMs;
     uint32_t mMainLoopCounter;
 
     LaunchSim         mLaunchSim;

@@ -6,10 +6,12 @@
 
 #include "pmmConsts.h"
 #include "pmmRoutines/rocketAvionic/rocketAvionic.h"
+#include "pmmRoutines/pda/pda.h"
 #include "pmmRoutines/launchSim/launchSimRoutine.h"
 
 void initDebug();
 void printMotd();
+void i2cScan();
 
 class Pmm
 {
@@ -21,10 +23,11 @@ public:
 
 private:
     #if   PMM_SYSTEM_ROUTINE  ==  PMM_ROUTINE_ROCKET_AVIONIC
-        RoutineRocketAvionic   mRoutine;
+        RoutineRocketAvionic  mRoutine;
     #elif PMM_SYSTEM_ROUTINE  ==  PMM_ROUTINE_PDA
+        RoutinePda            mRoutine;
     #elif PMM_SYSTEM_ROUTINE  ==  PMM_ROUTINE_LAUNCH_SIM
-        RoutineLaunchSim mRoutine;
+        RoutineLaunchSim      mRoutine;
     #else
     #    error [PMM] No routine defined. Compilation failed.
     #endif

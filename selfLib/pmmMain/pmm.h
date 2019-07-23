@@ -4,6 +4,7 @@
 #ifndef PMM_h
 #define PMM_h
 
+#include <stdint.h>
 #include "pmmConsts.h"
 #include "pmmRoutines/rocketAvionic/rocketAvionic.h"
 #include "pmmRoutines/pda/pda.h"
@@ -31,6 +32,9 @@ private:
     #else
     #    error [PMM] No routine defined. Compilation failed.
     #endif
+    
+    uint32_t pin13NextStateMillis;
+    bool     pin13State;
 };
 
 #endif

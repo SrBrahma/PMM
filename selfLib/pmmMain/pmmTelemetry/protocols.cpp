@@ -36,14 +36,14 @@ int  buildPacket(uint8_t destinationArray[], uint8_t* destinationPacketLength, P
         {
             // NEO, 3) Write the Protocol ID.
             destinationArray[PMM_TLM_PROTOCOLS_INDEX_PROTOCOL]     = PMM_NEO_PROTOCOL_ID;
-            // NEO, 4) Write the Source Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]        = packetToBeSent->getSourceAddress();
-            // NEO, 5) Write the Destination Address
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]   = packetToBeSent->getDestinationAddress();
-            // NEO, 6) Write the Port
-            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]          = packetToBeSent->getPort();
-            // NEO, 7) Write the Payload Length.
+            // NEO, 4) Write the Payload Length.
             destinationArray[PMM_NEO_PROTOCOL_INDEX_PACKET_LENGTH] = packetToBeSent->getPayloadLength() + PMM_NEO_PROTOCOL_HEADER_LENGTH;
+            // NEO, 5) Write the Source Address
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_SOURCE]        = packetToBeSent->getSourceAddress();
+            // NEO, 6) Write the Destination Address
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_DESTINATION]   = packetToBeSent->getDestinationAddress();
+            // NEO, 7) Write the Port
+            destinationArray[PMM_NEO_PROTOCOL_INDEX_PORT]          = packetToBeSent->getPort();
             // NEO, 8) Write the CRC of this header
             destinationArray[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC]    = crc8(destinationArray, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC); // The length is the same as the index of the CRC
 
@@ -106,7 +106,8 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 3;
 
                 // NEO, 5.1) Check if the Destination Address is to this device...
-                if ((packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != thisAddress) && !promiscuousMode)
+                if ((packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != PMM_TLM_ADDRESS_BROADCAST) &&
+                    ((packet[PMM_NEO_PROTOCOL_INDEX_DESTINATION] != thisAddress) || !promiscuousMode))
                     return 4;
 
                 // NEO, 5.2) ... and if is valid (there are forbidden addresses -- promiscuousMode isn't DUMB mode!)

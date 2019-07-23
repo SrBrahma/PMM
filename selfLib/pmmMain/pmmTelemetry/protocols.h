@@ -50,7 +50,7 @@
 // Allowed Protocols
 #define PMM_TLM_PROTOCOLS_ACCEPTS_NEO_PROTOCOL    1   // So you can enable/deactivate certain protocols of being received!
 
-
+#define PMM_NEO_PROTOCOL_ID                         1
 
 // Protocols Indexes definitions
 #define PMM_TLM_PROTOCOLS_INDEX_PROTOCOL          0   // Where is the protocol identifier in the packet
@@ -67,7 +67,7 @@
     // The define below is defined on pmmTelemetry.h, as there was happening a circular dependency!
     // #define PMM_NEO_PROTOCOL_MAX_PAYLOAD_LENGTH         PMM_TLM_MAX_PAYLOAD_LENGTH - PMM_NEO_PROTOCOL_HEADER_LENGTH
 
-    #define PMM_NEO_PROTOCOL_ID                         1
+ 
 
 
 

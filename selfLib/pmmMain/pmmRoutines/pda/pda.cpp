@@ -50,10 +50,11 @@ void RoutinePda::init()
     addVarsSimpleDataLog();
 
     // 4) Display
-    // mLiquidCrystal.begin();
-
+    mLiquidCrystal.begin();
+    mLiquidCrystal.noAutoscroll();
+    mLiquidCrystal.noBlink();
     // mLiquidCrystal.backlight();
-    // mLiquidCrystal.printf("aaaaaaaa!\n");
+    mLiquidCrystal.printf("    -=- PMM -=-");
     mMillis = millis(); // Again!
     printMotd();
 }
@@ -64,6 +65,7 @@ void RoutinePda::update()
     mPmmImu.update();
 
     if (updateTelemetryReception() == PORT_ID_SIMPLE_DATA_LOG)  {
+        advOnlyPrintln();
         updatePdaData();
         mSimpleDataLogRx.storeOnSd(mSimpleDataLogRx.getSourceSession(), true);
     }
@@ -100,7 +102,7 @@ void RoutinePda::updateDisplay()
 
     float Bear = mPmmGps.bearingToInDegrees(mTxData.gpsLat, mTxData.gpsLon) - mPmmImu.getBearingDegree();
     if (Bear < 0)
-        Bear = 360 - Bear;
+        Bear = 360 + Bear;
     
     uint32_t NTxP = floor((mTxData.timeMillis - mTxData.lastGpsLocationTimeMs) / 1000.0);
     if (NTxP > 999)
@@ -110,10 +112,13 @@ void RoutinePda::updateDisplay()
     if (NRxP > 999)
         NRxP = 999;
 
-    mLiquidCrystal.printf("TxCt %06lu Sess %03hu", TxCt, mSimpleDataLogRx.getSourceSession());
-    mLiquidCrystal.printf("MLCt %06lu H %05.fm",   MLCt, H);
-    mLiquidCrystal.printf("Dist %05.fm Bear %03.f", Dist, Bear);
-    mLiquidCrystal.printf("NTxP   %03us NRx %03us", NTxP, NRxP);
+    mLiquidCrystal.printf("TxCt %6u Sess %3u", TxCt, mSimpleDataLogRx.getSourceSession());
+    mLiquidCrystal.setCursor(0, 1); // For some reason, the second and third rows are inverted without using this setCursor.
+    mLiquidCrystal.printf("MLCt %6u H %5.fm",   MLCt, H);
+    mLiquidCrystal.setCursor(0, 2);
+    mLiquidCrystal.printf("Dist %5.fm Bear %3.f", Dist, Bear);
+    mLiquidCrystal.setCursor(0, 3);
+    mLiquidCrystal.printf("NTxP   %3us NRx %3us", NTxP, NRxP);
 }
 
 

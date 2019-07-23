@@ -66,6 +66,7 @@ void RoutineRocketAvionic::init()
     mAltAnalyzerIndexes.mainVel2 = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
                                     MeasuresAnalyzer::Relation::AreLesserThan, -150, MeasuresAnalyzer::Time::Second);
 
+
     pinMode(ROCKET_AVIONIC_PIN_DROGUE, OUTPUT); pinMode(ROCKET_AVIONIC_PIN_MAIN, OUTPUT);
     digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0); digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0); // Just to ensure! 
 
@@ -89,7 +90,6 @@ void RoutineRocketAvionic::update()
     }
 
     mMainLoopCounter++; mMillis = millis();
-    advOnlyPrintln();
 }
 
 void RoutineRocketAvionic::sR_FullActive()
@@ -101,7 +101,6 @@ void RoutineRocketAvionic::sR_FullActive()
     mPmmGps.update(mMillis);
     mSimpleDataLogTx.send();
     mSimpleDataLogTx.storeOnSd();
-
 }
 
 

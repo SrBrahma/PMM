@@ -75,14 +75,17 @@ int PmmImu::updateMpu()
 }
 
 
-
+// Some HMC5883L are actually "QMC5883L". This creates some problems.
+// https://circuitdigest.com/microcontroller-projects/digital-compass-with-arduino-and-hmc5883l-magnetometer
+// https://core-electronics.com.au/attachments/QMC5883L-Datasheet-1.0.pdf
 int  PmmImu::initMagnetometer()
 {
     int returnVal;
     if ((returnVal = mMagnetometer.begin())) {
         mMagnetometerIsWorking = false;
-        advPrintf("Magnetometer initialization failed! mMagnetometer.begin() return code is %i.\n", returnVal);
-        return 1;
+        advPrintf("Magnetometer initialization failed! mMagnetometer.begin() return code is %i. As there is the QMC5883 vs HMC5883 problem, this problem shouldn't be a big problem.\n", returnVal);
+
+        return 0;
     }
 
     mMagnetometerIsWorking = true;

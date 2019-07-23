@@ -26,10 +26,10 @@ PmmTelemetry::PmmTelemetry() : mRf95(PMM_PIN_RFM95_CS, PMM_PIN_RFM95_INT, PMM_LO
 
 int PmmTelemetry::init()
 {
-    pinMode(PMM_PIN_RFM95_RST, INPUT);     delay(15); // Reset pin should be left floating for >10ms, according to "7.2.1. POR" in SX1272 manual.
-    pinMode(PMM_PIN_RFM95_RST, OUTPUT);
-    digitalWrite(PMM_PIN_RFM95_RST, LOW);  delay( 1); // > 100uS, according to "7.2.2. Manual Reset" in SX1272 manual.
-    digitalWrite(PMM_PIN_RFM95_RST, HIGH); delay(10); // > 5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
+    // pinMode(PMM_PIN_RFM95_RST, INPUT);     delay(15); // Reset pin should be left floating for >10ms, according to "7.2.1. POR" in SX1272 manual.
+    // pinMode(PMM_PIN_RFM95_RST, OUTPUT);
+    // digitalWrite(PMM_PIN_RFM95_RST, LOW);  delay( 1); // > 100uS, according to "7.2.2. Manual Reset" in SX1272 manual.
+    // digitalWrite(PMM_PIN_RFM95_RST, HIGH); delay(10); // > 5ms, according to "7.2.2. Manual Reset" in SX1272 manual.
                                    
     if (!mRf95.init()) { // It returns false if failed to init.
         advPrintf("LoRa failed to initialize.\n");
@@ -55,10 +55,10 @@ int PmmTelemetry::send(PacketToBeSent* packetToBeSent) {
     uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH]; uint8_t packetLength;
 
     buildPacket(packet, &packetLength, packetToBeSent);
+    
+    if (!mRf95.send(packet, packetLength))         return 3;   // Send not successful!
 
-    if (mRf95.sendWithoutHeaders(packet, packetLength))         return 3;   // Send not successful!
-
-    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
+    #if 1 //PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
         tlmDebugMorePrintf("Transmitted packet content:\n");    printArrayHex(packet, packetLength);
     #endif
 
@@ -69,15 +69,15 @@ int PmmTelemetry::sendIfAvailable(PacketToBeSent* packetToBeSent)   {
     if (!mTelemetryIsWorking)   return 1;
     if (!packetToBeSent)        return 2;
     // You should run the isSendAvailable() on the function that builds the packetToBeSent object, before you start building it!
-
+    advOnlyPrintln();
     uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH]; uint8_t packetLength;
 
     buildPacket(packet, &packetLength, packetToBeSent);
 
     // 4) Send it!
     if (mRf95.sendIfAvailable(packet, packetLength))    return 3;   // Send not successful! Maybe a previous packet still being transmitted, or Channel Activity Detected!
-
-    #if PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
+    advOnlyPrintln();
+    #if 1//PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
         tlmDebugMorePrintf("Transmitted packet content:\n");    printArrayHex(packet, packetLength);
     #endif
 
@@ -88,7 +88,8 @@ int PmmTelemetry::sendIfAvailable(PacketToBeSent* packetToBeSent)   {
 
 // Returns true if received anything, else, false.
 bool PmmTelemetry::updateReception() {
-    if (mRf95.receivePayloadAndInfoStruct(&mRxPacketPhysicalLayerInfo)) {
+    if (!mRf95.receivePayloadAndInfoStruct(&mRxPacketPhysicalLayerInfo)) { // Returns 0 when success
+        advOnlyPrintln();
         getRxPacketAllInfo(&mRxPacketPhysicalLayerInfo, &mRxPacketAllInfo);
         tlmDebugMorePrintf("Packet received: Protocol[%u] Source[%u] Destination[%u] Port[%u] PayloadLength[%u]\n", mRxPacketAllInfo.protocol,
                             mRxPacketAllInfo.sourceAddress, mRxPacketAllInfo.destinationAddress, mRxPacketAllInfo.port, mRxPacketAllInfo.payloadLength);

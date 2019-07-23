@@ -6,7 +6,7 @@
 #include "pmmConsts.h"  // For PMM_DEBUG define
 
 
-#define PMM_DEBUG_PRINT_HEX_MAX_BYTES_PER_LINE      49
+#define PMM_DEBUG_PRINT_HEX_MAX_BYTES_PER_LINE      40
 void    printArrayHex(uint8_t arrayToPrint[], unsigned arrayLength);
 
 

@@ -25,7 +25,7 @@
     #define PMM_THIS_NAME_DEFINE                     "Aurora" // Used in messageLog.cpp.
 
     // This system address. Two systems MUST NOT have the same address.
-    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     1
+    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     2
 
     // For the PDA/Receiver:
     // Indicates the address which the SimpleDataLog Module will be listening to.
@@ -62,14 +62,14 @@
         // If 0, the code will wait indefinitely for the Serial connection with the
         // computer to the code proceed. If 1, the code will have a maximum wait time for the connection to take effect, and if this does not occur,
         // the code will proceed, without Serial debugging. It's great if you forgot to disable the Debug before launching your rocket!
-        #define PMM_DEBUG_TIMEOUT_ENABLED                   0
-            #define PMM_DEBUG_TIMEOUT_MILLIS             3000 // The max wait time in millis, for the above option.
+        #define PMM_DEBUG_TIMEOUT_ENABLED                   1
+            #define PMM_DEBUG_TIMEOUT_MILLIS             2000 // The max wait time in millis, for the above option.
 
 
         // These 2 below are ways of calmly reading the init() messages, to see if everything was successful or something went wrong.
 
         // They only happen if PMM_DEBUG is 1 and if Serial is working.
-        #define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED          1
+        #define PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED          0
 
         // The PMM_DEBUG_WAIT_AFTER_INIT won't happen if PMM_DEBUG_WAIT_FOR_ANY_KEY_PRESSED is 1.
         #define PMM_DEBUG_WAIT_AFTER_INIT                   0
@@ -92,6 +92,7 @@
     // to the declination, directly in the PMM code. (magneticDeclinationByCoord lib, right in selfLib dir).
     // But, didn't used it in the default routines.
     #define PMM_MAGNETIC_DECLINATION_DEGREE             -23.0
+
 
 
 
@@ -135,11 +136,11 @@
     // Extra codes are a fast way of testing a system, individually. It is very useful for debugging, testing and calibrating sensors,
     // formatting the SD, and whatever I may add on the future.
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
-    #define PMM_EXTRA_CODES_ENABLE                          1
+    #define PMM_EXTRA_CODES_ENABLE                          0
 
         #define PMM_SD_EXTRA_CODES                          0
         #define PMM_GPS_EXTRA_CODES                         0
-        #define PMM_IMU_EXTRA_CODES                         1
+        #define PMM_IMU_EXTRA_CODES                         0
         #define PMM_TLM_EXTRA_CODES                         0
 
 

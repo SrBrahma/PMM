@@ -49,7 +49,7 @@ int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
     // 5) Add the remaining fields and add it to the queue!
     packet.addInfo(PMM_NEO_PROTOCOL_ID, PMM_TLM_ADDRESS_THIS_SYSTEM, destinationAddress, PORT_ID_SIMPLE_DATA_LOG, payloadLength);
     
-    if (mPmmTlmPtr->send(&packet))//(mPmmTlmPtr->sendIfAvailable(&packet) == 0)    // If successfully sent,
+    if (mPmmTlmPtr->sendIfAvailable(&packet) == 0)//(mPmmTlmPtr->sendIfAvailable(&packet) == 0)    // If successfully sent,
         mTxCounter++;                                       // Increase the transmission counter.
     return 0;
 }

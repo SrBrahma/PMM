@@ -122,6 +122,7 @@ bool RH_RF95::init()
 // On MiniWirelessLoRa, only one of the several interrupt lines (DI0) from the RFM95 is usefuly
 // connnected to the processor.
 // We use this to get RxDone and TxDone interrupts
+// Changed by Henrique Bruno (aka SrBrahma) Fuck those RadioHead default headers.
 void RH_RF95::handleInterrupt()
 {
     // Read the interrupt register
@@ -166,7 +167,12 @@ void RH_RF95::handleInterrupt()
             _lastRssi -= 164;
 
         // We have received a message.
-        validateRxBuf();
+        int val = validateReceivedPacket(_buf, _bufLen, PMM_TLM_ADDRESS_THIS_SYSTEM, false);
+        Serial.printf("val is %i!\n", val);
+        if (val == 0)     {
+            _rxGood++;
+            _rxBufValid = true;
+        }
         if (_rxBufValid)
             setModeIdle(); // Got one
     }
@@ -205,25 +211,6 @@ void RH_RF95::isr2()
         _deviceForInterrupt[2]->handleInterrupt();
 }
 
-// Check whether the latest received message is complete and uncorrupted
-void RH_RF95::validateRxBuf()
-{
-    if (_bufLen < 4)
-        return; // Too short to be a real message
-    // Extract the 4 headers
-    _rxHeaderTo    = _buf[0];
-    _rxHeaderFrom  = _buf[1];
-    _rxHeaderId    = _buf[2];
-    _rxHeaderFlags = _buf[3];
-    if (_promiscuous ||
-        _rxHeaderTo == _thisAddress ||
-        _rxHeaderTo == RH_BROADCAST_ADDRESS)
-    {
-        _rxGood++;
-        _rxBufValid = true;
-    }
-}
-
 bool RH_RF95::available()
 {
     if (_mode == RHModeTx)
@@ -240,36 +227,17 @@ void RH_RF95::clearRxBuf()
     ATOMIC_BLOCK_END;
 }
 
-bool RH_RF95::recv(uint8_t* buf, uint8_t* len)
-{
-    if (!available())
-        return false;
-    if (buf && len)
-    {
-        ATOMIC_BLOCK_START;
-        // Skip the 4 headers that are at the beginning of the rxBuf
-        if (*len > _bufLen-RH_RF95_HEADER_LEN)
-            *len = _bufLen-RH_RF95_HEADER_LEN;
-        memcpy(buf, _buf+RH_RF95_HEADER_LEN, *len);
-        ATOMIC_BLOCK_END;
-    }
-    clearRxBuf(); // This message accepted and cleared
-    return true;
-}
-
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PAYLOAD_LEN!
 // This version retuns by reference a receivedPacketPhysicalLayerInfoStructType, which includes the packetLength, the SNR and the RSSI.
 // Returns 0 if received anything, else didn't received or error.
 int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct)
 {
-    Serial.println("some?");
     if (!available())
         return 1;
-    Serial.println("gotsome?");
+
     if (!receivedPacketPhysicalLayerStruct) // Avoid NULL address
         return 2;
 
-    Serial.println("gotsome");
     ATOMIC_BLOCK_START; // These exists so the packet data won't change while you are copying the data - if LoRa received another packet.
 
     memcpy(receivedPacketPhysicalLayerStruct, _buf, _bufLen);
@@ -295,9 +263,7 @@ bool  RH_RF95::isSendAvailable() {
 // Checks if this system isn't already sending a message.
 // By Henrique Bruno (aka SrBrahma).
 bool  RH_RF95::isPacketBeingSent() {
-    if (_mode == RHModeTx)
-        return true;
-    return false;
+    return (_mode == RHModeTx);
 }
 
 // The functions fails if there is any packet being sent by this system, or if
@@ -349,33 +315,6 @@ int RH_RF95::sendWithoutHeaders(const uint8_t data[], uint8_t len)
     setModeTx(); // Start the transmitter
     // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
     return 0;
-}
-
-bool RH_RF95::send(const uint8_t* data, uint8_t len)
-{
-    if (len > RH_RF95_MAX_MESSAGE_LEN)
-        return false;
-
-    waitPacketSent(); // Make sure we dont interrupt an outgoing message
-    setModeIdle();
-
-    if (!waitCAD())
-        return false;  // Check channel activity
-
-    // Position at the beginning of the FIFO
-    spiWrite(RH_RF95_REG_0D_FIFO_ADDR_PTR, 0);
-    // The headers
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderTo);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFrom);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderId);
-    spiWrite(RH_RF95_REG_00_FIFO, _txHeaderFlags);
-    // The message data
-    spiBurstWrite(RH_RF95_REG_00_FIFO, data, len);
-    spiWrite(RH_RF95_REG_22_PAYLOAD_LENGTH, len + RH_RF95_HEADER_LEN);
-
-    setModeTx(); // Start the transmitter
-    // when Tx is done, interruptHandler will fire and radio mode will return to STANDBY
-    return true;
 }
 
 bool RH_RF95::printRegisters()
@@ -705,3 +644,10 @@ void RH_RF95::setPayloadCRC(bool on)
         spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, current);
 }
 
+bool RH_RF95::recv(uint8_t* buf, uint8_t* len)          {
+    return false;
+}
+
+bool RH_RF95::send(const uint8_t* data, uint8_t len)    {
+    return false;
+}

@@ -28,9 +28,9 @@ int ModuleSimpleDataLogRx::addGyroscope() {
 }
 int ModuleSimpleDataLogRx::addMagnetometer() {
     int returnValue;
-    if ((returnValue = includeVariable(mStr.gyroscopeX, TYPE_ID_FLOAT)));
-    if ((returnValue = includeVariable(mStr.gyroscopeY, TYPE_ID_FLOAT)));
-    if ((returnValue = includeVariable(mStr.gyroscopeZ, TYPE_ID_FLOAT)));
+    if ((returnValue = includeVariable(mStr.magnetometerX, TYPE_ID_FLOAT)));
+    if ((returnValue = includeVariable(mStr.magnetometerY, TYPE_ID_FLOAT)));
+    if ((returnValue = includeVariable(mStr.magnetometerZ, TYPE_ID_FLOAT)));
     return 0;
 }
 int ModuleSimpleDataLogRx::addMpuTemperature() { return includeVariable(mStr.mpuTemperature,    TYPE_ID_FLOAT); }

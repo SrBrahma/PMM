@@ -102,7 +102,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
                     return 2;
 
                 // NEO, 4) Checks the CRC.
-                if (packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC] != crc8(packet, PMM_NEO_PROTOCOL_HEADER_LENGTH))
+                if (packet[PMM_NEO_PROTOCOL_INDEX_HEADER_CRC] != crc8(packet, PMM_NEO_PROTOCOL_INDEX_HEADER_CRC))
                     return 3;
 
                 // NEO, 5.1) Check if the Destination Address is to this device...

@@ -56,7 +56,7 @@ int PmmTelemetry::send(PacketToBeSent* packetToBeSent) {
 
     buildPacket(packet, &packetLength, packetToBeSent);
     
-    if (!mRf95.send(packet, packetLength))         return 3;   // Send not successful!
+    if (mRf95.sendWithoutHeaders(packet, packetLength))         return 3;   // Send not successful!
 
     #if 1 //PMM_DEBUG && PMM_DEBUG_MORE && PMM_TLM_DEBUG_MORE && 0
         tlmDebugMorePrintf("Transmitted packet content:\n");    printArrayHex(packet, packetLength);

@@ -62,22 +62,33 @@ int  ModuleSimpleDataLogRx::storeOnSd(uint8_t sourceSession, bool writeOnBckupTo
     char filePath[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
     char filePath2[PMM_SD_FILENAME_MAX_LENGTH] = {'\0'};
 
+    // 1) Construct the path
     mPmmSdPtr->getReceivedDirectory(filePath2, PMM_SD_FILENAME_MAX_LENGTH, mSourceAddress, sourceSession);
     snprintf(filePath, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath2, "/simpleDataLog.csv");
     if (writeOnBckupToo)
         snprintf(filePath2, PMM_SD_FILENAME_MAX_LENGTH, "%s%s", filePath2, "/simpleDataLogBckup.csv");
 
+    // 2) If file don't exist, build the csv header, create the file, and print the header.
     if (!mPmmSdPtr->exists(filePath)) {
         buildCsvHeader(data, dataMaxLength);
+        
         mPmmSdPtr->createDirsAndOpen(&file, filePath);
         file.print(data);
         
-        if (writeOnBckupToo) {
+        if (writeOnBckupToo)    {
             mPmmSdPtr->createDirsAndOpen(&file2, filePath2);
             file2.print(data);
         }
     }
 
+    // 3) So the file already exists. Open the file on append mode.
+    else  {
+        mPmmSdPtr->createDirsAndOpen(&file, filePath, O_WRITE|O_APPEND);
+        if (writeOnBckupToo)
+            mPmmSdPtr->createDirsAndOpen(&file2, filePath2, O_WRITE|O_APPEND);
+    }
+
+    // 4) Write the received data and then close the file.
     buildCsvData(data, dataMaxLength);
 
     file.print(data);  file.close();

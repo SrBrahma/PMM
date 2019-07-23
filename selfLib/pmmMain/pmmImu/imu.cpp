@@ -93,6 +93,8 @@ int  PmmImu::initMagnetometer()
     PmmEeprom pmmEeprom;
     mMagnetometer.setOffset(pmmEeprom.getMagnetometerCalibrationX(), pmmEeprom.getMagnetometerCalibrationY());
 
+    setDeclination(PMM_MAGNETIC_DECLINATION_DEGREE);
+
     imuDebugMorePrintf("Magnetometer initialized successfully!\n")
     return 0;
 }
@@ -106,7 +108,7 @@ int  PmmImu::getDecByCoord(float* returnDeclination, float latitude, float longi
 
 
 // Uses coordinates to get declination, using my another code.
-int  PmmImu::setDeclination(uint32_t latitude, uint32_t longitude)
+int  PmmImu::setDeclination(int32_t latitude, int32_t longitude)
 {
     return setDeclination(coord32ToFloat(latitude), coord32ToFloat(longitude));
 }
@@ -148,36 +150,6 @@ int  PmmImu::initBmp()  //BMP085 Setup
     imuDebugMorePrintf("Barometer initialized successfully!\n")
     return 0;
 }
-
-
-// Deppending on the number of measures, this may take a little while.
-// int  PmmImu::setReferencePressure(int samples)
-// {
-//     float sumPressure = 0;
-//     float pressure;
-
-//     for (unsigned counter = 0; counter < samples; counter ++)
-//     {
-//         unsigned counter2 = 0;
-
-//         while (mBarometer.isDataReady() != DATA_READY_PRESSURE)
-//         {
-//             if (counter2++ > 100)
-//             {
-//                 advPrintf("No pressure was obtained after various attempts.\n")
-//                 return 1;
-//             }
-//             delay(5);
-//         }
-
-//         mBarometer.getPressure(&pressure);
-//         sumPressure += pressure;
-
-//     }
-//     mReferencePressure = sumPressure / samples;
-
-//     return 0;
-// }
 
 
 
@@ -259,3 +231,7 @@ pmmImuStructType* PmmImu::getImuStructPtr() { return &mPmmImuStruct;            
 
 MPU6050*  PmmImu::getMPU6050Ptr()       { return &mMpu;             }
 HMC5883L* PmmImu::getHMC5883LPtr()      { return &mMagnetometer;    }
+
+float PmmImu::getBearingDegree() {
+    return mMagnetometer.getBearingDegree(mPmmImuStruct.magnetometerArray[0], mPmmImuStruct.magnetometerArray[1]);
+}

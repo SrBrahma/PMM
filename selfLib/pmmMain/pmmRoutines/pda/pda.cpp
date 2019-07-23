@@ -50,11 +50,11 @@ void RoutinePda::init()
     addVarsSimpleDataLog();
 
     // 4) Display
-    mLiquidCrystal.begin();
+    // mLiquidCrystal.begin();
 
+    // mLiquidCrystal.backlight();
+    // mLiquidCrystal.printf("aaaaaaaa!\n");
     mMillis = millis(); // Again!
-    mLiquidCrystal.backlight();
-    mLiquidCrystal.printf("aaaaaaaa!\n");
     printMotd();
 }
 
@@ -90,18 +90,25 @@ void RoutinePda::updateDisplay()
     mLiquidCrystal.home();
     uint32_t TxCt = mTxData.txCounter       % 999999; // It cycles if overflows
     uint32_t MLCt = mTxData.mainLoopCounter % 999999; // It cycles if overflows
-    float H = min(mTxData.barometerAltitude, 99999);
+    float H = mTxData.barometerAltitude;
+    if (H > 99999)
+        H = 99999;
 
     float Dist = mPmmGps.distanceToInMeters(mTxData.gpsLat, mTxData.gpsLon);
-    if (Dist > 99999) Dist = 99999;
+    if (Dist > 99999)
+        Dist = 99999;
 
-    float Bear = mPmmGps.bearingToInDegrees(mTxData.gpsLat, mTxData.gpsLon);
+    float Bear = mPmmGps.bearingToInDegrees(mTxData.gpsLat, mTxData.gpsLon) - mPmmImu.getBearingDegree();
+    if (Bear < 0)
+        Bear = 360 - Bear;
     
     uint32_t NTxP = floor((mTxData.timeMillis - mTxData.lastGpsLocationTimeMs) / 1000.0);
-    if (NTxP > 999) NTxP = 999;
+    if (NTxP > 999)
+        NTxP = 999;
+
     uint32_t NRxP = floor((mMillis - mPmmGps.getLastLocationTimeMs()) / 1000.0);
-    advPrintf("NRxP %u\n", NRxP);
-    if (NRxP > 999) NRxP = 999;
+    if (NRxP > 999)
+        NRxP = 999;
 
     mLiquidCrystal.printf("TxCt %06lu Sess %03hu", TxCt, mSimpleDataLogRx.getSourceSession());
     mLiquidCrystal.printf("MLCt %06lu H %05.fm",   MLCt, H);

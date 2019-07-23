@@ -6,6 +6,7 @@
 class PmmEeprom
 {
 public:
+    PmmEeprom();
     // Writes 0x00 to all addresses.
     void    clearAll(); 
 

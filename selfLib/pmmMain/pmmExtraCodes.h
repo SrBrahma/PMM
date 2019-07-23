@@ -13,6 +13,10 @@
         #include "pmmSd/extraCodes/main.h"
     #endif
 
+    #if PMM_IMU_EXTRA_CODES
+        #include "pmmImu/extraCodes/main.h"
+    #endif
+
     #if PMM_TLM_EXTRA_CODES
         #include "pmmTelemetry/extraCodes/main.h"
     #endif
@@ -21,12 +25,15 @@
     // This always returns true.
     bool runExtraCodes()
     {
-        if (Serial)
-        {
+        if (Serial) {
             Serial.println("=-= PMM Extra Codes initialized automatically. You can disable it at pmmConsts.h. =-=\n");
 
             #if PMM_SD_EXTRA_CODES
                 PmmSdExtraCodes();
+            #endif
+
+            #if PMM_IMU_EXTRA_CODES
+                PmmImuExtraCodes();
             #endif
 
             #if PMM_TLM_EXTRA_CODES

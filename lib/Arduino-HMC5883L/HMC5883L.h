@@ -121,7 +121,7 @@ class HMC5883L
     int   setDeclination(float degree);
     float getDeclination();
 
-    float getHeading(float xAxis, float yAxis);
+    float getBearingDegree(float xAxis, float yAxis);
 
 
 

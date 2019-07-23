@@ -22,10 +22,6 @@ PmmGps::PmmGps(){}
 
 int PmmGps::init()
 {
-    NeoGPS::Location_t loc1(-17.0, -62.0);
-    NeoGPS::Location_t loc2(0.0, -46.0);
-    advPrintf("%f\n", NeoGPS::Location_t::BearingToDegrees(loc1, loc2));
-
     PMM_GPS_PORT.begin(9600);
 
     if (!PMM_GPS_PORT)

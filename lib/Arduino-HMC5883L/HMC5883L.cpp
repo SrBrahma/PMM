@@ -127,12 +127,15 @@ float HMC5883L::getDeclination()
     return mDeclinationDegree;
 }
 
-float HMC5883L::getHeading(float xAxis, float yAxis)
+float HMC5883L::getBearingDegree(float xAxis, float yAxis)
 {
-    // Calculate heading
-    float heading = (atan2(yAxis, xAxis) * 180) / M_PI;
+    float bearing = atan2(yAxis, xAxis) * (180.0 / M_PI);
+    bearing += mDeclinationDegree;
+    bearing -= 90; // Bearing goes from 0 (north), 90 (east), 180 (south), 270 (west), 360 (north again)
+    if (bearing < 0)
+        bearing = 360 + bearing;
 
-    return (heading + mDeclinationDegree);
+    return bearing;// + mDeclinationDegree;//, 360.0); // float remain
 }
 
 

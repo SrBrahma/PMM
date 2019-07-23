@@ -5,6 +5,8 @@
 
 #include "pmmEeprom/eeprom.h"
 
+PmmEeprom::PmmEeprom() {}
+
 // Writes 0x00 to all addresses.
 void    PmmEeprom::clearAll()
 {
@@ -26,10 +28,11 @@ void     PmmEeprom::setMagnetometerCalibrationZ(int offset) { set32b(mIndexes::m
 
 uint32_t PmmEeprom::get32b(int startingIndex)  {
     uint32_t value = 0;
-    value = join4Bytes(EEPROM.read(startingIndex),
-                       EEPROM.read(startingIndex + 1),
+    value = join4Bytes(EEPROM.read(startingIndex + 3),
                        EEPROM.read(startingIndex + 2),
-                       EEPROM.read(startingIndex + 3));
+                       EEPROM.read(startingIndex + 1),
+                       EEPROM.read(startingIndex));
+                       
     return value;
 }
 

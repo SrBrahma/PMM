@@ -80,10 +80,11 @@ public:
     int    setDeclination(float degrees);
     int    getDecByCoord (float* returnDeclination, float latitude, float longitude);
     int    setDeclination(float latitude, float longitude); // Uses coordinates to get declination, using another my another code.
-    int    setDeclination(uint32_t latitude, uint32_t longitude); // Same as above, but using the uint32_t type for the coordinates.
+    int    setDeclination(int32_t latitude, int32_t longitude); // Same as above, but using the int32_t type for the coordinates.
     float  getDeclination();
 
     void   getMagnetometer(float destinationArray[3]);  float* getMagnetometerPtr();
+    float  getBearingDegree();
     // -=-=-=-=-=-
 
     MPU6050* getMPU6050Ptr(); HMC5883L* getHMC5883LPtr();

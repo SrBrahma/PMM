@@ -15,7 +15,7 @@
     #define PMM_ROUTINE_PDA                                 1
     #define PMM_ROUTINE_LAUNCH_SIM                          2
 
-    #define PMM_SYSTEM_ROUTINE     PMM_ROUTINE_ROCKET_AVIONIC
+    #define PMM_SYSTEM_ROUTINE                PMM_ROUTINE_PDA
 
 
 
@@ -137,9 +137,9 @@
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
     #define PMM_EXTRA_CODES_ENABLE                          1
 
-        #define PMM_SD_EXTRA_CODES                          1
+        #define PMM_SD_EXTRA_CODES                          0
         #define PMM_GPS_EXTRA_CODES                         0
-        #define PMM_IMU_EXTRA_CODES                         0
+        #define PMM_IMU_EXTRA_CODES                         1
         #define PMM_TLM_EXTRA_CODES                         0
 
 

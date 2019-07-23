@@ -114,7 +114,7 @@ class Formatter
             cout << F("SD error: ") << hex << int(card.errorCode());
             cout << ',' << int(card.errorData()) << dec << endl;
         }
-        SysCall::halt();
+        // SysCall::halt();
     }
     //------------------------------------------------------------------------------
     

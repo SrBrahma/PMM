@@ -1,0 +1,115 @@
+Date : 2019-07-30 19:33:43
+Directory : d:\HB\Minerva Rockets\pmm\selfLib
+Total : 70 files,  4533 codes, 810 comments, 1448 blanks, all 6791 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| C++        |         68 |      4,513 |        810 |      1,438 |      6,761 |
+| Markdown   |          1 |         11 |          0 |          9 |         20 |
+| Properties |          1 |          9 |          0 |          1 |         10 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                    | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                       |         70 |      4,533 |        810 |      1,448 |      6,791 |
+| pmmMain                                                 |         49 |      3,308 |        578 |      1,159 |      5,045 |
+| pmmMain\pmmSd                                           |          8 |        920 |        137 |        230 |      1,287 |
+| pmmMain\pmmRoutines                                     |         10 |        761 |         92 |        266 |      1,119 |
+| pmmMain\pmmSd\extraCodes                                |          3 |        754 |        112 |        152 |      1,018 |
+| magneticDeclinationByCoord                              |         14 |        663 |         38 |         73 |        774 |
+| magneticDeclinationByCoord\src                          |         12 |        643 |         38 |         63 |        744 |
+| magneticDeclinationByCoord\src\tables                   |         10 |        596 |          0 |         30 |        626 |
+| pmmMain\pmmModules                                      |         10 |        580 |        103 |        218 |        901 |
+| generalLibs                                             |          7 |        562 |        194 |        216 |        972 |
+| pmmMain\pmmModules\simpleDataLog                        |          9 |        553 |         90 |        204 |        847 |
+| pmmMain\pmmRoutines\launchSim                           |          4 |        368 |         40 |        111 |        519 |
+| pmmMain\pmmImu                                          |          5 |        321 |         38 |        115 |        474 |
+| pmmMain\pmmTelemetry                                    |          5 |        290 |         94 |        127 |        511 |
+| pmmMain\pmmRoutines\pda                                 |          3 |        199 |         31 |         82 |        312 |
+| pmmMain\pmmRoutines\rocketAvionic                       |          3 |        194 |         21 |         73 |        288 |
+| pmmMain\pmmGps                                          |          3 |        125 |         27 |         51 |        203 |
+| pmmMain\pmmImu\extraCodes                               |          2 |         79 |          2 |         15 |         96 |
+| pmmMain\pmmEeprom                                       |          2 |         58 |          2 |         19 |         79 |
+| pmmMain\pmmTelemetry\extraCodes                         |          1 |         32 |          0 |          5 |         37 |
++---------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------+------------+------------+------------+------------+------------+
+| generalLibs\byteSelection.h                             | C++        |         45 |          4 |         17 |         66 |
+| generalLibs\circularArray.h                             | C++        |        140 |         71 |         53 |        264 |
+| generalLibs\crc.cpp                                     | C++        |         70 |         63 |         29 |        162 |
+| generalLibs\crc.h                                       | C++        |         10 |          4 |         17 |         31 |
+| generalLibs\generalUnitsOps.h                           | C++        |         21 |          3 |          6 |         30 |
+| generalLibs\measuresAnalyzer.cpp                        | C++        |        220 |         18 |         61 |        299 |
+| generalLibs\measuresAnalyzer.h                          | C++        |         56 |         31 |         33 |        120 |
+| magneticDeclinationByCoord\README.md                    | Markdown   |         11 |          0 |          9 |         20 |
+| magneticDeclinationByCoord\library.properties           | Properties |          9 |          0 |          1 |         10 |
+| magneticDeclinationByCoord\src\magDecByCoord.cpp        | C++        |         42 |          1 |         22 |         65 |
+| magneticDeclinationByCoord\src\magDecByCoord.h          | C++        |          5 |         37 |         11 |         53 |
+| magneticDeclinationByCoord\src\tables\1.h               | C++        |        187 |          0 |          3 |        190 |
+| magneticDeclinationByCoord\src\tables\10.h              | C++        |         25 |          0 |          3 |         28 |
+| magneticDeclinationByCoord\src\tables\2.h               | C++        |         97 |          0 |          3 |        100 |
+| magneticDeclinationByCoord\src\tables\3.h               | C++        |         67 |          0 |          3 |         70 |
+| magneticDeclinationByCoord\src\tables\4.h               | C++        |         52 |          0 |          3 |         55 |
+| magneticDeclinationByCoord\src\tables\5.h               | C++        |         43 |          0 |          3 |         46 |
+| magneticDeclinationByCoord\src\tables\6.h               | C++        |         37 |          0 |          3 |         40 |
+| magneticDeclinationByCoord\src\tables\7.h               | C++        |         32 |          0 |          3 |         35 |
+| magneticDeclinationByCoord\src\tables\8.h               | C++        |         29 |          0 |          3 |         32 |
+| magneticDeclinationByCoord\src\tables\9.h               | C++        |         27 |          0 |          3 |         30 |
+| pmmMain\pmm.cpp                                         | C++        |         70 |         15 |         30 |        115 |
+| pmmMain\pmm.h                                           | C++        |         30 |          2 |          9 |         41 |
+| pmmMain\pmmConsts.h                                     | C++        |         45 |         53 |         49 |        147 |
+| pmmMain\pmmDebug.cpp                                    | C++        |         16 |          0 |          2 |         18 |
+| pmmMain\pmmDebug.h                                      | C++        |         55 |         10 |         28 |         93 |
+| pmmMain\pmmEeprom\eeprom.cpp                            | C++        |         32 |          1 |         11 |         44 |
+| pmmMain\pmmEeprom\eeprom.h                              | C++        |         26 |          1 |          8 |         35 |
+| pmmMain\pmmExtraCodes.h                                 | C++        |         37 |          5 |         15 |         57 |
+| pmmMain\pmmGps\gps.cpp                                  | C++        |         83 |         16 |         25 |        124 |
+| pmmMain\pmmGps\gps.h                                    | C++        |         27 |          7 |         21 |         55 |
+| pmmMain\pmmGps\gpsType.h                                | C++        |         15 |          4 |          5 |         24 |
+| pmmMain\pmmImu\extraCodes\calibration.h                 | C++        |         50 |          2 |         11 |         63 |
+| pmmMain\pmmImu\extraCodes\main.h                        | C++        |         29 |          0 |          4 |         33 |
+| pmmMain\pmmImu\imu.cpp                                  | C++        |        170 |         13 |         58 |        241 |
+| pmmMain\pmmImu\imu.h                                    | C++        |         57 |         23 |         36 |        116 |
+| pmmMain\pmmImu\imuType.h                                | C++        |         15 |          0 |          6 |         21 |
+| pmmMain\pmmModules\ports.h                              | C++        |         27 |         13 |         14 |         54 |
+| pmmMain\pmmModules\simpleDataLog\core.cpp               | C++        |         67 |         11 |         13 |         91 |
+| pmmMain\pmmModules\simpleDataLog\core.h                 | C++        |         42 |          7 |         23 |         72 |
+| pmmMain\pmmModules\simpleDataLog\receivedAdd.cpp        | C++        |         66 |          1 |         20 |         87 |
+| pmmMain\pmmModules\simpleDataLog\receiver.cpp           | C++        |         84 |          7 |         28 |        119 |
+| pmmMain\pmmModules\simpleDataLog\receiver.h             | C++        |         42 |         26 |         26 |         94 |
+| pmmMain\pmmModules\simpleDataLog\transmitter.cpp        | C++        |        110 |         14 |         33 |        157 |
+| pmmMain\pmmModules\simpleDataLog\transmitter.h          | C++        |         38 |         10 |         28 |         76 |
+| pmmMain\pmmModules\simpleDataLog\transmitterAdd.cpp     | C++        |         67 |         10 |         19 |         96 |
+| pmmMain\pmmModules\simpleDataLog\varsNames.h            | C++        |         37 |          4 |         14 |         55 |
+| pmmMain\pmmRoutines\launchSim\launchSim.cpp             | C++        |        160 |         12 |         31 |        203 |
+| pmmMain\pmmRoutines\launchSim\launchSim.h               | C++        |         75 |         18 |         32 |        125 |
+| pmmMain\pmmRoutines\launchSim\launchSimRoutine.cpp      | C++        |        106 |          8 |         35 |        149 |
+| pmmMain\pmmRoutines\launchSim\launchSimRoutine.h        | C++        |         27 |          2 |         13 |         42 |
+| pmmMain\pmmRoutines\pda\pda.cpp                         | C++        |        140 |         17 |         50 |        207 |
+| pmmMain\pmmRoutines\pda\pda.h                           | C++        |         52 |         10 |         27 |         89 |
+| pmmMain\pmmRoutines\pda\pdaConsts.h                     | C++        |          7 |          4 |          5 |         16 |
+| pmmMain\pmmRoutines\rocketAvionic\rocketAvionic.cpp     | C++        |        144 |         12 |         45 |        201 |
+| pmmMain\pmmRoutines\rocketAvionic\rocketAvionic.h       | C++        |         43 |          6 |         24 |         73 |
+| pmmMain\pmmRoutines\rocketAvionic\rocketAvionicConsts.h | C++        |          7 |          3 |          4 |         14 |
+| pmmMain\pmmSd\consts.h                                  | C++        |          8 |          0 |          5 |         13 |
+| pmmMain\pmmSd\extraCodes\formatter.h                    | C++        |        547 |         81 |         73 |        701 |
+| pmmMain\pmmSd\extraCodes\main.h                         | C++        |         32 |          8 |          4 |         44 |
+| pmmMain\pmmSd\extraCodes\safeLogTest.h                  | C++        |        175 |         23 |         75 |        273 |
+| pmmMain\pmmSd\generalFunctions.cpp                      | C++        |         32 |          2 |          7 |         41 |
+| pmmMain\pmmSd\generalFunctions.h                        | C++        |          6 |          0 |          3 |          9 |
+| pmmMain\pmmSd\sd.cpp                                    | C++        |         80 |         13 |         34 |        127 |
+| pmmMain\pmmSd\sd.h                                      | C++        |         40 |         10 |         29 |         79 |
+| pmmMain\pmmTelemetry\extraCodes\main.h                  | C++        |         32 |          0 |          5 |         37 |
+| pmmMain\pmmTelemetry\protocols.cpp                      | C++        |        102 |         39 |         33 |        174 |
+| pmmMain\pmmTelemetry\protocols.h                        | C++        |         62 |         31 |         41 |        134 |
+| pmmMain\pmmTelemetry\telemetry.cpp                      | C++        |         70 |         10 |         29 |        109 |
+| pmmMain\pmmTelemetry\telemetry.h                        | C++        |         24 |         14 |         19 |         57 |
+| Total                                                   |            |      4,533 |        810 |      1,448 |      6,791 |
++---------------------------------------------------------+------------+------------+------------+------------+------------+

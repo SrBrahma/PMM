@@ -33,7 +33,7 @@ int ModuleSimpleDataLogRx::getVarByIndex(void *destination, int index) {
 
 
 // Received Package Log Info Package
-bool ModuleSimpleDataLogRx::receivedPacket(receivedPacketAllInfoStructType* packet, bool autoStoreOnSd)
+bool ModuleSimpleDataLogRx::receivedPacket(rxPacketAllInfoType* packet, bool autoStoreOnSd)
 {
     if (!packet)                                 return false;
     if (packet->payloadLength < 3)               return false; // Should at least have the 2 bytes of crc16, and the session.

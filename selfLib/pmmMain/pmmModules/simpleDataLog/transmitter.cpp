@@ -8,6 +8,11 @@
 ModuleSimpleDataLogTx::ModuleSimpleDataLogTx() {}
 
 int  ModuleSimpleDataLogTx::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession) {
+    if (pmmTelemetry)
+        mUsesTelemetry = true;
+    else // If given address is NULL
+        mUsesTelemetry = false;
+
     mPmmTlmPtr = pmmTelemetry; mPmmSdPtr = pmmSd; mSystemSession = systemSession;
     mIsFirstStoreOnSd = true;
     return 0;
@@ -26,7 +31,8 @@ int  ModuleSimpleDataLogTx::init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8
 
 int ModuleSimpleDataLogTx::send(uint8_t destinationAddress)
 {
-    if (!mPmmTlmPtr->isSendAvailable())   return 1; // Won't waste time building the packet.
+    if (!mUsesTelemetry)                    return 1;
+    if (!mPmmTlmPtr->isSendAvailable())     return 2; // Won't waste time building the packet.
     advOnlyPrintln();
     PacketToBeSent packet;
     uint8_t payloadLength;

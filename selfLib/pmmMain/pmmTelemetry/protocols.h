@@ -80,14 +80,14 @@ typedef struct {
     uint8_t  destinationAddress;
     uint8_t  port;
     uint8_t  payloadLength;
-} receivedPacketAllInfoStructType;
+} rxPacketAllInfoType;
 
 typedef struct {
     uint8_t packet[PMM_TLM_MAX_PACKET_TOTAL_LENGTH];
     uint8_t packetLength;
     int8_t  snr;  //in dBm
     int8_t  rssi; //in dBm
-} receivedPacketPhysicalLayerInfoStructType;
+} rxPacketPhysicalLayerType;
 
 
 
@@ -124,7 +124,7 @@ private:
 // These steps can be slightly different from protocol to protocol.
 int  validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisAddress, int promiscuousMode);
 
-int  getRxPacketAllInfo(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct);
+int  getRxPacketAllInfo(rxPacketPhysicalLayerType* receivedPacketPhysicalLayerStruct, rxPacketAllInfoType* receivedPacketAllInfoStruct);
 
 // ===== Transmissin functions =====
 int  buildPacket (uint8_t packet[], uint8_t* packetLength, PacketToBeSent* toBeSentTelemetryPacketInfoStruct);

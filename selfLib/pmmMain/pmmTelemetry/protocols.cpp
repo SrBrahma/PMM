@@ -132,7 +132,7 @@ int validateReceivedPacket(uint8_t packet[], uint8_t packetLength, uint8_t thisA
 }
 
 // It assumes the packet was already validated by the validateReceivedPacket() function, which is called in handleInterrupt() function (in case of our rfm95w).
-int getRxPacketAllInfo(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct, receivedPacketAllInfoStructType* receivedPacketAllInfoStruct)
+int getRxPacketAllInfo(rxPacketPhysicalLayerType* receivedPacketPhysicalLayerStruct, rxPacketAllInfoType* receivedPacketAllInfoStruct)
 {
     if (!receivedPacketPhysicalLayerStruct) return 1;
     if (!receivedPacketAllInfoStruct)       return 2;

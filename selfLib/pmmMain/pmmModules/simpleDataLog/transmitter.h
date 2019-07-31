@@ -16,6 +16,7 @@ public:
 
     ModuleSimpleDataLogTx();
 
+    // The pmmTelemetry can be NULL, which tell this object that it won't transmit.
     int  init(PmmTelemetry* pmmTelemetry, PmmSd* pmmSd, uint8_t systemSession);
 
     // Transmission
@@ -56,8 +57,8 @@ private:
 
     int     includeVariable(const char  variableName[],   uint8_t variableType, void* variableAddress);
 
-    // Need rework somewhere.
-    // int     includeArray   (const char* const*variablesNames, uint8_t arrayType,    void* arrayAddress, uint8_t arraySize);
+    // The 
+    bool    mUsesTelemetry;
 
     bool    mIsFirstStoreOnSd;
 

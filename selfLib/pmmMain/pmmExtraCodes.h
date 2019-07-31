@@ -7,17 +7,17 @@
 
 #include "pmmConsts.h"  // For the defines
 
-#if PMM_EXTRA_CODES_ENABLE && PMM_DEBUG && (PMM_SD_EXTRA_CODES || PMM_GPS_EXTRA_CODES || PMM_IMU_EXTRA_CODES || PMM_TLM_EXTRA_CODES)
+#if PMM_EXTRA_CODES_ENABLE && PMM_DEBUG && (PMM_EXTRA_CODES_SD_ENABLE || PMM_EXTRA_CODES_GPS_ENABLE || PMM_EXTRA_CODES_IMU_ENABLE || PMM_EXTRA_CODES_TLM_ENABLE)
 
-    #if PMM_SD_EXTRA_CODES
+    #if PMM_EXTRA_CODES_SD_ENABLE
         #include "pmmSd/extraCodes/main.h"
     #endif
 
-    #if PMM_IMU_EXTRA_CODES
+    #if PMM_EXTRA_CODES_IMU_ENABLE
         #include "pmmImu/extraCodes/main.h"
     #endif
 
-    #if PMM_TLM_EXTRA_CODES
+    #if PMM_EXTRA_CODES_TLM_ENABLE
         #include "pmmTelemetry/extraCodes/main.h"
     #endif
 
@@ -28,15 +28,15 @@
         if (Serial) {
             Serial.println("=-= PMM Extra Codes initialized automatically. You can disable it at pmmConsts.h. =-=\n");
 
-            #if PMM_SD_EXTRA_CODES
+            #if PMM_EXTRA_CODES_SD_ENABLE
                 PmmSdExtraCodes();
             #endif
 
-            #if PMM_IMU_EXTRA_CODES
+            #if PMM_EXTRA_CODES_IMU_ENABLE
                 PmmImuExtraCodes();
             #endif
 
-            #if PMM_TLM_EXTRA_CODES
+            #if PMM_EXTRA_CODES_TLM_ENABLE
                 PmmTelemetryExtraCodes();
             #endif
 

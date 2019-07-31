@@ -25,7 +25,7 @@ public:
     // As only the Rx receives, we don't need the Tx here!
     void addSimpleDataLogRx(ModuleSimpleDataLogRx *moduleSimpleDataLog);
 
-    int receivedPacket(receivedPacketAllInfoStructType* packetInfo) {
+    int receivedPacket(rxPacketAllInfoType* packetInfo) {
         switch(packetInfo->port) {// 1) Which kind of packet is it?
             // case PORT_ID_DATA_LOG:
             //     mPmmModuleDataLog->receivedDataLog(packetInfo); break;

@@ -4,10 +4,10 @@
 
 #if PMM_SYSTEM_ROUTINE == PMM_ROUTINE_ROCKET_AVIONIC
 
-#include <EEPROM.h> // To get the mSessionId
 #include <generalUnitsOps.h>
 #include <measuresAnalyzer.h>
 
+#include "pmmEeprom/eeprom.h"
 #include "pmmTelemetry/telemetry.h"
 #include "pmmSd/sd.h"
 #include "pmmImu/imu.h"
@@ -33,10 +33,8 @@ void RoutineRocketAvionic::init()
 
     int initStatus = 0;
 
-    int adrs = 0;
-    mSessionId = EEPROM.read(adrs); 
-    EEPROM.write(adrs, mSessionId + 1);
-    EEPROM.read(adrs);
+    mSessionId = mPmmEeprom.getSession();
+    mPmmEeprom.setSession(mSessionId + 1);
 
     // 2) Main objects
     initStatus += mPmmTlm.init();

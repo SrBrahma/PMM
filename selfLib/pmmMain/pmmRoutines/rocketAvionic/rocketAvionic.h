@@ -9,6 +9,7 @@
 
 #include <measuresAnalyzer.h>
 
+#include "pmmEeprom/eeprom.h"
 #include "pmmTelemetry/telemetry.h"
 #include "pmmImu/imu.h"
 #include "pmmGps/gps.h"
@@ -30,6 +31,7 @@ public:
     void update();
 
 private:
+
     // Add the values to the Module SimpleDataLog
     void addVarsSimpleDataLog();
 
@@ -57,6 +59,7 @@ private:
 
 
     // Main objects
+    PmmEeprom    mPmmEeprom;
     PmmTelemetry mPmmTlm;
     PmmImu       mPmmImu;
     PmmGps       mPmmGps;

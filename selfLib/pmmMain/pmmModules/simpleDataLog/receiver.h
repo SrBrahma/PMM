@@ -23,7 +23,7 @@ public:
     int  init(PmmSd* pmmSd, uint8_t systemSession, uint8_t sourceAddress);
 
     // Returns true if received a valid packet.
-    bool receivedPacket(receivedPacketAllInfoStructType* packetInfo, bool autoStoreOnSd = false);
+    bool receivedPacket(rxPacketAllInfoType* packetInfo, bool autoStoreOnSd = false);
 
     // Stores the last received packet on the SD.
     // Should be runned after successful receivedPacket(). (can be automatically called using

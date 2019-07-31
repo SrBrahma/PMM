@@ -824,7 +824,7 @@ public:
     void setPayloadCRC(bool on);
 
     // PMM - By Henrique Bruno (aka SrBrahma)
-    int  receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct);
+    int  receivePayloadAndInfoStruct(rxPacketPhysicalLayerType* receivedPacketPhysicalLayerStruct);
     bool isSendAvailable();
     bool isPacketBeingSent();
     int  sendIfAvailable(const uint8_t data[], uint8_t length);

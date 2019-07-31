@@ -1,5 +1,5 @@
-#ifndef PMM_IMU_EXTRA_CODES_CALIBRATION_h
-#define PMM_IMU_EXTRA_CODES_CALIBRATION_h
+#ifndef PMM_EXTRA_CODES_IMU_ENABLE_CALIBRATION_h
+#define PMM_EXTRA_CODES_IMU_ENABLE_CALIBRATION_h
 
 #include "pmmImu/imu.h"
 #include "pmmEeprom/eeprom.h"

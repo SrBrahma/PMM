@@ -228,9 +228,9 @@ void RH_RF95::clearRxBuf()
 }
 
 // Be sure your buffer is equal or greater than RH_RF95_MAX_PAYLOAD_LEN!
-// This version retuns by reference a receivedPacketPhysicalLayerInfoStructType, which includes the packetLength, the SNR and the RSSI.
+// This version retuns by reference a rxPacketPhysicalLayerType, which includes the packetLength, the SNR and the RSSI.
 // Returns 0 if received anything, else didn't received or error.
-int RH_RF95::receivePayloadAndInfoStruct(receivedPacketPhysicalLayerInfoStructType* receivedPacketPhysicalLayerStruct)
+int RH_RF95::receivePayloadAndInfoStruct(rxPacketPhysicalLayerType* receivedPacketPhysicalLayerStruct)
 {
     if (!available())
         return 1;

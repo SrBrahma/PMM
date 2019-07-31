@@ -17,7 +17,6 @@
 #include <magDecByCoord.h>
 
 #include <SimpleKalmanFilter.h>
-#include <Plotter.h>
 
 #include "pmmImu/imuType.h"
 #include "pmmConsts.h"
@@ -31,7 +30,7 @@ class PmmImu
 public:
     PmmImu();
 
-    int init();     // Must be executed, so the object is passed. Also, inits everything.
+    int init();     // Inits all the sensors.
 
     // You can get those values by using a & (bitwise And) on the return value.
     enum
@@ -41,6 +40,7 @@ public:
         MagError = 0x100} ImuUpdateRtn;
 
     int update();   // Gets all the sensors
+
     enum class ImuMode {Sleep, Active};
     int setImuMode(ImuMode mode);
 
@@ -68,6 +68,7 @@ public:
     // int    setReferencePressure(int samples = 10);
 
     float  getBarometerPressure();     float* getBarometerPressurePtr();
+    // Uses the mReferencePressure to get the altitude. By default, it is 1013.25 (Mean sea level).
     float  getBarometerAltitude();     float* getBarometerAltitudePtr();
     float  getBarometerTemperature();  float* getBarometerTemperaturePtr();
     // -=-=-=-=-=-

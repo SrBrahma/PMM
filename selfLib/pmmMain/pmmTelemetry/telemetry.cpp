@@ -106,4 +106,4 @@ bool PmmTelemetry::isSendAvailable() {
     if (!mTelemetryIsWorking) return false;
     return mRf95.isSendAvailable(); }
 
-receivedPacketAllInfoStructType* PmmTelemetry::getRxPacketAllInfoPtr()      {   return &mRxPacketAllInfo;   }
+rxPacketAllInfoType* PmmTelemetry::getRxPacketAllInfoPtr()      {   return &mRxPacketAllInfo;   }

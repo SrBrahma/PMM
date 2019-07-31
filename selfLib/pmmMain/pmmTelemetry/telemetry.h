@@ -36,7 +36,7 @@ public:
     // Returns 0 if successfully sent. Else, error or wasn't sent.
     int sendIfAvailable(PacketToBeSent *packet);
 
-    receivedPacketAllInfoStructType* getRxPacketAllInfoPtr();
+    rxPacketAllInfoType* getRxPacketAllInfoPtr();
 
 
 private:
@@ -44,12 +44,8 @@ private:
     RH_RF95  mRf95;
     bool     mTelemetryIsWorking;
 
-    receivedPacketPhysicalLayerInfoStructType   mRxPacketPhysicalLayerInfo;
-    receivedPacketAllInfoStructType             mRxPacketAllInfo          ;
-
-    #if PMM_TLM_SIMULATE_RECEPTION
-        int    mNewSimulatedPacket;
-    #endif
+    rxPacketPhysicalLayerType   mRxPacketPhysicalLayerInfo;
+    rxPacketAllInfoType         mRxPacketAllInfo          ;
 };
 
 

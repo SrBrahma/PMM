@@ -15,17 +15,17 @@
     #define PMM_ROUTINE_PDA                                 1
     #define PMM_ROUTINE_LAUNCH_SIM                          2
 
-    #define PMM_SYSTEM_ROUTINE                PMM_ROUTINE_PDA
+    #define PMM_SYSTEM_ROUTINE                PMM_ROUTINE_ROCKET_AVIONIC
 
 
 
 // =======================================================================
 //  General
-// =======================================================================
+// ======================================= ================================
     #define PMM_THIS_NAME_DEFINE                     "Aurora" // Used in messageLog.cpp.
 
     // This system address. Two systems MUST NOT have the same address.
-    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     2
+    #define PMM_TLM_ADDRESS_THIS_SYSTEM                     1
 
     // For the PDA/Receiver:
     // Indicates the address which the SimpleDataLog Module will be listening to.
@@ -121,10 +121,9 @@
 // =======================================================================
 //  GPS
 // =======================================================================
-    #define PMM_USE_GPS                                     1
 
-        // Set the used GPS serial channel (Serial, Serial1...).
-        #define PMM_GPS_PORT                          Serial2
+    // Set the used GPS serial channel (Serial, Serial1...).
+    #define PMM_GPS_PORT                          Serial2
 
 
 
@@ -138,10 +137,10 @@
     // Besides this Enable, the Debug MUST also be enabled for the Extra Codes activation.
     #define PMM_EXTRA_CODES_ENABLE                          0
 
-        #define PMM_SD_EXTRA_CODES                          0
-        #define PMM_GPS_EXTRA_CODES                         0
-        #define PMM_IMU_EXTRA_CODES                         0
-        #define PMM_TLM_EXTRA_CODES                         0
+        #define PMM_EXTRA_CODES_SD_ENABLE                   0
+        #define PMM_EXTRA_CODES_GPS_ENABLE                  0
+        #define PMM_EXTRA_CODES_IMU_ENABLE                  0
+        #define PMM_EXTRA_CODES_TLM_ENABLE                  0
 
 
 

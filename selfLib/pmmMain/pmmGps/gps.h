@@ -36,6 +36,7 @@ public:
     float  bearingToInDegrees(int32_t targetLatitude, int32_t targetLongitude);
 
 private:
+
     void fixToOurType(gps_fix &mFix, pmmGpsStructType &mPmmGpsStruct);
     void debugPrintFix(Print &Serial, const NMEAGPS &mNMEAGPS, const gps_fix &mFix);
 

@@ -49,21 +49,27 @@ void RoutineRocketAvionic::init()
 
     // 4) Recovery. 20ms as the minTime is a nice value. BMP085/180 has a min value of ~26ms between
     // each measure on the Ultra-etc precision mode -- the one used here.
-    if (mAltitudeAnalyzer.init(millisToMicros(20), millisToMicros(100), secondsToMicros(1), 10)) {
+    if (mAltitudeAnalyzer.init(millisToMicros(10), millisToMicros(100), secondsToMicros(1), 10)) {
         initStatus ++;
         advPrintf("Fatal error! Failed to alloc memory to mAltitudeAnalyzer!");
     }
-    mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreGreaterThan, 5, MeasuresAnalyzer::Time::Second);
-    mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreLesserThan, -5, MeasuresAnalyzer::Time::Second);
-    mAltAnalyzerIndexes.mainAlt = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::Values,
-                                    MeasuresAnalyzer::Relation::AreLesserThan, 650);
-    mAltAnalyzerIndexes.mainVel = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreLesserThan, -5, MeasuresAnalyzer::Time::Second);
-    mAltAnalyzerIndexes.mainVel2 = mAltitudeAnalyzer.addCondition(95, MeasuresAnalyzer::CheckType::FirstDerivative,
-                                    MeasuresAnalyzer::Relation::AreLesserThan, -150, MeasuresAnalyzer::Time::Second);
+    mAltAnalyzerIndexes.liftOff = mAltitudeAnalyzer.addCondition(MIN_PERCENTAGE_MEASURES_ANALYZER,
+            MeasuresAnalyzer::CheckType::FirstDerivative, MeasuresAnalyzer::Relation::AreGreaterThan,
+            LIFT_OFF_MIN_SPEED, MeasuresAnalyzer::Time::Second);
 
+    mAltAnalyzerIndexes.drogue  = mAltitudeAnalyzer.addCondition(MIN_PERCENTAGE_MEASURES_ANALYZER,
+            MeasuresAnalyzer::CheckType::FirstDerivative, MeasuresAnalyzer::Relation::AreLesserThan,
+            DROGUE_MIN_SPEED, MeasuresAnalyzer::Time::Second);
+
+    mAltAnalyzerIndexes.mainAlt = mAltitudeAnalyzer.addCondition(MIN_PERCENTAGE_MEASURES_ANALYZER,
+            MeasuresAnalyzer::CheckType::Values, MeasuresAnalyzer::Relation::AreLesserThan, MAIN_MIN_ALTITUDE);
+    mAltAnalyzerIndexes.mainVel = mAltitudeAnalyzer.addCondition(MIN_PERCENTAGE_MEASURES_ANALYZER,
+            MeasuresAnalyzer::CheckType::FirstDerivative, MeasuresAnalyzer::Relation::AreLesserThan,
+            MAIN_MIN_SPEED, MeasuresAnalyzer::Time::Second);
+
+    mAltAnalyzerIndexes.mainVel2 = mAltitudeAnalyzer.addCondition(MIN_PERCENTAGE_MEASURES_ANALYZER,
+            MeasuresAnalyzer::CheckType::FirstDerivative, MeasuresAnalyzer::Relation::AreLesserThan,
+            MAIN_NO_DROGUE_MIN_SPEED, MeasuresAnalyzer::Time::Second);
 
     pinMode(ROCKET_AVIONIC_PIN_DROGUE, OUTPUT); pinMode(ROCKET_AVIONIC_PIN_MAIN, OUTPUT);
     digitalWrite(ROCKET_AVIONIC_PIN_DROGUE, 0); digitalWrite(ROCKET_AVIONIC_PIN_MAIN, 0); // Just to ensure! 

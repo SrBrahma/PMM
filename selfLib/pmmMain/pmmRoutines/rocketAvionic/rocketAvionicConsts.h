@@ -13,16 +13,24 @@
 
 
 #define MIN_PERCENTAGE_MEASURES_ANALYZER          95
+
+
+// Liftoff detection actually isn't used.
 #define LIFT_OFF_MIN_SPEED                         5
+
+// DROGUE_MIN_SPEED should be negative, as the altitude is decreasing
 #define DROGUE_MIN_SPEED                          -5
+
+
 // Set the INITIAL_ALTITUDE using the initial altitude from https://www.mapcoordinates.net/en
-#define     INITIAL_ALTITUDE                     500
+#define INITIAL_ALTITUDE                         500
 
 // Notice that the measured altitude uses the Mean Sea Level (MSL)
-#define     MAIN_MIN_ALTITUDE                    500 + INITIAL_ALTITUDE
-#define     MAIN_MIN_SPEED                        -5
+#define MAIN_MIN_ALTITUDE                        500 + INITIAL_ALTITUDE
+// MAIN_MIN_SPEED should be negative, as the altitude is decreasing
+#define MAIN_MIN_SPEED                            -5
 
 // If the barometer detects this vertical velocity, means that the drogue didn't open.
-#define     MAIN_NO_DROGUE_MIN_SPEED            -150
+#define MAIN_NO_DROGUE_MIN_SPEED                -150
 
 #endif

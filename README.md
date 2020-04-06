@@ -1,9 +1,9 @@
 # PMM
 Fork from my own project.
 
-**Now with a basic Wiki!**
+**Now with a basic Wiki!** Read it to get started.
 
-Open Source code of the PMM (Plataforma Multimissão, Multi-Mission Platform), a project of a system capable of functioning in a vast amount of diferent scenarios and applications, as rockets, drones, rovers, cars, submarines and handhelds.
+Open Source code of the PMM (Plataforma Multimissão, Multi-Mission Platform), a project of a system capable of functioning in a vast amount of diferent scenarios and applications, as rockets, drones, rovers, cars, submarines and handhelds. One of my greatest projects so far.
 
 Needs PlatformIO.
 

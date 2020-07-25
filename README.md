@@ -1,5 +1,5 @@
 # PMM
-Fork from my own project.
+Fork from my own project -- It previously showed to be a fork of my previous team repo, but as they removed the repository, now it shows, for some reason (maybe was the oldest fork), to be a fork of another team ex-member.
 
 **Now with a basic Wiki!** Read it to get started.
 
